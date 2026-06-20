@@ -3,7 +3,7 @@
    Used by all frontend pages to talk to the backend.
    ============================================================ */
 
-const VELORRA_API = 'http://localhost:3001/api';
+const VELORRA_API = 'https://velorra-vvp3.onrender.com/api';
 
 /* ── Get stored JWT token ── */
 function getToken() {
