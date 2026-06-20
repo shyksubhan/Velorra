@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Velorra</title>
+  <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Vel<span>orra</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="about.html">Our Story</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-icons">
+    <button><i class="fa-solid fa-magnifying-glass"></i></button>
+    <button data-open-cart style="position:relative;">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <span class="cart-count" style="display:none;">0</span>
+    </button>
+    <button class="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <p class="section-label">We're Here For You</p>
+    <h1>Get In <em>Touch</em></h1>
+  </div>
+</div>
+
+<section style="padding: 80px 0 120px;">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- Contact Form -->
+      <div class="reveal">
+        <p class="section-label" style="margin-bottom:20px;">Send Us a Message</p>
+        <form class="contact-form" id="contact-form">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="name" placeholder="Your name" required />
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="you@email.com" required />
+          </div>
+          <div class="form-group">
+            <label>Phone (Optional)</label>
+            <input type="tel" name="phone" placeholder="+92 300 000 0000" />
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <select name="subject">
+              <option value="">Select a topic</option>
+              <option>Order Inquiry</option>
+              <option>Return / Exchange</option>
+              <option>Product Question</option>
+              <option>Wholesale / Collaboration</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea name="message" placeholder="How can we help you?"></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="clip-path:none; padding:16px 40px;">Send Message</button>
+        </form>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="contact-info reveal reveal-delay-2">
+        <p class="section-label" style="margin-bottom:20px;">Contact Details</p>
+        <p>We'd love to hear from you. Our team is available Monday through Saturday, 10am to 7pm PKT. Expect a reply within 24 hours.</p>
+        <div class="contact-detail">
+          <div class="c-item">
+            <i class="fa-solid fa-envelope c-icon"></i>
+            <div class="c-text">
+              <strong>Email</strong>
+              hello@velorra.com
+            </div>
+          </div>
+          <div class="c-item">
+            <i class="fa-brands fa-whatsapp c-icon"></i>
+            <div class="c-text">
+              <strong>WhatsApp</strong>
+              +92 300 000 0000
+            </div>
+          </div>
+          <div class="c-item">
+            <i class="fa-brands fa-instagram c-icon"></i>
+            <div class="c-text">
+              <strong>Instagram</strong>
+              @velorra
+            </div>
+          </div>
+          <div class="c-item">
+            <i class="fa-solid fa-location-dot c-icon"></i>
+            <div class="c-text">
+              <strong>Location</strong>
+              Lahore, Punjab, Pakistan
+            </div>
+          </div>
+          <div class="c-item">
+            <i class="fa-solid fa-clock c-icon"></i>
+            <div class="c-text">
+              <strong>Hours</strong>
+              Monday – Saturday: 10:00am – 7:00pm
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div style="margin-top:48px; padding:32px; background:var(--card); border:1px solid var(--border);">
+          <p class="section-label" style="margin-bottom:16px;">Order & Delivery</p>
+          <p style="font-size:0.82rem; color:var(--muted); line-height:1.85;">
+            📦 Standard delivery: 3–5 business days<br>
+            🚀 Express delivery: 1–2 business days (Lahore)<br>
+            🆓 Free shipping on orders over PKR 5,000<br>
+            💰 Cash on Delivery available across Pakistan<br>
+            🔄 14-day hassle-free returns
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="nav-logo">Vel<span>orra</span></span>
+        <p>Pakistan's premium fashion destination.</p>
+        <div class="footer-social">
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="shop.html">All Products</a></li>
+          <li><a href="shop.html?cat=women">Women</a></li>
+          <li><a href="shop.html?cat=men">Men</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Shipping</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>hello@velorra.com</p>
+        <p style="margin-top:8px;">Lahore, Pakistan</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 <span class="gold-text">Velorra</span>. All rights reserved.</p>
+      <div class="footer-pay">
+        <span class="pay-badge">COD</span>
+        <span class="pay-badge">Easypaisa</span>
+        <span class="pay-badge">JazzCash</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="cart-drawer">
+  <div class="cart-header">
+    <h3>Your Bag</h3>
+    <button id="cart-close" class="cart-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cart-items"><div class="cart-empty">Your bag is empty.</div></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cart-total-val">PKR 0</span></div>
+    <button class="btn-primary cart-checkout" style="width:100%;clip-path:none;padding:16px;">Checkout</button>
+  </div>
+</div>
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<div id="chatbot">
+  <div id="chat-window">
+    <div class="chat-win-header">
+      <span class="chat-title">Velorra Style Assistant</span>
+      <span class="chat-status"><span class="chat-status-dot"></span>Online</span>
+    </div>
+    <div id="chat-messages">
+      <div class="msg bot">Hi! Any questions before you reach out? I can help 💛</div>
+    </div>
+    <div id="chat-input-row">
+      <input id="chat-input" type="text" placeholder="Ask me anything…" />
+      <button id="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+  <button id="chat-toggle" onclick="toggleChat()">
+    <div class="chat-pulse"></div>
+    <i class="fa-solid fa-comment-dots"></i>
+  </button>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

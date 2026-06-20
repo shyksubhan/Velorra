@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop — Velorra</title>
+  <meta name="description" content="Browse the full Velorra collection — women's clothing, men's fashion, jewellery, watches and cosmetics." />
+  <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Vel<span>orra</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="about.html">Our Story</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-icons">
+    <button aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <button data-open-cart aria-label="Cart" style="position:relative;">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <span class="cart-count" style="display:none;">0</span>
+    </button>
+    <button class="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Page Hero -->
+<div class="page-hero">
+  <div class="container">
+    <p class="section-label">The Full Edit</p>
+    <h1>All <em>Collections</em></h1>
+  </div>
+</div>
+
+<section style="padding:60px 0 100px;">
+  <div class="container">
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="women">Women</button>
+      <button class="filter-btn" data-filter="men">Men</button>
+      <button class="filter-btn" data-filter="jewellery">Jewellery</button>
+      <button class="filter-btn" data-filter="watches">Watches</button>
+      <button class="filter-btn" data-filter="cosmetics">Cosmetics</button>
+      <button class="filter-btn" data-filter="sale">Sale</button>
+    </div>
+
+    <div class="products-grid">
+
+      <!-- Sample 1 -->
+      <div class="product-card reveal" data-category="women">
+        <div class="product-img-wrap">
+          <span class="product-badge new">New</span>
+          <div class="product-img-placeholder">
+            <span class="pi-icon">👗</span>
+            <span class="pi-label">Women's Dress</span>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Ivory Silk Maxi Gown',12500,'👗','M — Ivory')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Women · Dresses</p>
+          <h3 class="product-name">Ivory Silk Maxi Gown</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR 12,500</span>
+            <span class="product-price-old">PKR 16,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample 2 -->
+      <div class="product-card reveal reveal-delay-1" data-category="watches">
+        <div class="product-img-wrap">
+          <span class="product-badge">Bestseller</span>
+          <div class="product-img-placeholder">
+            <span class="pi-icon">⌚</span>
+            <span class="pi-label">Timepiece</span>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Noir Rose Gold Watch',28000,'⌚','Rose Gold')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Unisex · Watches</p>
+          <h3 class="product-name">Noir Rose Gold Timepiece</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR 28,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample 3 -->
+      <div class="product-card reveal reveal-delay-2" data-category="men">
+        <div class="product-img-wrap">
+          <div class="product-img-placeholder">
+            <span class="pi-icon">🧥</span>
+            <span class="pi-label">Men's Wear</span>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Obsidian Slim Suit',35000,'🧥','M — Charcoal')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Men · Formal</p>
+          <h3 class="product-name">Obsidian Slim Suit</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR 35,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample 4 -->
+      <div class="product-card reveal reveal-delay-3" data-category="jewellery">
+        <div class="product-img-wrap">
+          <span class="product-badge new">New</span>
+          <div class="product-img-placeholder">
+            <span class="pi-icon">💍</span>
+            <span class="pi-label">Jewellery</span>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Aurora Gold Necklace',8500,'💍','Gold')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Women · Jewellery</p>
+          <h3 class="product-name">Aurora Gold Necklace</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR 8,500</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample 5 -->
+      <div class="product-card reveal" data-category="cosmetics">
+        <div class="product-img-wrap">
+          <div class="product-img-placeholder">
+            <span class="pi-icon">💄</span>
+            <span class="pi-label">Cosmetics</span>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Velvet Noir Lip Kit',3500,'💄','Deep Red')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Cosmetics · Lips</p>
+          <h3 class="product-name">Velvet Noir Lip Kit</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR 3,500</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample 6 -->
+      <div class="product-card reveal reveal-delay-1" data-category="women">
+        <div class="product-img-wrap">
+          <span class="product-badge">Sale</span>
+          <div class="product-img-placeholder">
+            <span class="pi-icon">👜</span>
+            <span class="pi-label">Handbag</span>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Champagne Leather Tote',18000,'👜','Champagne')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Women · Bags</p>
+          <h3 class="product-name">Champagne Leather Tote</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR 18,000</span>
+            <span class="product-price-old">PKR 24,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD YOUR OWN PRODUCTS BELOW THIS LINE ── -->
+      <!--
+      <div class="product-card" data-category="women">
+        <div class="product-img-wrap">
+          <img src="images/your-product.jpg" alt="Product Name" style="width:100%;height:100%;object-fit:cover;">
+          <div class="product-actions">
+            <button onclick="addToCart('Product Name', PRICE_IN_PKR, 'emoji', 'Variant')">Add to Bag</button>
+            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">Category</p>
+          <h3 class="product-name">Product Name</h3>
+          <div class="product-pricing">
+            <span class="product-price">PKR X,XXX</span>
+          </div>
+        </div>
+      </div>
+      -->
+
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section id="newsletter" style="padding:80px 0;">
+  <div class="container">
+    <div class="newsletter-inner reveal">
+      <p class="section-label">Be First To Know</p>
+      <h2 class="section-title">New Arrivals <em>Weekly</em></h2>
+      <p>Subscribe and get 10% off your first order.</p>
+      <form class="newsletter-form" onsubmit="return false;">
+        <input type="email" placeholder="Your email address" required />
+        <button type="submit" class="btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="nav-logo">Vel<span>orra</span></span>
+        <p>Pakistan's premium fashion destination.</p>
+        <div class="footer-social">
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="shop.html?cat=women">Women</a></li>
+          <li><a href="shop.html?cat=men">Men</a></li>
+          <li><a href="shop.html?cat=jewellery">Jewellery</a></li>
+          <li><a href="shop.html?cat=watches">Watches</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Size Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>hello@velorra.com</p>
+        <p style="margin-top:8px;">Lahore, Pakistan</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 <span class="gold-text">Velorra</span>. All rights reserved.</p>
+      <div class="footer-pay">
+        <span class="pay-badge">COD</span>
+        <span class="pay-badge">Easypaisa</span>
+        <span class="pay-badge">JazzCash</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="cart-drawer">
+  <div class="cart-header">
+    <h3>Your Bag</h3>
+    <button id="cart-close" class="cart-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cart-items"><div class="cart-empty">Your bag is empty.</div></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cart-total-val">PKR 0</span></div>
+    <a href="contact.html" class="btn-primary cart-checkout" style="display:block;clip-path:none;text-align:center;padding:16px;">Checkout</a>
+  </div>
+</div>
+
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<div id="chatbot">
+  <div id="chat-window">
+    <div class="chat-win-header">
+      <span class="chat-title">Velorra Style Assistant</span>
+      <span class="chat-status"><span class="chat-status-dot"></span>Online</span>
+    </div>
+    <div id="chat-messages">
+      <div class="msg bot">Hi! Need help finding the perfect piece? I'm here 💛</div>
+    </div>
+    <div id="chat-input-row">
+      <input id="chat-input" type="text" placeholder="Ask me anything…" />
+      <button id="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+  <button id="chat-toggle" onclick="toggleChat()">
+    <div class="chat-pulse"></div>
+    <i class="fa-solid fa-comment-dots"></i>
+  </button>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+/* ── Auto-filter from URL ?cat= parameter ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const cat    = params.get('cat');
+  if (cat) {
+    /* Find and click the matching filter button */
+    const btn = document.querySelector(`.filter-btn[data-filter="${cat}"]`);
+    if (btn) {
+      btn.click();
+      /* Scroll to product grid smoothly */
+      const grid = document.querySelector('.product-grid');
+      if (grid) setTimeout(() => grid.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+    /* Update page heading to reflect selected category */
+    const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
+    if (heading) {
+      const labels = { women:'Women', men:'Men', jewellery:'Jewellery & Accessories', watches:'Watches', cosmetics:'Cosmetics', sale:'Sale' };
+      if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
+    }
+  }
+});
+</script>

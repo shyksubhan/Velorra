@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — Velorra</title>
+  <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/pages.css"/>
+</head>
+<body>
+
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <nav>
+    <a href="index.html" class="nav-logo">Vel<span>orra</span></a>
+    <div class="nav-icons">
+      <a href="account.html" aria-label="Account">&#128100;</a>
+      <button data-open-cart aria-label="Bag">
+        &#128717;<span class="cart-count" style="display:none">0</span>
+      </button>
+    </div>
+  </nav>
+  <!-- 3D Canvas behind header -->
+  <canvas id="checkout-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.18"></canvas>
+  <main class="checkout-main" style="position:relative;z-index:1">
+    <div class="container">
+      <!-- Step Indicator -->
+      <div class="checkout-steps">
+        <div class="ck-step active" id="step-ind-1">
+          <span class="ck-num">1</span><span class="ck-lbl">Delivery</span>
+        </div>
+        <div class="ck-step-line"></div>
+        <div class="ck-step" id="step-ind-2">
+          <span class="ck-num">2</span><span class="ck-lbl">Payment</span>
+        </div>
+        <div class="ck-step-line"></div>
+        <div class="ck-step" id="step-ind-3">
+          <span class="ck-num">3</span><span class="ck-lbl">Confirm</span>
+        </div>
+      </div>
+      <div class="checkout-grid">
+        <!-- LEFT: form panels -->
+        <div class="checkout-form-col">
+          <!-- STEP 1: Delivery -->
+          <div class="ck-panel" id="ck-panel-1">
+            <h2 class="ck-panel-title">Delivery <em>Details</em></h2>
+            <div class="gold-rule"></div>
+            <form id="delivery-form" class="ck-form">
+              <div class="ck-row-2">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" name="fname" placeholder="First Name" required/>
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" name="lname" placeholder="Last Name" required/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="you@email.com" required/>
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" placeholder="+92 300 000 0000" required/>
+              </div>
+              <div class="form-group">
+                <label>Street Address</label>
+                <input type="text" name="address" placeholder="House 12, Street 4, DHA" required/>
+              </div>
+              <div class="ck-row-2">
+                <div class="form-group">
+                  <label>City</label>
+                  <input type="text" name="city" placeholder="Lahore" required/>
+                </div>
+                <div class="form-group">
+                  <label>Province</label>
+                  <select name="province">
+                    <option value="">Select Province</option>
+                    <option>Punjab</option>
+                    <option>Sindh</option>
+                    <option>KPK</option>
+                    <option>Balochistan</option>
+                    <option>AJK</option>
+                    <option>Gilgit-Baltistan</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Delivery Notes (Optional)</label>
+                <textarea name="notes" placeholder="Any special instructions…" rows="3"></textarea>
+              </div>
+              <!-- Delivery method -->
+              <div class="ck-option-group">
+                <p class="section-label" style="margin-bottom:14px">Delivery Method</p>
+                <label class="ck-option-card">
+                  <input type="radio" name="delivery" value="standard" checked/>
+                  <div class="ck-option-body">
+                    <div>
+                      <strong>Standard Delivery</strong>
+                      <span>3–5 business days</span>
+                    </div>
+                    <div class="ck-option-price free-badge">FREE over PKR 5K</div>
+                  </div>
+                </label>
+                <label class="ck-option-card">
+                  <input type="radio" name="delivery" value="express"/>
+                  <div class="ck-option-body">
+                    <div>
+                      <strong>Express Delivery</strong>
+                      <span>1–2 business days (Lahore only)</span>
+                    </div>
+                    <div class="ck-option-price">PKR 250</div>
+                  </div>
+                </label>
+              </div>
+              <button type="submit" class="btn-primary ck-next-btn">Continue to Payment →</button>
+            </form>
+          </div>
+          <!-- STEP 2: Payment -->
+          <div class="ck-panel hidden" id="ck-panel-2">
+            <h2 class="ck-panel-title">Payment <em>Method</em></h2>
+            <div class="gold-rule"></div>
+            <form id="payment-form" class="ck-form">
+              <div class="ck-option-group">
+                <label class="ck-option-card">
+                  <input type="radio" name="payment" value="cod" checked/>
+                  <div class="ck-option-body">
+                    <div>
+                      <strong>&#128179; Cash on Delivery</strong>
+                      <span>Pay when your order arrives</span>
+                    </div>
+                    <div class="ck-option-price">No extra fee</div>
+                  </div>
+                </label>
+                <label class="ck-option-card">
+                  <input type="radio" name="payment" value="easypaisa"/>
+                  <div class="ck-option-body">
+                    <div>
+                      <strong>&#128184; Easypaisa</strong>
+                      <span>Mobile wallet payment</span>
+                    </div>
+                  </div>
+                </label>
+                <label class="ck-option-card">
+                  <input type="radio" name="payment" value="jazzcash"/>
+                  <div class="ck-option-body">
+                    <div>
+                      <strong>&#128184; JazzCash</strong>
+                      <span>Mobile wallet payment</span>
+                    </div>
+                  </div>
+                </label>
+                <label class="ck-option-card">
+                  <input type="radio" name="payment" value="card"/>
+                  <div class="ck-option-body">
+                    <div>
+                      <strong>&#9999; Credit / Debit Card</strong>
+                      <span>Visa, Mastercard accepted</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              <!-- Card fields (shown only when card selected) -->
+              <div id="card-fields" style="display:none">
+                <div class="card-preview" id="card-preview-3d">
+                  <div class="card-3d-inner">
+                    <div class="card-3d-front">
+                      <div class="card-chip">&#9646;</div>
+                      <div class="card-number-display" id="card-disp-num">•••• •••• •••• ••••</div>
+                      <div class="card-bottom-row">
+                        <div>
+                          <div class="card-label">Card Holder</div>
+                          <div class="card-name-display" id="card-disp-name">YOUR NAME</div>
+                        </div>
+                        <div>
+                          <div class="card-label">Expires</div>
+                          <div id="card-disp-exp">MM/YY</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-3d-back">
+                      <div class="card-stripe"></div>
+                      <div class="card-cvv-row">
+                        <div class="card-label">CVV</div>
+                        <div class="card-cvv-box" id="card-disp-cvv">•••</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="ck-form" style="margin-top:24px">
+                  <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" id="inp-card-num" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number"/>
+                  </div>
+                  <div class="form-group">
+                    <label>Name on Card</label>
+                    <input type="text" id="inp-card-name" placeholder="Name on Card" autocomplete="cc-name"/>
+                  </div>
+                  <div class="ck-row-2">
+                    <div class="form-group">
+                      <label>Expiry</label>
+                      <input type="text" id="inp-card-exp" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp"/>
+                    </div>
+                    <div class="form-group">
+                      <label>CVV</label>
+                      <input type="text" id="inp-card-cvv" placeholder="•••" maxlength="4" autocomplete="cc-csc"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="ck-btn-row">
+                <button type="button" class="btn-outline" onclick="goToStep(1)">← Back</button>
+                <button type="submit" class="btn-primary">Review Order →</button>
+              </div>
+            </form>
+          </div>
+          <!-- STEP 3: Confirm -->
+          <div class="ck-panel hidden" id="ck-panel-3">
+            <h2 class="ck-panel-title">Confirm <em>Order</em></h2>
+            <div class="gold-rule"></div>
+            <div id="order-summary-full"></div>
+            <div class="ck-btn-row" style="margin-top:28px">
+              <button type="button" class="btn-outline" onclick="goToStep(2)">← Back</button>
+              <button type="button" class="btn-primary" onclick="placeOrder()">Place Order ✓</button>
+            </div>
+          </div>
+          <!-- STEP 4: Success -->
+          <div class="ck-panel hidden" id="ck-panel-success">
+            <div class="order-success">
+              <div class="success-icon">&#10003;</div>
+              <h2 class="ck-panel-title" style="text-align:center">Order <em>Placed!</em></h2>
+              <p>Thank you for shopping with Velorra. Your order confirmation has been sent to your email. We'll notify you when it ships.</p>
+              <div class="order-ref" id="order-ref-num"></div>
+              <a href="shop.html" class="btn-primary" style="margin-top:28px;display:inline-block">Continue Shopping</a>
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: Order summary -->
+        <div class="checkout-summary-col" id="checkout-summary-sidebar">
+          <div class="ck-summary-box">
+            <h3 class="ck-summary-title">Your Bag</h3>
+            <div id="ck-summary-items"></div>
+            <div class="ck-summary-divider"></div>
+            <div class="ck-summary-row">
+              <span>Subtotal</span><span id="ck-subtotal">PKR 0</span>
+            </div>
+            <div class="ck-summary-row">
+              <span>Delivery</span><span id="ck-delivery-fee">FREE</span>
+            </div>
+            <div class="ck-summary-divider"></div>
+            <div class="ck-summary-row ck-total-row">
+              <span>Total</span><span id="ck-total">PKR 0</span>
+            </div>
+            <div class="ck-trust-badges">
+              <span>&#128274; Secure Checkout</span>
+              <span>&#8635; Easy Returns</span>
+              <span>&#128230; Fast Delivery</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="overlay"></div>
+  <div id="toast"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/whatsapp-config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>
