@@ -302,39 +302,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
-<!-- ── SUBSCRIBERS ── -->
-<div id="page-subscribers" class="page" style="display:none">
-  <div class="page-header">
-    <h1>Subscribers</h1>
-    <div class="ml-auto">
-      <button class="btn btn-success" onclick="exportExcel('subscribers')"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-      <button class="btn btn-outline" onclick="loadSubscribers()"><i class="fa-solid fa-rotate"></i> Refresh</button>
-    </div>
-  </div>
-  <div class="table-wrap">
-    <table><thead><tr><th>#</th><th>Email</th><th>Subscribed At</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody id="subscribers-body"></tbody></table>
-  </div>
-</div>
-
-<!-- ── USERS & ROLES ── -->
-<div id="page-roles" class="page" style="display:none">
-  <div class="page-header">
-    <h1>Users & Roles</h1>
-    <div class="ml-auto">
-      <button class="btn btn-gold" onclick="openRoleModal()" id="add-user-btn"><i class="fa-solid fa-plus"></i> Add User</button>
-    </div>
-  </div>
-  <div id="roles-restricted" class="empty-state" style="display:none">
-    <i class="fa-solid fa-lock"></i>
-    <p style="margin-top:12px">Only Super Admins can manage users and roles.</p>
-  </div>
-  <div class="table-wrap" id="roles-table-wrap">
-    <table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody id="roles-body"></tbody></table>
-  </div>
-</div>
-
 <!-- ── SETTINGS ── -->
 <div id="page-settings" class="page" style="display:none">
   <div class="page-header"><h1>Settings</h1></div>
@@ -389,9 +356,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <label>Category *</label>
           <select id="p-category">
             <option value="">Select category</option>
-            <option value="women">Women</option><option value="men">Men</option>
-            <option value="jewellery">Jewellery</option><option value="watches">Watches</option>
-            <option value="cosmetics">Cosmetics</option>
+            <option value="scrunchies">Scrunchies</option>
+            <option value="catchers">Catchers</option>
+            <option value="hair-bands">Hair Bands</option>
+            <option value="pins">Pins</option>
+            <option value="ponies">Ponies</option>
+            <option value="fancy">Fancy Accessories</option>
           </select>
         </div>
         <div class="form-group"><label>Badge</label>
@@ -491,8 +461,8 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div class="form-group"><label>Password *</label><input type="password" id="r-password" placeholder="Min 8 characters"/></div>
       <div class="form-group"><label>Role *</label>
         <select id="r-role">
-          <option value="admin">Admin — Full access except user management</option>
-          <option value="supervisor">Supervisor — View only, can update order status</option>
+          <option value="admin">Admin — Can see all data &amp; modify, except earnings &amp; Excel exports</option>
+          <option value="supervisor">Supervisor — Can view messages &amp; orders, update status, reply to messages</option>
         </select>
       </div>
     </div>
@@ -611,13 +581,43 @@ function onLoginSuccess() {
   document.getElementById('admin-name').textContent  = `${currentUser.fname} ${currentUser.lname || ''}`.trim();
   document.getElementById('admin-role-label').textContent = formatRole(currentUser.role);
 
-  /* Show/hide role-restricted UI */
-  if (currentUser.role !== 'super_admin') {
-    document.getElementById('add-user-btn').style.display = 'none';
-  }
+  applyRolePermissions(currentUser.role);
 
   loadDashboard();
   connectSSE();
+}
+
+function applyRolePermissions(role) {
+  /* Super Admin — sees everything */
+  if (role === 'super_admin') {
+    document.getElementById('activity-btn').style.display = 'inline-flex';
+    return;
+  }
+  /* Hide Add User button for non-super admins */
+  document.getElementById('add-user-btn').style.display = 'none';
+
+  /* Admin — hide earnings stats + Excel export buttons */
+  if (role === 'admin') {
+    /* Hide revenue stat card */
+    const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
+    if (revenueCard) revenueCard.style.display = 'none';
+    /* Hide Excel export buttons */
+    document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
+  }
+
+  /* Supervisor — restrict to only Orders + Messages in sidebar */
+  if (role === 'supervisor') {
+    /* Hide sidebar items not allowed */
+    ['nav-dashboard','nav-products','nav-subscribers','nav-roles','nav-settings'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    /* Hide revenue stat card */
+    const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
+    if (revenueCard) revenueCard.style.display = 'none';
+    /* Redirect to orders page */
+    showPage('orders');
+  }
 }
 
 function logout() {
@@ -1118,6 +1118,7 @@ function renderMessages(messages) {
       <td>${fmtDate(m.createdAt)}</td>
       <td style="display:flex;gap:6px">
         <button class="btn btn-outline btn-sm" onclick="viewMessage('${m.id}')">View</button>
+        <button class="btn btn-success btn-sm" onclick="replyToMessage('${m.id}')">${m.replied ? '✓ Replied' : 'Reply'}</button>
         <button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')">Delete</button>
       </td>
     </tr>`).join('');
@@ -1256,6 +1257,52 @@ async function deleteAdminUser(id) {
   const res = await apiFetch(`/auth/admin-users/${id}`, { method: 'DELETE' });
   if (res.ok) { toast('User deleted.', 'success'); loadRoles(); }
   else toast('Delete failed.', 'error');
+}
+
+/* ═══════════════════ STAFF ACTIVITY ═══════════════════ */
+async function loadStaffActivity() {
+  const wrap = document.getElementById('staff-activity-wrap');
+  const tbody = document.getElementById('activity-body');
+  if (wrap.style.display === 'none' || wrap.style.display === '') {
+    wrap.style.display = 'block';
+    document.getElementById('activity-btn').innerHTML = '<i class="fa-solid fa-chevron-up"></i> Hide Activity';
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px"><div class="spinner"></div></td></tr>`;
+    try {
+      const res  = await apiFetch('/admin/staff-summary');
+      const data = await res.json();
+      const staff = data.staff || [];
+      if (!staff.length) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>No staff members yet. Add an Admin or Supervisor to track their activity.</p></div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = staff.map(s => `
+        <tr>
+          <td><strong>${s.name}</strong></td>
+          <td><span class="badge badge-role-${s.role}">${formatRole(s.role)}</span></td>
+          <td style="text-align:center">${s.msgReplied}</td>
+          <td style="text-align:center">${s.ordersUpdated}</td>
+          <td style="color:var(--muted)">${s.lastActive ? fmtDate(s.lastActive) : '—'}</td>
+          <td><span class="badge ${s.active ? 'badge-delivered' : 'badge-cancelled'}">${s.active ? 'Active' : 'Disabled'}</span></td>
+        </tr>`).join('');
+    } catch {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>Failed to load activity.</p></div></td></tr>`;
+    }
+  } else {
+    wrap.style.display = 'none';
+    document.getElementById('activity-btn').innerHTML = '<i class="fa-solid fa-chart-bar"></i> Staff Activity';
+  }
+}
+
+/* ═══════════════════ MESSAGE REPLY ═══════════════════ */
+async function replyToMessage(id) {
+  const replyText = prompt('Type your reply to this message:');
+  if (!replyText?.trim()) return;
+  try {
+    const res  = await apiFetch(`/contact/${id}/reply`, { method: 'POST', body: JSON.stringify({ replyText }) });
+    const data = await res.json();
+    if (res.ok) { toast('Reply recorded. ✓', 'success'); loadMessages(); }
+    else toast(data.error || 'Reply failed.', 'error');
+  } catch { toast('Reply failed.', 'error'); }
 }
 
 /* ═══════════════════ SETTINGS ═══════════════════ */

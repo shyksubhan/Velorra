@@ -1,105 +1,103 @@
-/* ============================================================
+﻿/* ============================================================
    VELORRA — Shared Singleton Data Store
    THE single source of truth for all in-memory data.
    All routes import this module — they all share the SAME arrays.
-   This fixes the "isolated memory" bug where each route had its own
-   separate array that no other route could see.
    ============================================================ */
 
-/* ── Default product catalogue ── */
+/* ── Default product catalogue (Hair Accessories) ── */
 const DEFAULT_PRODUCTS = [
   {
-    id: 'ivory-silk-maxi-gown',
-    name: 'Ivory Silk Maxi Gown',
-    category: 'women',
-    subcategory: 'Dresses',
-    price: 12500,
-    priceOld: 16000,
-    emoji: '👗',
-    badge: 'New',
-    description: 'An elegant ivory silk maxi gown crafted for the modern Pakistani woman. Features a flowing silhouette with delicate embroidery on the neckline.',
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    colors: ['Ivory', 'Blush'],
-    inStock: true,
-    featured: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'noir-rose-gold-timepiece',
-    name: 'Noir Rose Gold Timepiece',
-    category: 'watches',
-    subcategory: 'Watches',
-    price: 28000,
-    priceOld: null,
-    emoji: '⌚',
+    id: 'silk-scrunchie-set',
+    name: 'Silk Scrunchie Set',
+    category: 'scrunchies',
+    subcategory: 'Scrunchies',
+    price: 850,
+    priceOld: 1200,
+    emoji: '🎀',
     badge: 'Bestseller',
-    description: 'A statement unisex timepiece featuring a rose gold case with a midnight noir dial. Swiss movement.',
+    description: 'Luxurious 100% mulberry silk scrunchies. Gentle on hair, reduces breakage and creases. Set of 5 elegant colours.',
     sizes: [],
-    colors: ['Rose Gold / Black'],
+    colors: ['Blush Pink', 'Champagne', 'Dusty Rose', 'Ivory', 'Mauve'],
     inStock: true,
     featured: true,
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'obsidian-slim-suit',
-    name: 'Obsidian Slim Suit',
-    category: 'men',
-    subcategory: 'Formal',
-    price: 35000,
+    id: 'crystal-butterfly-pin',
+    name: 'Crystal Butterfly Pin',
+    category: 'pins',
+    subcategory: 'Pins',
+    price: 650,
     priceOld: null,
-    emoji: '🤵',
-    badge: null,
-    description: 'A sharp obsidian slim-cut suit tailored for the modern Pakistani man. Includes jacket and trousers.',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Obsidian Black'],
-    inStock: true,
-    featured: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'aurora-gold-necklace',
-    name: 'Aurora Gold Necklace',
-    category: 'jewellery',
-    subcategory: 'Jewellery & Accessories',
-    price: 8500,
-    priceOld: null,
-    emoji: '💎',
+    emoji: '🦋',
     badge: 'New',
-    description: 'An ethereal layered gold necklace inspired by the northern lights. 18K gold-plated.',
+    description: 'Delicate butterfly hair pin encrusted with Austrian crystals. Adds sparkle to any hairstyle.',
     sizes: [],
-    colors: ['Gold', 'Rose Gold'],
+    colors: ['Silver Crystal', 'Rose Gold Crystal', 'Pearl White'],
     inStock: true,
     featured: true,
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'velvet-noir-lip-kit',
-    name: 'Velvet Noir Lip Kit',
-    category: 'cosmetics',
-    subcategory: 'Cosmetics',
-    price: 3500,
+    id: 'velvet-hair-band',
+    name: 'Velvet Padded Hair Band',
+    category: 'hair-bands',
+    subcategory: 'Hair Bands',
+    price: 1200,
     priceOld: null,
-    emoji: '💄',
+    emoji: '💗',
     badge: 'New',
-    description: 'A luxurious lip kit containing a matte liquid lipstick, precision lip liner, and glossy topcoat.',
+    description: 'Wide padded velvet headband. Comfortable all-day wear, perfect for both casual and formal looks.',
     sizes: [],
-    colors: ['Velvet Noir', 'Berry Rouge', 'Nude Blush'],
+    colors: ['Deep Mauve', 'Blush Pink', 'Black', 'Ivory'],
+    inStock: true,
+    featured: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'pearl-catcher-clip',
+    name: 'Pearl Catcher Clip',
+    category: 'catchers',
+    subcategory: 'Catchers',
+    price: 950,
+    priceOld: 1400,
+    emoji: '🤍',
+    badge: 'Sale',
+    description: 'Elegant claw clip adorned with faux pearls. Strong grip, suitable for thick and thin hair types.',
+    sizes: [],
+    colors: ['Pearl White', 'Rose Gold', 'Black Pearl'],
+    inStock: true,
+    featured: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'satin-ponytail-set',
+    name: 'Satin Ponytail Ties',
+    category: 'ponies',
+    subcategory: 'Ponies',
+    price: 600,
+    priceOld: null,
+    emoji: '🎗️',
+    badge: 'New',
+    description: 'Soft satin-wrapped elastic hair ties that grip without pulling. Pack of 6 in complementary shades.',
+    sizes: [],
+    colors: ['Blush', 'Nude', 'Taupe', 'White', 'Rose', 'Dusty Lilac'],
     inStock: true,
     featured: false,
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'champagne-leather-tote',
-    name: 'Champagne Leather Tote',
-    category: 'women',
-    subcategory: 'Bags',
-    price: 18000,
-    priceOld: 24000,
-    emoji: '👜',
+    id: 'floral-fancy-set',
+    name: 'Floral Fancy Hair Set',
+    category: 'fancy',
+    subcategory: 'Fancy Hair Accessories',
+    price: 1850,
+    priceOld: 2400,
+    emoji: '🌸',
     badge: 'Sale',
-    description: 'A sophisticated champagne-coloured tote crafted from genuine pebbled leather. Fits a 13" laptop.',
+    description: 'A curated set of floral hair accessories — pins, clips and a ribbon. Perfect for special occasions.',
     sizes: [],
-    colors: ['Champagne'],
+    colors: ['Pastel Mix', 'Pink Garden', 'Ivory Bloom'],
     inStock: true,
     featured: false,
     createdAt: new Date().toISOString(),
@@ -114,6 +112,7 @@ const store = {
   messages:    [],
   subscribers: [],
   users:       [],
+  activityLogs: [],
 
   /* Admin users with role support */
   adminUsers: [
@@ -148,6 +147,21 @@ const store = {
     return () => this._notifListeners.delete(fn);
   },
 
+  /* ── Activity Logging ── */
+  logActivity({ staffId, staffName, staffRole, action, details = {} }) {
+    this.activityLogs.unshift({
+      id:        'log-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      staffId,
+      staffName,
+      staffRole,
+      action,
+      details,
+      timestamp: new Date().toISOString(),
+    });
+    /* Keep last 1000 logs in memory */
+    if (this.activityLogs.length > 1000) this.activityLogs = this.activityLogs.slice(0, 1000);
+  },
+
   /* ── Helpers ── */
   findProduct(id)     { return this.products.find(p => p.id === id); },
   findOrder(id)       { return this.orders.find(o => o.id === id); },
@@ -155,6 +169,25 @@ const store = {
   findAdminUser(usernameOrEmail) {
     const v = (usernameOrEmail || '').toLowerCase();
     return this.adminUsers.find(u => u.username === v || u.email === v);
+  },
+
+  /* ── Staff summary (per-staff activity counts) ── */
+  staffSummary() {
+    const summary = {};
+    this.adminUsers.filter(u => u.role !== 'super_admin').forEach(u => {
+      summary[u.id] = {
+        id:           u.id,
+        name:         `${u.fname} ${u.lname || ''}`.trim(),
+        role:         u.role,
+        username:     u.username,
+        active:       u.active,
+        lastLogin:    u.lastLogin,
+        msgReplied:   this.activityLogs.filter(l => l.staffId === u.id && l.action === 'message_reply').length,
+        ordersUpdated: this.activityLogs.filter(l => l.staffId === u.id && l.action === 'order_status_change').length,
+        lastActive:   this.activityLogs.filter(l => l.staffId === u.id)[0]?.timestamp || null,
+      };
+    });
+    return Object.values(summary);
   },
 
   /* Stats snapshot — used by /admin/stats */

@@ -5,7 +5,7 @@
 /* ── Search Overlay ── */
 #search-overlay {
   position: fixed; inset: 0;
-  background: rgba(10,10,10,0.97);
+  background: rgba(253,250,246,0.97);
   backdrop-filter: blur(20px);
   z-index: 2500;
   display: flex; align-items: flex-start; justify-content: center;
@@ -44,7 +44,7 @@
 .sr-icon { font-size: 1.2rem; width: 28px; text-align: center; }
 .sr-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .sr-title { font-family: var(--font-display); font-size: 1rem; }
-.sr-title mark { background: rgba(201,168,76,0.3); color: var(--gold-light); border-radius: 2px; padding: 0 2px; }
+.sr-title mark { background: rgba(200,149,108,0.25); color: var(--gold); border-radius: 2px; padding: 0 2px; }
 .sr-badge {
   font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--muted);

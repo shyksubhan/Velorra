@@ -1,6 +1,6 @@
 /* ============================================================
-   VELORRA — Auth Routes (uses shared store)
-   Fixes: login works, change password, role management
+   VELORRA — Auth Routes (uses shared store + Firebase)
+   Roles: super_admin, admin, supervisor
    ============================================================ */
 const express  = require('express');
 const bcrypt   = require('bcryptjs');
@@ -19,6 +19,8 @@ function signToken(payload, expiresIn = '30d') {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 }
 
+const VALID_ROLES = ['admin', 'supervisor'];
+
 /* ── Lazily initialize the built-in super admin from .env ── */
 function initSuperAdmin() {
   const u = store.adminUsers[0];
@@ -29,6 +31,45 @@ function initSuperAdmin() {
   /* Hash the password only once */
   if (!u.passwordHash && process.env.ADMIN_PASSWORD) {
     u.passwordHash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10);
+  }
+}
+
+/* ── Find admin user from Firebase or store ── */
+async function findAdminUserByUsername(username) {
+  const lower = (username || '').toLowerCase();
+  /* Always check in-memory store first (includes super admin) */
+  const inMem = store.findAdminUser(lower);
+  if (inMem) return inMem;
+  /* Then check Firebase if available */
+  if (isFirebaseAvailable()) {
+    try {
+      const snap = await getDB().collection('adminUsers')
+        .where('username', '==', lower).limit(1).get();
+      if (!snap.empty) {
+        const data = { ...snap.docs[0].data(), id: snap.docs[0].id };
+        /* Cache in memory so subsequent lookups are fast */
+        if (!store.findAdminUser(lower)) store.adminUsers.push(data);
+        return data;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+/* ── Get all admin users ── */
+async function getAllAdminUsers() {
+  if (!isFirebaseAvailable()) return store.adminUsers;
+  try {
+    const snap = await getDB().collection('adminUsers').orderBy('createdAt', 'asc').get();
+    const fbUsers = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    /* Merge: always keep super admin from store, add Firebase users */
+    const superAdmin = store.adminUsers.find(u => u.role === 'super_admin');
+    const merged = [superAdmin, ...fbUsers.filter(u => u.role !== 'super_admin')];
+    /* Update in-memory cache */
+    store.adminUsers = merged;
+    return merged;
+  } catch {
+    return store.adminUsers;
   }
 }
 
@@ -52,7 +93,7 @@ router.post('/register', async (req, res) => {
       const userData = { id: ref.id, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, isAdmin: false, createdAt: new Date().toISOString() };
       await ref.set(userData);
       const token = signToken({ uid: ref.id, email: normalEmail, isAdmin: false });
-      return res.status(201).json({ message: 'Account created! Welcome to Velorra 💛', token, user: { id: ref.id, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
+      return res.status(201).json({ message: 'Account created! Welcome to Velorra 💧', token, user: { id: ref.id, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
     }
 
     /* In-memory */
@@ -61,7 +102,7 @@ router.post('/register', async (req, res) => {
     const userData = { id: uid, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, isAdmin: false, createdAt: new Date().toISOString() };
     store.users.push(userData);
     const token = signToken({ uid, email: normalEmail, isAdmin: false });
-    return res.status(201).json({ message: 'Account created! Welcome to Velorra 💛', token, user: { id: uid, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
+    return res.status(201).json({ message: 'Account created! Welcome to Velorra 💧', token, user: { id: uid, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
 
   } catch (err) {
     console.error('Register error:', err);
@@ -79,16 +120,20 @@ router.post('/login', async (req, res) => {
 
     const normalEmail = email.trim().toLowerCase();
 
-    /* ── Admin login (checks both admin panel users AND env credentials) ── */
+    /* ── Admin login ── */
     initSuperAdmin();
-    const adminUser = store.findAdminUser(normalEmail);
+    const adminUser = await findAdminUserByUsername(normalEmail);
     if (adminUser && adminUser.active) {
       const passMatch = adminUser.passwordHash
         ? await bcrypt.compare(password, adminUser.passwordHash)
-        : password === process.env.ADMIN_PASSWORD;     /* fallback for plain text in env */
+        : password === process.env.ADMIN_PASSWORD;
 
       if (passMatch) {
+        /* Update lastLogin */
         adminUser.lastLogin = new Date().toISOString();
+        if (isFirebaseAvailable() && adminUser.role !== 'super_admin') {
+          try { await getDB().collection('adminUsers').doc(adminUser.id).update({ lastLogin: adminUser.lastLogin }); } catch {}
+        }
         const token = signToken({ uid: adminUser.id, email: adminUser.username, isAdmin: true, role: adminUser.role });
         return res.json({
           message: `Welcome, ${adminUser.fname}! ✓`,
@@ -145,7 +190,7 @@ router.get('/me', requireAuth, async (req, res) => {
 });
 
 /* ============================================================
-   PATCH /api/auth/change-password — Fix #4
+   PATCH /api/auth/change-password
    ============================================================ */
 router.patch('/change-password', requireAuth, async (req, res) => {
   try {
@@ -153,7 +198,6 @@ router.patch('/change-password', requireAuth, async (req, res) => {
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both current and new password are required.' });
     if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters.' });
 
-    /* Admin password change */
     if (req.user.isAdmin) {
       const adminUser = store.adminUsers.find(u => u.id === req.user.uid) || store.adminUsers[0];
       const match = adminUser.passwordHash
@@ -161,12 +205,14 @@ router.patch('/change-password', requireAuth, async (req, res) => {
         : currentPassword === process.env.ADMIN_PASSWORD;
       if (!match) return res.status(401).json({ error: 'Current password is incorrect.' });
       adminUser.passwordHash = await bcrypt.hash(newPassword, 12);
-      /* Also update .env in memory (actual .env file won't change — that's fine for security) */
-      process.env.ADMIN_PASSWORD = newPassword;
+      /* Persist to Firebase if available (non-super_admin) */
+      if (isFirebaseAvailable() && adminUser.role !== 'super_admin') {
+        try { await getDB().collection('adminUsers').doc(adminUser.id).update({ passwordHash: adminUser.passwordHash }); } catch {}
+      }
+      if (adminUser.role === 'super_admin') process.env.ADMIN_PASSWORD = newPassword;
       return res.json({ message: 'Password changed successfully.' });
     }
 
-    /* Customer password change */
     if (isFirebaseAvailable()) {
       const db = getDB();
       const ref = db.collection('users').doc(req.user.uid);
@@ -191,12 +237,12 @@ router.patch('/change-password', requireAuth, async (req, res) => {
 });
 
 /* ============================================================
-   GET /api/auth/admin-users (super_admin only) — Fix #5
+   GET /api/auth/admin-users (super_admin only)
    ============================================================ */
 router.get('/admin-users', requireAdmin, async (req, res) => {
   try {
     if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can view admin users.' });
-    const users = store.adminUsers.map(u => ({
+    const users = (await getAllAdminUsers()).map(u => ({
       id:        u.id,
       fname:     u.fname,
       lname:     u.lname,
@@ -220,10 +266,11 @@ router.post('/admin-users', requireAdmin, async (req, res) => {
     if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can create admin users.' });
     const { fname, lname, username, password, role } = req.body;
     if (!fname || !username || !password) return res.status(400).json({ error: 'First name, username, and password are required.' });
-    if (!['admin', 'supervisor'].includes(role)) return res.status(400).json({ error: 'Role must be "admin" or "supervisor".' });
+    if (!VALID_ROLES.includes(role)) return res.status(400).json({ error: 'Role must be "admin" or "supervisor".' });
 
     const normalUsername = username.trim().toLowerCase();
-    if (store.findAdminUser(normalUsername)) return res.status(409).json({ error: 'Username already exists.' });
+    const existing = await findAdminUserByUsername(normalUsername);
+    if (existing) return res.status(409).json({ error: 'Username already exists.' });
 
     const newUser = {
       id:           'admin-' + Date.now(),
@@ -237,8 +284,24 @@ router.post('/admin-users', requireAdmin, async (req, res) => {
       createdAt:    new Date().toISOString(),
       lastLogin:    null,
     };
-    store.adminUsers.push(newUser);
-    return res.status(201).json({ message: `${role.charAt(0).toUpperCase() + role.slice(1)} "${fname}" created.`, user: { id: newUser.id, fname: newUser.fname, username: newUser.username, role: newUser.role } });
+
+    /* Persist to Firebase if available */
+    if (isFirebaseAvailable()) {
+      try {
+        const ref = getDB().collection('adminUsers').doc(newUser.id);
+        await ref.set(newUser);
+      } catch (fbErr) {
+        console.error('Firebase admin user save failed, falling back to memory:', fbErr.message);
+        store.adminUsers.push(newUser);
+      }
+    } else {
+      store.adminUsers.push(newUser);
+    }
+
+    return res.status(201).json({
+      message: `${role.charAt(0).toUpperCase() + role.slice(1)} "${fname}" created.`,
+      user: { id: newUser.id, fname: newUser.fname, username: newUser.username, role: newUser.role }
+    });
   } catch (err) {
     console.error('Create admin user error:', err);
     return res.status(500).json({ error: 'Failed to create user.' });
@@ -246,17 +309,36 @@ router.post('/admin-users', requireAdmin, async (req, res) => {
 });
 
 /* ============================================================
-   PATCH /api/auth/admin-users/:id — Update role/status
+   PATCH /api/auth/admin-users/:id — Update role/status/password
    ============================================================ */
 router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
   try {
     if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can update admin users.' });
-    const { role, active } = req.body;
+    const { role, active, password } = req.body;
+
+    /* Try Firebase first */
+    if (isFirebaseAvailable() && req.params.id !== 'super-admin-1') {
+      const ref = getDB().collection('adminUsers').doc(req.params.id);
+      const doc = await ref.get();
+      if (doc.exists) {
+        const updates = {};
+        if (role)   updates.role   = role;
+        if (active !== undefined) updates.active = active;
+        if (password) updates.passwordHash = await bcrypt.hash(password, 12);
+        await ref.update(updates);
+        /* Update in-memory cache */
+        const inMem = store.adminUsers.find(u => u.id === req.params.id);
+        if (inMem) Object.assign(inMem, updates);
+        return res.json({ message: 'User updated.' });
+      }
+    }
+
     const user = store.adminUsers.find(u => u.id === req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found.' });
     if (user.id === 'super-admin-1') return res.status(403).json({ error: 'Cannot modify the primary super admin.' });
-    if (role) user.role   = role;
+    if (role)   user.role   = role;
     if (active !== undefined) user.active = active;
+    if (password) user.passwordHash = await bcrypt.hash(password, 12);
     return res.json({ message: 'User updated.', user: { id: user.id, fname: user.fname, role: user.role, active: user.active } });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update user.' });
@@ -270,9 +352,12 @@ router.delete('/admin-users/:id', requireAdmin, async (req, res) => {
   try {
     if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can delete admin users.' });
     if (req.params.id === 'super-admin-1') return res.status(403).json({ error: 'Cannot delete the primary super admin.' });
+
+    if (isFirebaseAvailable()) {
+      try { await getDB().collection('adminUsers').doc(req.params.id).delete(); } catch {}
+    }
     const idx = store.adminUsers.findIndex(u => u.id === req.params.id);
-    if (idx < 0) return res.status(404).json({ error: 'User not found.' });
-    store.adminUsers.splice(idx, 1);
+    if (idx >= 0) store.adminUsers.splice(idx, 1);
     return res.json({ message: 'Admin user deleted.' });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to delete user.' });

@@ -4,7 +4,7 @@
 const express = require('express');
 const path    = require('path');
 const { getDB }       = require('../utils/firebase');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireRole } = require('../middleware/auth');
 const store = require('../utils/store');
 
 const router = express.Router();
@@ -33,18 +33,41 @@ router.get('/stats', requireAdmin, async (req, res) => {
       const statusCounts = {};
       orders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
       const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + (o.total || 0), 0);
+
+      /* ── Date-filtered revenue for admin role hiding ── */
+      const today = new Date(); today.setHours(0,0,0,0);
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const todayRevenue = orders
+        .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today)
+        .reduce((s, o) => s + (o.total || 0), 0);
+      const monthRevenue = orders
+        .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
+        .reduce((s, o) => s + (o.total || 0), 0);
+
       return res.json({
         orders:         { total: ordersSnap.size, statuses: statusCounts },
         products:       { total: productsSnap.size },
         subscribers:    { total: subscribersSnap.size },
         unreadMessages: messagesSnap.size,
         totalRevenue:   Math.round(revenue),
+        todayRevenue:   Math.round(todayRevenue),
+        monthRevenue:   Math.round(monthRevenue),
         demoMode:       false,
       });
     }
 
-    /* Demo mode — read from shared store (the SAME store all routes write to) */
-    return res.json({ ...store.stats(), demoMode: true });
+    /* Demo mode — read from shared store */
+    const base = store.stats();
+    const orders = store.orders;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    base.todayRevenue = Math.round(orders
+      .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today)
+      .reduce((s, o) => s + (o.total || 0), 0));
+    base.monthRevenue = Math.round(orders
+      .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
+      .reduce((s, o) => s + (o.total || 0), 0));
+    return res.json({ ...base, demoMode: true });
 
   } catch (err) {
     console.error('Stats error:', err);
@@ -97,6 +120,28 @@ router.get('/export/:type', requireAdmin, async (req, res) => {
     return res.json(data);
   } catch (err) {
     return res.status(500).json({ error: 'Export failed.' });
+  }
+});
+
+/* ── GET /api/admin/activity-logs — All staff activity (super_admin only) ── */
+router.get('/activity-logs', requireRole('super_admin'), async (req, res) => {
+  try {
+    const { staffId, limit: lim } = req.query;
+    let logs = store.activityLogs;
+    if (staffId) logs = logs.filter(l => l.staffId === staffId);
+    if (lim) logs = logs.slice(0, parseInt(lim));
+    return res.json({ logs, total: logs.length });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch activity logs.' });
+  }
+});
+
+/* ── GET /api/admin/staff-summary — Per-staff performance (super_admin only) ── */
+router.get('/staff-summary', requireRole('super_admin'), (req, res) => {
+  try {
+    return res.json({ staff: store.staffSummary() });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch staff summary.' });
   }
 });
 

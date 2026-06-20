@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Velorra — Dress Your Finest Self</title>
+  <title>Velorra — Hair Accessories & Beauty</title>
+  <meta name="description" content="Velorra — Pakistan's most beautiful hair accessories. Scrunchies, hair bands, pins, catchers, ponies and fancy accessories." />
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
@@ -40,7 +41,7 @@
     <div class="search-box">
       <div class="search-inner">
         <span class="search-icon-big"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <input type="text" id="search-input" placeholder="Search products, categories, keywords…" autocomplete="off" />
+        <input type="text" id="search-input" placeholder="Search hair accessories, scrunchies, pins…" autocomplete="off" />
         <button id="search-close">&#10005;</button>
       </div>
       <div id="search-results"></div>
@@ -51,13 +52,13 @@
     <canvas id="three-canvas"></canvas>
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <p class="hero-eyebrow">New Collection 2026</p>
-      <h1 class="hero-title">Dress Your<br><em>Finest Self</em></h1>
+      <p class="hero-eyebrow">Handcrafted with Love</p>
+      <h1 class="hero-title">Adorn Your<br><em>True Self</em></h1>
       <p class="hero-sub">
-        <span>Women · Men · </span>Jewellery &amp; Accessories<span> · Watches · Cosmetics</span>
+        <span>Scrunchies · Catchers · </span>Hair Bands &amp; Pins<span> · Fancy Accessories</span>
       </p>
       <div class="hero-cta">
-        <a href="shop.html" class="btn-primary">Explore Collection</a>
+        <a href="shop.html" class="btn-primary">Shop Collection</a>
         <a href="about.html" class="btn-outline">Our Story</a>
       </div>
     </div>
@@ -66,42 +67,44 @@
   <!-- MARQUEE -->
   <div class="marquee-wrap">
     <div class="marquee-track">
-      <!-- duplicated for seamless loop -->
       <span class="marquee-item">Free Delivery Over PKR 5,000<span class="marquee-dot"></span></span>
-      <span class="marquee-item">Premium Quality Fabrics<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Gentle On Your Hair<span class="marquee-dot"></span></span>
       <span class="marquee-item">New Arrivals Every Week<span class="marquee-dot"></span></span>
       <span class="marquee-item">Easy Returns &amp; Exchanges<span class="marquee-dot"></span></span>
       <span class="marquee-item">Exclusive Members Offer — 10% Off<span class="marquee-dot"></span></span>
       <span class="marquee-item">Cash on Delivery Available<span class="marquee-dot"></span></span>
       <span class="marquee-item">Free Delivery Over PKR 5,000<span class="marquee-dot"></span></span>
-      <span class="marquee-item">Premium Quality Fabrics<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Gentle On Your Hair<span class="marquee-dot"></span></span>
       <span class="marquee-item">New Arrivals Every Week<span class="marquee-dot"></span></span>
       <span class="marquee-item">Easy Returns &amp; Exchanges<span class="marquee-dot"></span></span>
       <span class="marquee-item">Exclusive Members Offer — 10% Off<span class="marquee-dot"></span></span>
       <span class="marquee-item">Cash on Delivery Available<span class="marquee-dot"></span></span>
     </div>
   </div>
-  <!-- CATEGORIES — 5 columns -->
+  <!-- CATEGORIES -->
   <section id="categories">
     <div class="container">
       <p class="section-label">Shop By Category</p>
       <h2 class="section-title">Find Your <em>Style</em></h2>
       <div class="gold-rule"></div>
       <div class="cat-grid cat-grid-5">
-        <a href="shop.html?cat=women" class="cat-card" data-label="Women">
-          <div class="cat-bg"><div class="cat-icon-placeholder">W</div></div>
+        <a href="shop.html?cat=scrunchies" class="cat-card" data-label="Scrunchies">
+          <div class="cat-bg"><div class="cat-icon-placeholder">🎀</div></div>
         </a>
-        <a href="shop.html?cat=men" class="cat-card" data-label="Men">
-          <div class="cat-bg"><div class="cat-icon-placeholder">M</div></div>
+        <a href="shop.html?cat=catchers" class="cat-card" data-label="Catchers">
+          <div class="cat-bg"><div class="cat-icon-placeholder">🤍</div></div>
         </a>
-        <a href="shop.html?cat=jewellery" class="cat-card" data-label="Jewellery & Accessories">
-          <div class="cat-bg"><div class="cat-icon-placeholder">&#9670;</div></div>
+        <a href="shop.html?cat=hair-bands" class="cat-card" data-label="Hair Bands">
+          <div class="cat-bg"><div class="cat-icon-placeholder">💗</div></div>
         </a>
-        <a href="shop.html?cat=watches" class="cat-card" data-label="Watches">
-          <div class="cat-bg"><div class="cat-icon-placeholder">&#9676;</div></div>
+        <a href="shop.html?cat=pins" class="cat-card" data-label="Pins">
+          <div class="cat-bg"><div class="cat-icon-placeholder">🦋</div></div>
         </a>
-        <a href="shop.html?cat=cosmetics" class="cat-card" data-label="Cosmetics">
-          <div class="cat-bg"><div class="cat-icon-placeholder">&#10022;</div></div>
+        <a href="shop.html?cat=ponies" class="cat-card" data-label="Ponies">
+          <div class="cat-bg"><div class="cat-icon-placeholder">🎗️</div></div>
+        </a>
+        <a href="shop.html?cat=fancy" class="cat-card" data-label="Fancy Accessories">
+          <div class="cat-bg"><div class="cat-icon-placeholder">🌸</div></div>
         </a>
       </div>
     </div>
@@ -117,7 +120,6 @@
         <a href="shop.html" class="view-all">View All →</a>
       </div>
       <div class="products-grid">
-        <!-- Featured products are loaded dynamically from the backend (see js/products-render.js) -->
         <p style="grid-column:1/-1;text-align:center;padding:40px 0;opacity:0.5;">Loading products…</p>
       </div>
     </div>
@@ -127,20 +129,20 @@
     <div class="container">
       <div class="story-grid">
         <div class="story-visual reveal">
-          <div class="story-visual-inner">V</div>
+          <div class="story-visual-inner">🎀</div>
           <div class="story-accent"></div>
         </div>
         <div class="story-text reveal reveal-delay-2">
           <p class="section-label">The Velorra Story</p>
-          <h2 class="section-title">Born From a Passion<br>for <em>Elegance</em></h2>
+          <h2 class="section-title">Born From a Passion<br>for <em>Beauty</em></h2>
           <div class="gold-rule"></div>
-          <p>Velorra was founded on a simple belief — that <strong>luxury should feel personal</strong>. Every thread, every gem, every detail is curated with intention, so you don't just wear fashion — you embody it.</p>
-          <p>From the streets of Lahore to wardrobes across Pakistan, we bring you pieces that <strong>transcend trends</strong> and celebrate timeless style for both women and men.</p>
+          <p>Velorra was founded on a simple belief — that every woman deserves accessories that are <strong>as beautiful as she is</strong>. Every scrunchie, every pin, every clip is curated with intention, so you don't just style your hair — you express your soul.</p>
+          <p>From the streets of Lahore to wardrobes across Pakistan, we bring you hair accessories that <strong>transcend trends</strong> and celebrate timeless femininity with every look.</p>
           <a href="about.html" class="btn-outline" style="display:inline-block;margin-top:8px">Discover Our Story</a>
           <div class="story-stats">
-            <div><div class="stat-num">500+</div><div class="stat-label">Curated Pieces</div></div>
+            <div><div class="stat-num">200+</div><div class="stat-label">Accessories</div></div>
             <div><div class="stat-num">5K+</div><div class="stat-label">Happy Customers</div></div>
-            <div><div class="stat-num">100%</div><div class="stat-label">Authentic Quality</div></div>
+            <div><div class="stat-num">100%</div><div class="stat-label">Gentle Quality</div></div>
           </div>
         </div>
       </div>
@@ -154,20 +156,20 @@
       <div class="testimonial-slider">
         <div class="testimonial-card reveal">
           <div class="t-stars">★★★★★</div>
-          <p class="t-text">"The quality of the silk gown was beyond what I expected at this price point. Velorra has become my go-to for every occasion."</p>
+          <p class="t-text">&ldquo;The silk scrunchies are absolutely gorgeous — my hair has never felt better and the colours are so elegant. I've ordered three times already!&rdquo;</p>
           <div class="t-author">Ayesha M.</div>
           <div class="t-loc">Lahore, Pakistan</div>
         </div>
         <div class="testimonial-card reveal reveal-delay-2">
           <div class="t-stars">★★★★★</div>
-          <p class="t-text">"The watch I ordered for my husband was absolutely stunning. Fast delivery and beautifully packaged. Will definitely order again."</p>
+          <p class="t-text">&ldquo;The pearl catcher clip is my absolute favourite — I get compliments every single day. Beautiful packaging too. Velorra is my go-to now!&rdquo;</p>
           <div class="t-author">Sana K.</div>
           <div class="t-loc">Karachi, Pakistan</div>
         </div>
         <div class="testimonial-card reveal reveal-delay-3">
           <div class="t-stars">★★★★★</div>
-          <p class="t-text">"Bought the Obsidian Suit for my cousin's wedding — every guest was asking where it was from. Velorra delivered perfection."</p>
-          <div class="t-author">Usman R.</div>
+          <p class="t-text">&ldquo;Ordered the floral fancy set for my daughter's birthday — she was overjoyed! Fast delivery and the quality is truly premium. Will definitely order again.&rdquo;</p>
+          <div class="t-author">Hina R.</div>
           <div class="t-loc">Islamabad, Pakistan</div>
         </div>
       </div>
@@ -193,7 +195,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="nav-logo">Vel<span>orra</span></a>
-          <p>Pakistan's premium fashion destination. Curated clothing, jewellery &amp; accessories, watches, and cosmetics for those who value elegance above all.</p>
+          <p>Pakistan's premier hair accessories destination. Handcrafted scrunchies, pins, catchers, bands and fancy accessories for women who love beauty.</p>
           <div class="footer-social" id="footer-social-links">
             <!-- filled by JS from config -->
           </div>
@@ -201,12 +203,12 @@
         <div class="footer-col">
           <h4>Shop</h4>
           <ul>
-            <li><a href="shop.html?cat=women">Women</a></li>
-            <li><a href="shop.html?cat=men">Men</a></li>
-            <li><a href="shop.html?cat=jewellery">Jewellery &amp; Accessories</a></li>
-            <li><a href="shop.html?cat=watches">Watches</a></li>
-            <li><a href="shop.html?cat=cosmetics">Cosmetics</a></li>
-            <li><a href="shop.html?cat=sale">Sale</a></li>
+            <li><a href="shop.html?cat=scrunchies">Scrunchies</a></li>
+            <li><a href="shop.html?cat=catchers">Catchers</a></li>
+            <li><a href="shop.html?cat=hair-bands">Hair Bands</a></li>
+            <li><a href="shop.html?cat=pins">Pins</a></li>
+            <li><a href="shop.html?cat=ponies">Ponies</a></li>
+            <li><a href="shop.html?cat=fancy">Fancy Accessories</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -215,7 +217,6 @@
             <li><a href="contact.html">Contact Us</a></li>
             <li><a href="policy.html?page=shipping">Shipping Info</a></li>
             <li><a href="policy.html?page=returns">Returns Policy</a></li>
-            <li><a href="policy.html?page=sizeguide">Size Guide</a></li>
             <li><a href="policy.html?page=faqs">FAQs</a></li>
             <li><a href="policy.html?page=track">Track Order</a></li>
           </ul>
@@ -231,10 +232,9 @@
       <div class="footer-bottom">
         <p>© 2025 <span class="gold-text">Velorra</span>. All rights reserved.</p>
         <div class="footer-pay">
-          <span class="pay-badge pay-icon">&#128179;</span>
-          <span class="pay-badge pay-icon">&#128184;</span>
-          <span class="pay-badge pay-icon">&#128180;</span>
-          <span class="pay-badge pay-icon">&#9999;</span>
+          <span class="pay-badge">COD</span>
+          <span class="pay-badge">Easypaisa</span>
+          <span class="pay-badge">JazzCash</span>
         </div>
       </div>
     </div>
@@ -269,40 +269,7 @@
       <span class="wa-tooltip">Chat with us</span>
     </a>
   </div>
-  <!-- AI CHATBOT -->
-  <div id="chatbot">
-    <div id="chat-window">
-      <div class="chat-win-header">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="chat-avatar-circle">V</div>
-          <div>
-            <span class="chat-title">Velorra Assistant</span>
-            <div class="chat-status"><span class="chat-status-dot"></span> AI · Always Online</div>
-          </div>
-        </div>
-        <button id="chat-close" onclick="toggleChat()" aria-label="Close chat">&#10005;</button>
-      </div>
-      <div id="chat-messages">
-        <div class="msg bot">Hello! Welcome to Velorra 💛 I'm your personal style assistant powered by AI. I can help you with products, sizing, shipping, returns, or anything else. What can I help you with today?</div>
-        <div class="chat-quick-replies" id="chat-quick-replies">
-          <button onclick="sendQuick('What products do you sell?')">Our Products</button>
-          <button onclick="sendQuick('How does shipping work?')">Shipping Info</button>
-          <button onclick="sendQuick('What is your return policy?')">Returns</button>
-          <button onclick="sendQuick('How do I find my size?')">Size Guide</button>
-        </div>
-      </div>
-      <div id="chat-input-row">
-        <input id="chat-input" type="text" placeholder="Ask me anything about Velorra…" autocomplete="off"/>
-        <button id="chat-send" onclick="sendChat()" aria-label="Send">
-          <i class="fa-solid fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>
-    <button id="chat-toggle" onclick="toggleChat()" aria-label="Open chat">
-      <i class="fa-solid fa-comment-dots"></i>
-      <span class="chat-pulse"></span>
-    </button>
-  </div>
+
   <!-- Three.js for 3D Hero Background -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/whatsapp-config.js"></script>

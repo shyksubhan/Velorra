@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shop — Velorra</title>
-  <meta name="description" content="Browse the full Velorra collection — women's clothing, men's fashion, jewellery, watches and cosmetics." />
+  <title>Shop — Velorra Hair Accessories</title>
+  <meta name="description" content="Browse the full Velorra collection — scrunchies, catchers, hair bands, pins, ponies and fancy hair accessories." />
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -42,22 +42,18 @@
 
 <section style="padding:60px 0 100px;">
   <div class="container">
-
     <!-- Filter Bar -->
     <div class="filter-bar">
       <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="women">Women</button>
-      <button class="filter-btn" data-filter="men">Men</button>
-      <button class="filter-btn" data-filter="jewellery">Jewellery</button>
-      <button class="filter-btn" data-filter="watches">Watches</button>
-      <button class="filter-btn" data-filter="cosmetics">Cosmetics</button>
+      <button class="filter-btn" data-filter="scrunchies">Scrunchies</button>
+      <button class="filter-btn" data-filter="catchers">Catchers</button>
+      <button class="filter-btn" data-filter="hair-bands">Hair Bands</button>
+      <button class="filter-btn" data-filter="pins">Pins</button>
+      <button class="filter-btn" data-filter="ponies">Ponies</button>
+      <button class="filter-btn" data-filter="fancy">Fancy</button>
       <button class="filter-btn" data-filter="sale">Sale</button>
     </div>
-
     <div class="products-grid" id="shop-products-grid">
-      <!-- Products are loaded dynamically from the backend (see js/products-render.js).
-           This grid intentionally starts empty; it is populated by JavaScript on page load
-           so that products added/edited/deleted in the admin panel show up automatically. -->
       <p style="grid-column:1/-1;text-align:center;padding:60px 0;opacity:0.5;">Loading products…</p>
     </div>
   </div>
@@ -83,7 +79,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <span class="nav-logo">Vel<span>orra</span></span>
-        <p>Pakistan's premium fashion destination.</p>
+        <p>Pakistan's premier hair accessories destination.</p>
         <div class="footer-social">
           <a href="#"><i class="fa-brands fa-instagram"></i></a>
           <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
@@ -93,10 +89,12 @@
       <div class="footer-col">
         <h4>Shop</h4>
         <ul>
-          <li><a href="shop.html?cat=women">Women</a></li>
-          <li><a href="shop.html?cat=men">Men</a></li>
-          <li><a href="shop.html?cat=jewellery">Jewellery</a></li>
-          <li><a href="shop.html?cat=watches">Watches</a></li>
+          <li><a href="shop.html?cat=scrunchies">Scrunchies</a></li>
+          <li><a href="shop.html?cat=catchers">Catchers</a></li>
+          <li><a href="shop.html?cat=hair-bands">Hair Bands</a></li>
+          <li><a href="shop.html?cat=pins">Pins</a></li>
+          <li><a href="shop.html?cat=ponies">Ponies</a></li>
+          <li><a href="shop.html?cat=fancy">Fancy</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -105,7 +103,6 @@
           <li><a href="contact.html">Contact Us</a></li>
           <li><a href="#">Returns</a></li>
           <li><a href="#">Shipping</a></li>
-          <li><a href="#">Size Guide</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -115,7 +112,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2025 <span class="gold-text">Velorra</span>. All rights reserved.</p>
+      <p>&copy; 2025 <span class="gold-text">Velorra</span>. All rights reserved.</p>
       <div class="footer-pay">
         <span class="pay-badge">COD</span>
         <span class="pay-badge">Easypaisa</span>
@@ -133,56 +130,36 @@
   <div class="cart-items" id="cart-items"><div class="cart-empty">Your bag is empty.</div></div>
   <div class="cart-footer">
     <div class="cart-total"><span>Total</span><span id="cart-total-val">PKR 0</span></div>
-    <a href="contact.html" class="btn-primary cart-checkout" style="display:block;clip-path:none;text-align:center;padding:16px;">Checkout</a>
+    <a href="checkout.html" class="btn-primary cart-checkout" style="display:block;clip-path:none;text-align:center;padding:16px;">Checkout</a>
   </div>
 </div>
 
 <div id="overlay"></div>
 <div id="toast"></div>
 
-<div id="chatbot">
-  <div id="chat-window">
-    <div class="chat-win-header">
-      <span class="chat-title">Velorra Style Assistant</span>
-      <span class="chat-status"><span class="chat-status-dot"></span>Online</span>
-    </div>
-    <div id="chat-messages">
-      <div class="msg bot">Hi! Need help finding the perfect piece? I'm here 💛</div>
-    </div>
-    <div id="chat-input-row">
-      <input id="chat-input" type="text" placeholder="Ask me anything…" />
-      <button id="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-  </div>
-  <button id="chat-toggle" onclick="toggleChat()">
-    <div class="chat-pulse"></div>
-    <i class="fa-solid fa-comment-dots"></i>
-  </button>
-</div>
-
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script src="js/products-render.js"></script>
 <script>
-/* ── Auto-filter from URL ?cat= parameter ── */
+/* -- Auto-filter from URL ?cat= parameter -- */
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const cat    = params.get('cat');
   if (cat) {
-    /* Find and click the matching filter button */
     const btn = document.querySelector(`.filter-btn[data-filter="${cat}"]`);
     if (btn) {
       btn.click();
-      /* Scroll to product grid smoothly */
       const grid = document.querySelector('.product-grid');
       if (grid) setTimeout(() => grid.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     }
-    /* Update page heading to reflect selected category */
     const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
     if (heading) {
-      const labels = { women:'Women', men:'Men', jewellery:'Jewellery & Accessories', watches:'Watches', cosmetics:'Cosmetics', sale:'Sale' };
+      const labels = { scrunchies:'Scrunchies', catchers:'Catchers', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', sale:'Sale' };
       if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
     }
   }
 });
 </script>
+
+</body>
+</html>

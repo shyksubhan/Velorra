@@ -28,6 +28,10 @@ router.post('/', async (req, res) => {
       subject:   (subject || 'General Enquiry').trim(),
       message:   message.trim(),
       read:      false,
+      replied:   false,
+      replyText: null,
+      repliedBy: null,
+      repliedAt: null,
       createdAt: new Date().toISOString(),
     };
 
@@ -77,6 +81,49 @@ router.patch('/:id/read', requireAdmin, async (req, res) => {
     return res.json({ message: 'Marked as read.' });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update.' });
+  }
+});
+
+/* ── POST /api/contact/:id/reply (admin) — reply to a message ── */
+router.post('/:id/reply', requireAdmin, async (req, res) => {
+  try {
+    const { replyText } = req.body;
+    if (!replyText?.trim()) return res.status(400).json({ error: 'Reply text is required.' });
+
+    const replyData = {
+      read:      true,
+      replied:   true,
+      replyText: replyText.trim(),
+      repliedBy: req.user.email || req.user.uid,
+      repliedAt: new Date().toISOString(),
+    };
+
+    if (isFirebaseAvailable()) {
+      const ref = getDB().collection('messages').doc(req.params.id);
+      const doc = await ref.get();
+      if (!doc.exists) return res.status(404).json({ error: 'Message not found.' });
+      await ref.update(replyData);
+    } else {
+      const msg = store.messages.find(m => m.id === req.params.id);
+      if (!msg) return res.status(404).json({ error: 'Message not found.' });
+      Object.assign(msg, replyData);
+    }
+
+    /* ── Log staff activity ── */
+    if (req.user?.role !== 'super_admin') {
+      store.logActivity({
+        staffId:   req.user.uid,
+        staffName: req.user.email || 'Unknown',
+        staffRole: req.user.role,
+        action:    'message_reply',
+        details:   { messageId: req.params.id },
+      });
+    }
+
+    return res.json({ message: 'Reply recorded.' });
+  } catch (err) {
+    console.error('Reply error:', err);
+    return res.status(500).json({ error: 'Failed to save reply.' });
   }
 });
 

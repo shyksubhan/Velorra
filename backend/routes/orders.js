@@ -161,6 +161,17 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
       store.orders[idx].updatedAt = new Date().toISOString();
     }
 
+    /* ── Log activity for non-super_admin staff ── */
+    if (req.user?.role !== 'super_admin') {
+      store.logActivity({
+        staffId:   req.user.uid,
+        staffName: req.user.email || 'Unknown',
+        staffRole: req.user.role,
+        action:    'order_status_change',
+        details:   { orderId: req.params.id, newStatus: status },
+      });
+    }
+
     store.emit('order_status_changed', { id: req.params.id, status });
     return res.json({ message: `Order updated to "${status}".`, status });
   } catch (err) {

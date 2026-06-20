@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    VELORRA — JWT Authentication Middleware
    ============================================================ */
 const jwt = require('jsonwebtoken');
@@ -24,7 +24,7 @@ function requireAuth(req, res, next) {
   }
 }
 
-/* ── Verify admin JWT token (has admin: true claim) ── */
+/* ── Verify admin JWT token (has isAdmin: true claim) ── */
 function requireAdmin(req, res, next) {
   requireAuth(req, res, () => {
     if (!req.user?.isAdmin) {
@@ -34,4 +34,16 @@ function requireAdmin(req, res, next) {
   });
 }
 
-module.exports = { requireAuth, requireAdmin };
+/* ── Require specific role(s) ── */
+function requireRole(...roles) {
+  return (req, res, next) => {
+    requireAdmin(req, res, () => {
+      if (!roles.includes(req.user?.role)) {
+        return res.status(403).json({ error: `Access denied. Required role: ${roles.join(' or ')}.` });
+      }
+      next();
+    });
+  };
+}
+
+module.exports = { requireAuth, requireAdmin, requireRole };
