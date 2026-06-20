@@ -246,47 +246,86 @@ section { padding: 100px 0; }
 /* ── Gold Text ── */
 .gold-text { color: var(--gold); }
 
-/* ── Categories Band ── */
-#categories { background: var(--deep); padding: 80px 0; }
+/* ── Categories Band — Boutique Medallion Cards ── */
+#categories { background: var(--deep); padding: 96px 0; }
 .cat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
 }
 .cat-card {
   position: relative; overflow: hidden;
-  aspect-ratio: 3/4;
-  background: var(--card);
+  aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 28px 20px;
+  background: linear-gradient(155deg, #ffffff 0%, var(--deep) 130%);
+  border: 1px solid var(--border);
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
 }
-.cat-card::before {
-  content: attr(data-label);
-  position: absolute; bottom: 28px; left: 28px;
-  font-family: var(--font-display);
-  font-size: 1.6rem; font-weight: 300;
-  color: #fff; z-index: 2;
-  transition: transform var(--transition);
+.cat-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-5px);
+  box-shadow: 0 28px 56px rgba(160,112,80,0.18);
 }
-.cat-card::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(92,45,68,0.55) 0%, transparent 55%);
-  z-index: 1;
+/* oversized ghost icon, sits behind everything for quiet depth */
+.cat-watermark {
+  position: absolute; width: 78%; left: 11%; top: 8%;
+  color: var(--gold);
+  opacity: 0.06;
+  transform: rotate(-9deg);
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.6s ease;
 }
-.cat-card-img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 0.7s cubic-bezier(0.25,0.8,0.25,1);
-  filter: grayscale(10%) brightness(0.95);
-}
-.cat-card:hover .cat-card-img { transform: scale(1.06); filter: grayscale(0%) brightness(1); }
-.cat-card:hover::before { transform: translateY(-6px); }
-.cat-bg {
-  width: 100%; height: 100%;
+.cat-card:hover .cat-watermark { opacity: 0.1; transform: rotate(-4deg) scale(1.05); }
+/* medallion ring holding the line-icon, echoes the diamond mark in the logo */
+.cat-medallion {
+  position: relative; z-index: 2;
+  width: 72px; height: 72px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--gold-dim);
+  margin-bottom: 20px;
+  transition: border-color var(--transition), transform var(--transition);
 }
-.cat-icon-placeholder {
+.cat-card:hover .cat-medallion { border-color: var(--gold); transform: scale(1.07); }
+.cat-medallion .gem {
+  position: absolute; top: -4px; left: 50%;
+  width: 6px; height: 6px; background: var(--gold-dim);
+  transform: translateX(-50%) rotate(45deg);
+  transition: background var(--transition);
+}
+.cat-card:hover .cat-medallion .gem { background: var(--gold); }
+.cat-icon { width: 30px; height: 30px; color: var(--gold-dim); transition: color var(--transition); }
+.cat-card:hover .cat-icon { color: var(--gold); }
+.cat-name {
+  position: relative; z-index: 2;
   font-family: var(--font-display);
-  font-size: 5rem; color: var(--gold); opacity: 0.18;
-  font-style: italic;
+  font-size: 1.3rem; font-weight: 400;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+.cat-rule {
+  position: relative; z-index: 2;
+  width: 18px; height: 1px; background: var(--gold-dim);
+  transition: width var(--transition), background var(--transition);
+}
+.cat-card:hover .cat-rule { width: 40px; background: var(--gold); }
+.cat-cta {
+  position: absolute; left: 0; right: 0; bottom: 18px; z-index: 2;
+  font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0; transform: translateY(6px);
+  transition: opacity var(--transition), transform var(--transition);
+}
+.cat-card:hover .cat-cta { opacity: 1; transform: translateY(0); }
+@media (max-width: 900px) {
+  .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .cat-card { padding: 24px 16px; }
+}
+@media (max-width: 480px) {
+  .cat-name { font-size: 1.1rem; }
+  .cat-medallion { width: 60px; height: 60px; margin-bottom: 14px; }
+  .cat-icon { width: 24px; height: 24px; }
 }
 
 /* ── Featured Products ── */
