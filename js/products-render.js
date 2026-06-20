@@ -15,16 +15,21 @@ function velorraProductCardHTML(p) {
   const emoji = p.emoji || '🛍️';
   const variant = (p.colors && p.colors[0]) || (p.sizes && p.sizes[0]) || 'Standard';
   const safeName = p.name.replace(/'/g, "\\'");
+  const mainImage = (p.images && p.images.length) ? p.images[0] : null;
+
+  const mediaHTML = mainImage
+    ? `<img src="${mainImage}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"/>`
+    : `<div class="product-img-placeholder">
+         <div class="pi-icon">${emoji}</div>
+         <div class="pi-label">${p.subcategory || p.category}</div>
+       </div>`;
 
   return `
     <div class="product-card reveal" data-category="${p.category}" data-id="${p.id}">
       <a href="product.html?id=${encodeURIComponent(p.id)}">
         <div class="product-img-wrap">
           ${badge}
-          <div class="product-img-placeholder">
-            <div class="pi-icon">${emoji}</div>
-            <div class="pi-label">${p.subcategory || p.category}</div>
-          </div>
+          ${mediaHTML}
         </div>
       </a>
       <div class="product-info">

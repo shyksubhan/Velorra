@@ -413,28 +413,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <div class="form-group"><label>Sizes (comma separated)</label><input id="p-sizes" placeholder="XS, S, M, L, XL"/></div>
         <div class="form-group"><label>Colors (comma separated)</label><input id="p-colors" placeholder="Black, White"/></div>
       </div>
-
-      <!-- ── Gallery: Images ── -->
-      <div class="form-group">
-        <label>Product Images (gallery — first image is the main photo)</label>
-        <input type="file" id="p-image-input" accept="image/*" multiple style="display:none" onchange="handleImageSelect(event)"/>
-        <button type="button" class="btn btn-outline" onclick="document.getElementById('p-image-input').click()">
-          <i class="fa-solid fa-images"></i> Browse Images
-        </button>
-        <span id="image-upload-status" style="margin-left:10px;font-size:0.8rem;color:var(--muted);"></span>
-        <div id="image-gallery-preview" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;"></div>
-      </div>
-
-      <!-- ── Video ── -->
-      <div class="form-group">
-        <label>Product Video (optional)</label>
-        <input type="file" id="p-video-input" accept="video/*" style="display:none" onchange="handleVideoSelect(event)"/>
-        <button type="button" class="btn btn-outline" onclick="document.getElementById('p-video-input').click()">
-          <i class="fa-solid fa-video"></i> Browse Video
-        </button>
-        <span id="video-upload-status" style="margin-left:10px;font-size:0.8rem;color:var(--muted);"></span>
-        <div id="video-preview" style="margin-top:12px;"></div>
-      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('product-modal')">Cancel</button>
@@ -888,89 +866,6 @@ function renderProducts(products) {
     </tr>`).join('');
 }
 
-/* ── Gallery upload state (current product being added/edited) ── */
-let productImages = [];   /* array of Cloudinary URLs */
-let productVideo   = null; /* single Cloudinary URL or null */
-
-function renderImageGalleryPreview() {
-  const wrap = document.getElementById('image-gallery-preview');
-  wrap.innerHTML = productImages.map((url, idx) => `
-    <div style="position:relative;width:80px;height:80px;">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--border);${idx===0?'outline:2px solid var(--gold);':''}"/>
-      ${idx===0 ? '<span style="position:absolute;bottom:2px;left:2px;background:var(--gold);color:#1a1a1a;font-size:0.55rem;padding:1px 5px;border-radius:3px;">MAIN</span>' : ''}
-      <button type="button" onclick="removeGalleryImage(${idx})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#c0392b;color:#fff;border:none;cursor:pointer;font-size:0.7rem;line-height:1;">✕</button>
-    </div>`).join('');
-}
-
-function removeGalleryImage(idx) {
-  productImages.splice(idx, 1);
-  renderImageGalleryPreview();
-}
-
-function renderVideoPreview() {
-  const wrap = document.getElementById('video-preview');
-  if (!productVideo) { wrap.innerHTML = ''; return; }
-  wrap.innerHTML = `
-    <div style="position:relative;width:160px;">
-      <video src="${productVideo}" controls style="width:100%;border-radius:6px;border:1px solid var(--border);"></video>
-      <button type="button" onclick="removeVideo()" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#c0392b;color:#fff;border:none;cursor:pointer;font-size:0.7rem;">✕</button>
-    </div>`;
-}
-
-function removeVideo() {
-  productVideo = null;
-  renderVideoPreview();
-}
-
-/* ── Upload a single file to /api/upload (admin-only, multipart) ── */
-async function uploadFileToServer(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  const res = await fetch(`${API}/upload`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${adminToken}` },  /* no Content-Type — browser sets multipart boundary */
-    body: formData,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Upload failed.');
-  return data;  /* { url, type, publicId } */
-}
-
-async function handleImageSelect(event) {
-  const files = Array.from(event.target.files || []);
-  if (!files.length) return;
-  const status = document.getElementById('image-upload-status');
-
-  for (let i = 0; i < files.length; i++) {
-    status.textContent = `Uploading ${i + 1} of ${files.length}…`;
-    try {
-      const result = await uploadFileToServer(files[i]);
-      productImages.push(result.url);
-      renderImageGalleryPreview();
-    } catch (err) {
-      toast(err.message || 'Image upload failed.', 'error');
-    }
-  }
-  status.textContent = '';
-  event.target.value = '';  /* allow re-selecting the same file later */
-}
-
-async function handleVideoSelect(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const status = document.getElementById('video-upload-status');
-  status.textContent = 'Uploading video…';
-  try {
-    const result = await uploadFileToServer(file);
-    productVideo = result.url;
-    renderVideoPreview();
-  } catch (err) {
-    toast(err.message || 'Video upload failed.', 'error');
-  }
-  status.textContent = '';
-  event.target.value = '';
-}
-
 function openProductModal(product = null) {
   document.getElementById('product-modal-title').textContent = product ? 'Edit Product' : 'Add Product';
   document.getElementById('product-edit-id').value = product?.id || '';
@@ -985,10 +880,6 @@ function openProductModal(product = null) {
   document.getElementById('p-desc').value       = product?.description || '';
   document.getElementById('p-sizes').value      = (product?.sizes || []).join(', ');
   document.getElementById('p-colors').value     = (product?.colors || []).join(', ');
-  productImages = Array.isArray(product?.images) ? [...product.images] : [];
-  productVideo  = product?.video || null;
-  renderImageGalleryPreview();
-  renderVideoPreview();
   openModal('product-modal');
 }
 
@@ -1017,8 +908,6 @@ async function saveProduct() {
     description: document.getElementById('p-desc').value,
     sizes:       document.getElementById('p-sizes').value.split(',').map(s=>s.trim()).filter(Boolean),
     colors:      document.getElementById('p-colors').value.split(',').map(s=>s.trim()).filter(Boolean),
-    images:      productImages,
-    video:       productVideo,
   };
 
   try {

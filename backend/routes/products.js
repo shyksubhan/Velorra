@@ -80,7 +80,7 @@ router.get('/:id', async (req, res) => {
 /* ── POST /api/products (admin) ── */
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { name, category, subcategory, price, priceOld, emoji, badge, description, sizes, colors, inStock, featured } = req.body;
+    const { name, category, subcategory, price, priceOld, emoji, badge, description, sizes, colors, inStock, featured, images, video } = req.body;
     if (!name || !category || !price) return res.status(400).json({ error: 'Name, category, and price are required.' });
 
     const slug = makeSlug(name);
@@ -96,6 +96,8 @@ router.post('/', requireAdmin, async (req, res) => {
       description: description || '',
       sizes:       Array.isArray(sizes) ? sizes : (sizes || '').split(',').map(s => s.trim()).filter(Boolean),
       colors:      Array.isArray(colors) ? colors : (colors || '').split(',').map(s => s.trim()).filter(Boolean),
+      images:      Array.isArray(images) ? images.filter(Boolean) : [],
+      video:       video || null,
       inStock:     inStock !== false,
       featured:    featured === true || featured === 'true',
       createdAt:   new Date().toISOString(),

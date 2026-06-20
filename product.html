@@ -185,10 +185,30 @@
     ? `<p style="color:#d96a6a;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Out of Stock</p>`
     : '';
 
+  const images = (product.images && product.images.length) ? product.images : null;
+  const hasVideo = !!product.video;
+
+  const galleryThumbsHTML = (images && images.length > 1)
+    ? `<div class="product-gallery-thumbs" id="pd-thumbs">
+        ${images.map((url, i) => `<div class="gallery-thumb${i===0?' active':''}" data-idx="${i}" onclick="velorraSwitchGalleryImage(${i})"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"/></div>`).join('')}
+        ${hasVideo ? `<div class="gallery-thumb" data-idx="video" onclick="velorraSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>` : ''}
+      </div>`
+    : (hasVideo && images)
+      ? `<div class="product-gallery-thumbs" id="pd-thumbs">
+          <div class="gallery-thumb active" data-idx="0" onclick="velorraSwitchGalleryImage(0)"><img src="${images[0]}" style="width:100%;height:100%;object-fit:cover;"/></div>
+          <div class="gallery-thumb" data-idx="video" onclick="velorraSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>
+        </div>`
+      : '';
+
+  const mainMediaHTML = images
+    ? `<img src="${images[0]}" id="pd-main-image" style="width:100%;height:100%;object-fit:cover;"/>`
+    : `${emoji}`;
+
   root.innerHTML = `
     <div class="product-detail-grid">
       <div>
-        <div class="product-gallery-main">${emoji}</div>
+        <div class="product-gallery-main" id="pd-gallery-main">${mainMediaHTML}</div>
+        ${galleryThumbsHTML}
       </div>
       <div>
         <p class="pd-breadcrumb"><a href="shop.html">Shop</a> / <a href="shop.html?cat=${product.category}">${product.subcategory || product.category}</a> / ${product.name}</p>
@@ -206,6 +226,20 @@
         </div>
       </div>
     </div>`;
+
+  /* Gallery image/video switching */
+  window.velorraGalleryImages = images || [];
+  window.velorraGalleryVideo = product.video || null;
+  window.velorraSwitchGalleryImage = function (idx) {
+    const main = document.getElementById('pd-gallery-main');
+    if (idx === 'video' && window.velorraGalleryVideo) {
+      main.innerHTML = `<video src="${window.velorraGalleryVideo}" controls autoplay muted style="width:100%;height:100%;object-fit:cover;"></video>`;
+    } else if (typeof idx === 'number' && window.velorraGalleryImages[idx]) {
+      main.innerHTML = `<img src="${window.velorraGalleryImages[idx]}" style="width:100%;height:100%;object-fit:cover;"/>`;
+    }
+    document.querySelectorAll('#pd-thumbs .gallery-thumb').forEach(t => t.classList.remove('active'));
+    document.querySelector(`#pd-thumbs .gallery-thumb[data-idx="${idx}"]`)?.classList.add('active');
+  };
 
   /* Size / color selection */
   root.querySelectorAll('.size-opt').forEach(opt => {

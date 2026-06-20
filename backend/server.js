@@ -8,6 +8,7 @@ const cors    = require('cors');
 const path    = require('path');
 
 const { initFirebase } = require('./utils/firebase');
+const { initCloudinary } = require('./utils/cloudinary');
 const store            = require('./utils/store');
 
 /* ── Route modules ── */
@@ -18,6 +19,7 @@ const contactRoutes    = require('./routes/contact');
 const newsletterRoutes = require('./routes/newsletter');
 const adminRoutes      = require('./routes/admin');
 const paymentsRoutes   = require('./routes/payments');
+const uploadRoutes     = require('./routes/upload');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -64,6 +66,9 @@ app.use('/api/', (req, res, next) => {
 
 /* ── Firebase init ── */
 initFirebase();
+
+/* ── Cloudinary init (image/video uploads) ── */
+initCloudinary();
 
 /* ── Serve static frontend ── */
 app.use(express.static(path.join(__dirname, '..')));
@@ -116,6 +121,7 @@ app.use('/api/orders',     orderRoutes);
 app.use('/api/contact',    contactRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/payments',   paymentsRoutes);
+app.use('/api/upload',     uploadRoutes);
 
 /* ── Admin dashboard HTML ── serve the file directly to avoid router path issues */
 app.get(['/admin', '/admin/'], (req, res) => {
