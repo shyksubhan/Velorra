@@ -5,7 +5,7 @@
 /* ── Search Overlay ── */
 #search-overlay {
   position: fixed; inset: 0;
-  background: rgba(253,250,246,0.97);
+  background: rgba(10,10,10,0.97);
   backdrop-filter: blur(20px);
   z-index: 2500;
   display: flex; align-items: flex-start; justify-content: center;
@@ -44,13 +44,16 @@
 .sr-icon { font-size: 1.2rem; width: 28px; text-align: center; }
 .sr-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .sr-title { font-family: var(--font-display); font-size: 1rem; }
-.sr-title mark { background: rgba(200,149,108,0.25); color: var(--gold); border-radius: 2px; padding: 0 2px; }
+.sr-title mark { background: rgba(201,168,76,0.3); color: var(--gold-light); border-radius: 2px; padding: 0 2px; }
 .sr-badge {
   font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--muted);
 }
 .search-no-results { color: var(--muted); font-size: 0.9rem; padding: 20px 0; text-align: center; font-style: italic; }
-/* (legacy 5-col category grid removed — .cat-grid is now a balanced 3-col / 2-row layout, see style.css) */
+/* ── 5-Column Category Grid ── */
+.cat-grid-5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 1024px) { .cat-grid-5 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .cat-grid-5 { grid-template-columns: repeat(2, 1fr); } }
 /* ── WhatsApp Float Button ── */
 #whatsapp-btn-wrap {
   position: fixed; bottom: 108px; right: 32px;
