@@ -726,7 +726,9 @@ footer {
 
 /* ── Page: Product Detail ── */
 .product-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: start; padding-top: calc(var(--nav-h) + 48px); }
-.product-gallery-main { aspect-ratio: 4/5; background: var(--card); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 10rem; color: var(--gold); opacity: 0.12; font-style: italic; }
+.product-gallery-main { aspect-ratio: 4/5; background: var(--card); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 10rem; color: var(--gold); font-style: italic; overflow: hidden; }
+.product-gallery-main .emoji-placeholder { opacity: 0.12; }
+.product-gallery-main img, .product-gallery-main video { opacity: 1; width: 100%; height: 100%; object-fit: cover; }
 .product-gallery-thumbs { display: flex; gap: 10px; margin-top: 12px; }
 .gallery-thumb { width: 72px; height: 88px; background: var(--card); border: 1px solid transparent; cursor: pointer; transition: border-color var(--transition); display: flex; align-items: center; justify-content: center; color: var(--gold-dim); font-size: 1.5rem; }
 .gallery-thumb.active { border-color: var(--gold); }

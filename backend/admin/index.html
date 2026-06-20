@@ -378,7 +378,11 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <input type="hidden" id="product-edit-id"/>
       <div class="form-row">
         <div class="form-group"><label>Product Name *</label><input id="p-name" placeholder="e.g. Ivory Silk Gown"/></div>
-        <div class="form-group"><label>Emoji / Icon</label><input id="p-emoji" placeholder="👗"/></div>
+        <div class="form-group"><label>Product Icon</label>
+          <div id="emoji-picker" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;"></div>
+          <input type="hidden" id="p-emoji" value="👗"/>
+          <p style="font-size:.73rem;color:var(--muted);margin-top:6px;">Icon auto-suggests based on category. Click to change.</p>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -521,6 +525,11 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('login-username').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-password').focus();
+  });
+
+  /* Update emoji picker when category changes */
+  document.getElementById('p-category')?.addEventListener('change', function() {
+    renderEmojiPicker(this.value, '');
   });
 
   if (adminToken) {
@@ -971,6 +980,37 @@ async function handleVideoSelect(event) {
   event.target.value = '';
 }
 
+/* ── Emoji picker config ── */
+const CATEGORY_EMOJIS = {
+  women:     ['👗','👘','🥻','👙','👚','👜','👒','💃','🧥','👠'],
+  men:       ['👔','🧥','🥋','🧣','👟','👞','🕴️','🧤','🎩','👕'],
+  jewellery: ['💍','📿','💎','⌚','🪙','✨','💫','🔮','👑','🫧'],
+  watches:   ['⌚','🕐','🕰️','⏱️','⏰','🌟','💎','✨','🔱','💠'],
+  cosmetics: ['💄','💅','🪞','🧴','🌸','💋','🫧','✨','🧖','💆'],
+  accessories:['👜','🎒','🧢','🕶️','🧣','💼','🪮','👒','🌂','⌚'],
+};
+const DEFAULT_EMOJIS = ['🛍️','✨','💎','🌟','👑','🎁','💫','🔮','🌸','💠'];
+
+function renderEmojiPicker(category, selectedEmoji) {
+  const picker = document.getElementById('emoji-picker');
+  if (!picker) return;
+  const emojis = CATEGORY_EMOJIS[category] || DEFAULT_EMOJIS;
+  const current = selectedEmoji || emojis[0];
+  if (!selectedEmoji) document.getElementById('p-emoji').value = emojis[0];
+  picker.innerHTML = emojis.map(e => `
+    <div onclick="selectEmoji('${e}')" title="${e}" style="
+      width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+      font-size:1.4rem;cursor:pointer;border-radius:8px;border:2px solid ${e===current?'var(--gold)':'var(--border)'};
+      background:${e===current?'rgba(201,168,76,0.15)':'var(--bg)'};
+      transition:all .2s;">${e}</div>`).join('');
+}
+
+function selectEmoji(e) {
+  document.getElementById('p-emoji').value = e;
+  const cat = document.getElementById('p-category').value;
+  renderEmojiPicker(cat, e);
+}
+
 function openProductModal(product = null) {
   document.getElementById('product-modal-title').textContent = product ? 'Edit Product' : 'Add Product';
   document.getElementById('product-edit-id').value = product?.id || '';
@@ -989,8 +1029,11 @@ function openProductModal(product = null) {
   productVideo  = product?.video || null;
   renderImageGalleryPreview();
   renderVideoPreview();
+  /* Render emoji picker after setting category */
+  renderEmojiPicker(product?.category || '', product?.emoji || '');
   openModal('product-modal');
 }
+
 
 function editProduct(product) { openProductModal(product); }
 

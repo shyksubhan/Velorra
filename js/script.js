@@ -155,10 +155,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ── Contact Form ── */
-  document.getElementById('contact-form')?.addEventListener('submit', e => {
+  document.getElementById('contact-form')?.addEventListener('submit', async e => {
     e.preventDefault();
-    showToast('Message sent — we\'ll reply within 24h ✓');
-    e.target.reset();
+    const form = e.target;
+    const btn  = form.querySelector('button[type="submit"]');
+    const fd   = new FormData(form);
+    const payload = {
+      name:    (fd.get('name')    || '').trim(),
+      email:   (fd.get('email')   || '').trim(),
+      phone:   (fd.get('phone')   || '').trim(),
+      subject: (fd.get('subject') || 'General Enquiry').trim(),
+      message: (fd.get('message') || '').trim(),
+    };
+    if (!payload.name || !payload.email || !payload.message) {
+      showToast('Please fill in all required fields.');
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    try {
+      const result = await apiSendContact(payload);
+      if (result.ok) {
+        showToast(result.data?.message || 'Message sent — we\'ll reply within 24h ✓');
+        form.reset();
+      } else {
+        showToast(result.data?.error || 'Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      showToast('Could not reach the server. Please try again later.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Send Message'; }
+    }
   });
 
   /* ── Hamburger Mobile Menu ── */
