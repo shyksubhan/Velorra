@@ -139,6 +139,11 @@ body > nav.scrolled, header > nav.scrolled {
   overflow: hidden;
   background: linear-gradient(165deg, var(--deep) 0%, var(--black) 55%, #050505 100%);
 }
+#three-canvas {
+  position: absolute; inset: 0;
+  z-index: 0;
+  opacity: 0.85;
+}
 /* ── Decorative backdrop: quiet dot field + corner orbit rings + floating gems ──
    Kept light and off-center on purpose so nothing ever sits behind the headline. */
 .hero-bg {

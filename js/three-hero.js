@@ -33,6 +33,10 @@
   white1.position.set(0, 4, -2);
   scene.add(white1);
 
+  const blush = new THREE.PointLight(0xa52d54, 0.9, 10);
+  blush.position.set(-2, 3, 1.5);
+  scene.add(blush);
+
   /* ── Materials ── */
   const goldMat = new THREE.MeshStandardMaterial({
     color: 0xc9a84c, metalness: 0.92, roughness: 0.12,
@@ -148,6 +152,8 @@
     /* light animation */
     gold1.position.x = Math.sin(t * 0.4) * 4;
     gold1.position.y = Math.cos(t * 0.3) * 3;
+    blush.position.x = Math.cos(t * 0.25) * 3.5;
+    blush.position.z = Math.sin(t * 0.25) * 2.5;
 
     /* camera parallax */
     camera.position.x += (mouseX - camera.position.x) * 0.04;
