@@ -219,8 +219,8 @@
           <h3>Need Help?</h3>
           <p>If you can't find your order, contact us directly:</p>
           <ul class="policy-list">
-            <li>WhatsApp: <a href="#" id="wa-track-link" style="color:var(--gold)">+92 300 000 0000</a></li>
-            <li>Email: <a href="mailto:hello@velorra.com" style="color:var(--gold)">hello@velorra.com</a></li>
+            <li>WhatsApp: <a href="#" id="wa-track-link" style="color:var(--gold)"><span data-velorra="phone">+92 300 000 0000</span></a></li>
+            <li>Email: <a href="#" style="color:var(--gold)" data-velorra="email">hello@velorra.com</a></li>
           </ul>
         </div>`
     },
@@ -252,7 +252,7 @@
         </div>
         <div class="policy-section">
           <h3>Contact for Concerns</h3>
-          <p>For any privacy or terms concerns, email us at <a href="mailto:hello@velorra.com" style="color:var(--gold)">hello@velorra.com</a>.</p>
+          <p>For any privacy or terms concerns, email us at <a href="#" style="color:var(--gold)" data-velorra="email">hello@velorra.com</a>.</p>
         </div>`
     }
   };
@@ -263,6 +263,7 @@
     const data    = POLICIES[key] || POLICIES['shipping'];
     const content = document.getElementById('policy-content');
     if (content) content.innerHTML = data.html;
+    if (content && window.applyVelorraContactInfo) window.applyVelorraContactInfo(content);
     document.title = data.title + ' — Velorra';
     /* Update sidebar heading to reflect active page */
     const sidebarHeading = document.querySelector('.policy-sidebar h3');

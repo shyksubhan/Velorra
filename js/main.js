@@ -281,32 +281,29 @@ YOUR BEHAVIOUR RULES:
 - If the customer seems ready to buy, gently guide them to the shop or add to bag
 - Never discuss topics unrelated to fashion, shopping, Velorra, or style advice`;
 
-/* ── Worker URL ─────────────────────────────────────────────
-   After deploying velorra-chat-worker.js to Cloudflare Workers,
-   replace the URL below with your worker URL.
-   Example: 'https://velorra-chat.yourname.workers.dev'
+/* ── Chat API ───────────────────────────────────────────────
+   Uses your own backend's /api/chat route (backend/routes/chat.js),
+   which already runs on Render and already has ANTHROPIC_API_KEY
+   set in its environment. No separate Cloudflare Worker needed —
+   this avoids CORS issues since it's the same origin as the rest
+   of the site's API calls (see js/api.js → VELORRA_API).
    ────────────────────────────────────────────────────────── */
-const VELORRA_WORKER_URL = 'https://velorra-chat.yourname.workers.dev';
-
 async function getAIResponse(userMessage) {
   VELORRA_CHAT_HISTORY.push({ role: 'user', content: userMessage });
 
   try {
-    const res = await fetch(VELORRA_WORKER_URL, {
+    const res = await fetch(`${VELORRA_API}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system:     VELORRA_SYSTEM_PROMPT,
-        messages:   VELORRA_CHAT_HISTORY,
+        messages: VELORRA_CHAT_HISTORY,
       })
     });
 
     if (!res.ok) throw new Error('API error ' + res.status);
 
     const data  = await res.json();
-    const reply = data.content?.[0]?.text || 'I apologise, something went wrong. Please try again or message us on WhatsApp.';
+    const reply = data.reply || 'I apologise, something went wrong. Please try again or message us on WhatsApp.';
 
     VELORRA_CHAT_HISTORY.push({ role: 'assistant', content: reply });
     return reply;

@@ -32,3 +32,45 @@ VELORRA_CONFIG.social.whatsapp =
   `?text=${encodeURIComponent(VELORRA_CONFIG.whatsapp.message)}`;
 /* Make globally available */
 window.VELORRA_CONFIG = VELORRA_CONFIG;
+
+/* ============================================================
+   AUTO-FILL CONTACT DETAILS
+   Any element with data-velorra="email" / "phone" / "location" / "hours"
+   gets its text (and href, for <a> tags) filled in automatically from
+   VELORRA_CONFIG.contact above. This means editing the contact block
+   at the top of this file updates EVERY page at once — footers, the
+   contact page, policy page, everywhere — no need to hunt through HTML
+   files one by one.
+
+   Usage in HTML:
+     <span data-velorra="email"></span>
+     <a href="#" data-velorra="email">hello@velorra.com</a>   (href auto becomes mailto:)
+     <span data-velorra="phone"></span>
+     <a href="#" data-velorra="phone">+92 300 000 0000</a>     (href auto becomes tel:)
+     <span data-velorra="location"></span>
+     <span data-velorra="hours"></span>
+   ============================================================ */
+function applyVelorraContactInfo(root) {
+  root = root || document;
+  const c = VELORRA_CONFIG.contact;
+
+  root.querySelectorAll('[data-velorra="email"]').forEach(el => {
+    el.textContent = c.email;
+    if (el.tagName === 'A') el.href = `mailto:${c.email}`;
+  });
+  root.querySelectorAll('[data-velorra="phone"]').forEach(el => {
+    el.textContent = c.phone;
+    if (el.tagName === 'A') el.href = `tel:${c.phone.replace(/\s+/g, '')}`;
+  });
+  root.querySelectorAll('[data-velorra="location"]').forEach(el => {
+    el.textContent = c.location;
+  });
+  root.querySelectorAll('[data-velorra="hours"]').forEach(el => {
+    el.textContent = c.hours;
+  });
+}
+/* Run once the page loads */
+document.addEventListener('DOMContentLoaded', () => applyVelorraContactInfo());
+/* Expose globally so pages that inject HTML later (like policy.html)
+   can re-run it on the newly added content */
+window.applyVelorraContactInfo = applyVelorraContactInfo;
