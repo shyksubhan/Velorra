@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product — Velorra</title>
+  <meta name="description" content="Shop premium fashion at Velorra." />
+  <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Vel<span>orra</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="about.html">Our Story</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-icons">
+    <button aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <button data-open-cart aria-label="Cart" style="position:relative;">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <span class="cart-count" style="display:none;">0</span>
+    </button>
+    <button class="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<section class="container">
+  <div id="pd-root">
+    <p style="padding:160px 0;text-align:center;opacity:0.6;">Loading product…</p>
+  </div>
+</section>
+
+<!-- You May Also Like -->
+<section id="pd-related" style="padding:60px 0 100px;display:none;">
+  <div class="container">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-label">Complete The Look</p>
+        <h2 class="section-title">You May Also <em>Like</em></h2>
+      </div>
+    </div>
+    <div class="products-grid" id="pd-related-grid"></div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section id="newsletter" style="padding:80px 0;">
+  <div class="container">
+    <div class="newsletter-inner reveal">
+      <p class="section-label">Be First To Know</p>
+      <h2 class="section-title">New Arrivals <em>Weekly</em></h2>
+      <p>Subscribe and get 10% off your first order.</p>
+      <form class="newsletter-form" onsubmit="return false;">
+        <input type="email" placeholder="Your email address" required />
+        <button type="submit" class="btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="nav-logo">Vel<span>orra</span></span>
+        <p>Pakistan's premium fashion destination.</p>
+        <div class="footer-social">
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="shop.html?cat=women">Women</a></li>
+          <li><a href="shop.html?cat=men">Men</a></li>
+          <li><a href="shop.html?cat=jewellery">Jewellery</a></li>
+          <li><a href="shop.html?cat=watches">Watches</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Size Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>hello@velorra.com</p>
+        <p style="margin-top:8px;">Lahore, Pakistan</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 <span class="gold-text">Velorra</span>. All rights reserved.</p>
+      <div class="footer-pay">
+        <span class="pay-badge">COD</span>
+        <span class="pay-badge">Easypaisa</span>
+        <span class="pay-badge">JazzCash</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="cart-drawer">
+  <div class="cart-header">
+    <h3>Your Bag</h3>
+    <button id="cart-close" class="cart-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cart-items"><div class="cart-empty">Your bag is empty.</div></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cart-total-val">PKR 0</span></div>
+    <a href="contact.html" class="btn-primary cart-checkout" style="display:block;clip-path:none;text-align:center;padding:16px;">Checkout</a>
+  </div>
+</div>
+
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/products-render.js"></script>
+<script>
+/* ============================================================
+   Product Detail Page — loads the product matching ?id= from
+   the backend and renders the detail layout dynamically.
+   ============================================================ */
+(async function () {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const root = document.getElementById('pd-root');
+
+  if (!id) {
+    root.innerHTML = `<p style="padding:160px 0;text-align:center;">No product specified. <a href="shop.html" style="color:var(--gold);">Browse the shop →</a></p>`;
+    return;
+  }
+
+  let product = null;
+  try {
+    const data = await apiGet(`/products/${encodeURIComponent(id)}`);
+    product = data.product;
+  } catch (err) {
+    console.error('Failed to load product:', err);
+  }
+
+  if (!product) {
+    root.innerHTML = `<p style="padding:160px 0;text-align:center;">Sorry, we couldn't find that product. <a href="shop.html" style="color:var(--gold);">Browse the shop →</a></p>`;
+    return;
+  }
+
+  document.title = `${product.name} — Velorra`;
+
+  const emoji = product.emoji || '🛍️';
+  const oldPriceHTML = product.priceOld
+    ? `<span class="product-price-old" style="font-size:1.1rem;margin-left:12px;">PKR ${Number(product.priceOld).toLocaleString()}</span>`
+    : '';
+
+  const sizesHTML = (product.sizes && product.sizes.length)
+    ? `<p class="pd-option-label">Size</p>
+       <div class="size-options">
+         ${product.sizes.map((s, i) => `<div class="size-opt${i === 0 ? ' active' : ''}" data-size="${s}">${s}</div>`).join('')}
+       </div>`
+    : '';
+
+  const colorsHTML = (product.colors && product.colors.length)
+    ? `<p class="pd-option-label">Color</p>
+       <div class="color-options">
+         ${product.colors.map((c, i) => `<div class="color-opt${i === 0 ? ' active' : ''}" data-color="${c}" title="${c}" style="background:${velorraColorSwatch(c)};border:1px solid var(--border);"></div>`).join('')}
+       </div>`
+    : '';
+
+  const stockHTML = product.inStock === false
+    ? `<p style="color:#d96a6a;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Out of Stock</p>`
+    : '';
+
+  root.innerHTML = `
+    <div class="product-detail-grid">
+      <div>
+        <div class="product-gallery-main">${emoji}</div>
+      </div>
+      <div>
+        <p class="pd-breadcrumb"><a href="shop.html">Shop</a> / <a href="shop.html?cat=${product.category}">${product.subcategory || product.category}</a> / ${product.name}</p>
+        <h1 class="pd-title">${product.name}</h1>
+        <div class="pd-price">PKR ${Number(product.price).toLocaleString()}${oldPriceHTML}</div>
+        ${stockHTML}
+        <p class="pd-desc">${product.description || ''}</p>
+        ${sizesHTML}
+        ${colorsHTML}
+        <div class="pd-add-row">
+          <button class="btn-primary" id="pd-add-btn" ${product.inStock === false ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+            ${product.inStock === false ? 'Out of Stock' : 'Add to Bag'}
+          </button>
+          <div class="pd-wishlist"><i class="fa-regular fa-heart"></i></div>
+        </div>
+      </div>
+    </div>`;
+
+  /* Size / color selection */
+  root.querySelectorAll('.size-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      root.querySelectorAll('.size-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+    });
+  });
+  root.querySelectorAll('.color-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      root.querySelectorAll('.color-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+    });
+  });
+
+  /* Add to bag */
+  const addBtn = document.getElementById('pd-add-btn');
+  if (addBtn && product.inStock !== false) {
+    addBtn.addEventListener('click', () => {
+      const size = root.querySelector('.size-opt.active')?.dataset.size;
+      const color = root.querySelector('.color-opt.active')?.dataset.color;
+      const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
+      window.addToCart(product.name, Number(product.price), emoji, variant);
+    });
+  }
+
+  /* Related products (same category, excluding this one) */
+  try {
+    const relData = await apiGet(`/products?category=${encodeURIComponent(product.category)}&limit=5`);
+    const related = (relData.products || []).filter(p => p.id !== product.id).slice(0, 4);
+    if (related.length) {
+      document.getElementById('pd-related').style.display = '';
+      const grid = document.getElementById('pd-related-grid');
+      grid.innerHTML = related.map(velorraProductCardHTML).join('');
+      velorraReInitCards(grid);
+    }
+  } catch (err) {
+    console.error('Failed to load related products:', err);
+  }
+})();
+
+/* Simple named-color to CSS color mapping for the color swatches */
+function velorraColorSwatch(name) {
+  const map = {
+    ivory: '#f5f0e8', blush: '#e8c4c4', gold: '#c9a84c', 'rose gold': '#e0bfb8',
+    black: '#1a1a1a', 'obsidian black': '#1a1a1a', champagne: '#d9c8a8',
+    nude: '#d9b896', berry: '#8a3a4a', noir: '#1a1a1a', silver: '#c0c0c0', white: '#f5f5f5',
+  };
+  const key = (name || '').toLowerCase();
+  for (const k in map) if (key.includes(k)) return map[k];
+  return '#888';
+}
+</script>
+
+</body>
+</html>

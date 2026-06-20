@@ -117,94 +117,8 @@
         <a href="shop.html" class="view-all">View All →</a>
       </div>
       <div class="products-grid">
-        <div class="product-card reveal reveal-delay-1" data-category="women">
-          <a href="product.html?id=ivory-silk-maxi-gown">
-            <div class="product-img-wrap">
-              <span class="product-badge new">New</span>
-              <div class="product-img-placeholder">
-                <div class="pi-icon">&#128153;</div>
-                <div class="pi-label">Women's Dress</div>
-              </div>
-            </div>
-          </a>
-          <div class="product-info">
-            <div class="product-category">Women · Dresses</div>
-            <h3 class="product-name">Ivory Silk Maxi Gown</h3>
-            <div class="product-pricing">
-              <span class="product-price">PKR 12,500</span>
-              <span class="product-price-old">PKR 16,000</span>
-            </div>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Ivory Silk Maxi Gown',12500,'👗','Standard')">Add to Bag</button>
-            <button class="wishlist-btn">&#10084;</button>
-          </div>
-        </div>
-        <div class="product-card reveal reveal-delay-2" data-category="watches">
-          <a href="product.html?id=noir-rose-gold-timepiece">
-            <div class="product-img-wrap">
-              <span class="product-badge">Bestseller</span>
-              <div class="product-img-placeholder">
-                <div class="pi-icon">&#8987;</div>
-                <div class="pi-label">Timepiece</div>
-              </div>
-            </div>
-          </a>
-          <div class="product-info">
-            <div class="product-category">Unisex · Watches</div>
-            <h3 class="product-name">Noir Rose Gold Timepiece</h3>
-            <div class="product-pricing">
-              <span class="product-price">PKR 28,000</span>
-            </div>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Noir Rose Gold Timepiece',28000,'⌚','Standard')">Add to Bag</button>
-            <button class="wishlist-btn">&#10084;</button>
-          </div>
-        </div>
-        <div class="product-card reveal reveal-delay-3" data-category="men">
-          <a href="product.html?id=obsidian-slim-suit">
-            <div class="product-img-wrap">
-              <div class="product-img-placeholder">
-                <div class="pi-icon">&#128084;</div>
-                <div class="pi-label">Men's Wear</div>
-              </div>
-            </div>
-          </a>
-          <div class="product-info">
-            <div class="product-category">Men · Formal</div>
-            <h3 class="product-name">Obsidian Slim Suit</h3>
-            <div class="product-pricing">
-              <span class="product-price">PKR 35,000</span>
-            </div>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Obsidian Slim Suit',35000,'🤵','Standard')">Add to Bag</button>
-            <button class="wishlist-btn">&#10084;</button>
-          </div>
-        </div>
-        <div class="product-card reveal reveal-delay-4" data-category="jewellery">
-          <a href="product.html?id=aurora-gold-necklace">
-            <div class="product-img-wrap">
-              <span class="product-badge new">New</span>
-              <div class="product-img-placeholder">
-                <div class="pi-icon">&#128142;</div>
-                <div class="pi-label">Jewellery</div>
-              </div>
-            </div>
-          </a>
-          <div class="product-info">
-            <div class="product-category">Women · Jewellery &amp; Accessories</div>
-            <h3 class="product-name">Aurora Gold Necklace</h3>
-            <div class="product-pricing">
-              <span class="product-price">PKR 8,500</span>
-            </div>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Aurora Gold Necklace',8500,'💎','Standard')">Add to Bag</button>
-            <button class="wishlist-btn">&#10084;</button>
-          </div>
-        </div>
+        <!-- Featured products are loaded dynamically from the backend (see js/products-render.js) -->
+        <p style="grid-column:1/-1;text-align:center;padding:40px 0;opacity:0.5;">Loading products…</p>
       </div>
     </div>
   </section>
@@ -394,6 +308,7 @@
   <script src="js/whatsapp-config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/products-render.js"></script>
   <script src="js/three-scene.js"></script>
   <script src="js/search.js"></script>
 </body>

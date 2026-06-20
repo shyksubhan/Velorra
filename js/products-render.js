@@ -1,0 +1,123 @@
+/* ============================================================
+   VELORRA — Dynamic Product Rendering
+   Fetches products from the live backend (/api/products) and
+   renders them into .products-grid containers on shop.html and
+   index.html. This replaces the old hardcoded sample cards so
+   that admin add/edit/delete actions actually show up live.
+   ============================================================ */
+
+/* ── Build the HTML for a single product card ── */
+function velorraProductCardHTML(p) {
+  const badge = p.badge ? `<span class="product-badge${p.badge === 'New' ? ' new' : ''}">${p.badge}</span>` : '';
+  const oldPrice = p.priceOld
+    ? `<span class="product-price-old">PKR ${Number(p.priceOld).toLocaleString()}</span>`
+    : '';
+  const emoji = p.emoji || '🛍️';
+  const variant = (p.colors && p.colors[0]) || (p.sizes && p.sizes[0]) || 'Standard';
+  const safeName = p.name.replace(/'/g, "\\'");
+
+  return `
+    <div class="product-card reveal" data-category="${p.category}" data-id="${p.id}">
+      <a href="product.html?id=${encodeURIComponent(p.id)}">
+        <div class="product-img-wrap">
+          ${badge}
+          <div class="product-img-placeholder">
+            <div class="pi-icon">${emoji}</div>
+            <div class="pi-label">${p.subcategory || p.category}</div>
+          </div>
+        </div>
+      </a>
+      <div class="product-info">
+        <p class="product-category">${p.subcategory || p.category}</p>
+        <h3 class="product-name">${p.name}</h3>
+        <div class="product-pricing">
+          <span class="product-price">PKR ${Number(p.price).toLocaleString()}</span>
+          ${oldPrice}
+        </div>
+      </div>
+      <div class="product-actions">
+        <button onclick="addToCart('${safeName}',${Number(p.price)},'${emoji}','${variant}')">Add to Bag</button>
+        <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+      </div>
+    </div>`;
+}
+
+/* ── Render a "no products" empty state ── */
+function velorraEmptyState(msg) {
+  return `<p style="grid-column:1/-1;text-align:center;padding:60px 0;opacity:0.6;">${msg}</p>`;
+}
+
+/* ── Re-apply scroll reveal + filter-button listeners to freshly injected cards ── */
+function velorraReInitCards(grid) {
+  /* Scroll reveal */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  grid.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  /* Re-apply currently active filter (shop page) */
+  const activeBtn = document.querySelector('.filter-btn.active');
+  if (activeBtn) {
+    const cat = activeBtn.dataset.filter;
+    grid.querySelectorAll('.product-card').forEach(card => {
+      const show = cat === 'all' || card.dataset.category === cat ||
+        (cat === 'sale' && card.querySelector('.product-price-old'));
+      card.style.display = show ? '' : 'none';
+    });
+  }
+}
+
+/* ── Load & render the full shop grid (shop.html) ── */
+async function velorraRenderShopGrid() {
+  const grid = document.querySelector('#shop-products-grid, .products-grid');
+  if (!grid) return;
+
+  try {
+    const data = await apiGet('/products');
+    const products = data.products || [];
+    if (!products.length) {
+      grid.innerHTML = velorraEmptyState('No products available right now. Please check back soon.');
+      return;
+    }
+    grid.innerHTML = products.map(velorraProductCardHTML).join('');
+    velorraReInitCards(grid);
+  } catch (err) {
+    console.error('Failed to load products:', err);
+    grid.innerHTML = velorraEmptyState('Unable to load products. Please refresh the page.');
+  }
+}
+
+/* ── Load & render featured products only (index.html homepage) ── */
+async function velorraRenderFeaturedGrid() {
+  const grid = document.querySelector('#featured .products-grid');
+  if (!grid) return;
+
+  try {
+    const data = await apiGet('/products?featured=true&limit=4');
+    let products = data.products || [];
+    if (!products.length) {
+      /* fall back to first 4 products if nothing is marked featured */
+      const all = await apiGet('/products?limit=4');
+      products = all.products || [];
+    }
+    if (!products.length) {
+      grid.innerHTML = velorraEmptyState('No products available right now.');
+      return;
+    }
+    grid.innerHTML = products.map(velorraProductCardHTML).join('');
+    velorraReInitCards(grid);
+  } catch (err) {
+    console.error('Failed to load featured products:', err);
+    grid.innerHTML = velorraEmptyState('Unable to load products right now.');
+  }
+}
+
+/* ── Auto-run on page load ── */
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('shop-products-grid') || document.querySelector('.filter-bar')) {
+    velorraRenderShopGrid();
+  }
+  if (document.querySelector('#featured .products-grid')) {
+    velorraRenderFeaturedGrid();
+  }
+});

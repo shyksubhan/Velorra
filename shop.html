@@ -54,160 +54,11 @@
       <button class="filter-btn" data-filter="sale">Sale</button>
     </div>
 
-    <div class="products-grid">
-
-      <!-- Sample 1 -->
-      <div class="product-card reveal" data-category="women">
-        <div class="product-img-wrap">
-          <span class="product-badge new">New</span>
-          <div class="product-img-placeholder">
-            <span class="pi-icon">👗</span>
-            <span class="pi-label">Women's Dress</span>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Ivory Silk Maxi Gown',12500,'👗','M — Ivory')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Women · Dresses</p>
-          <h3 class="product-name">Ivory Silk Maxi Gown</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR 12,500</span>
-            <span class="product-price-old">PKR 16,000</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 2 -->
-      <div class="product-card reveal reveal-delay-1" data-category="watches">
-        <div class="product-img-wrap">
-          <span class="product-badge">Bestseller</span>
-          <div class="product-img-placeholder">
-            <span class="pi-icon">⌚</span>
-            <span class="pi-label">Timepiece</span>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Noir Rose Gold Watch',28000,'⌚','Rose Gold')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Unisex · Watches</p>
-          <h3 class="product-name">Noir Rose Gold Timepiece</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR 28,000</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 3 -->
-      <div class="product-card reveal reveal-delay-2" data-category="men">
-        <div class="product-img-wrap">
-          <div class="product-img-placeholder">
-            <span class="pi-icon">🧥</span>
-            <span class="pi-label">Men's Wear</span>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Obsidian Slim Suit',35000,'🧥','M — Charcoal')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Men · Formal</p>
-          <h3 class="product-name">Obsidian Slim Suit</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR 35,000</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 4 -->
-      <div class="product-card reveal reveal-delay-3" data-category="jewellery">
-        <div class="product-img-wrap">
-          <span class="product-badge new">New</span>
-          <div class="product-img-placeholder">
-            <span class="pi-icon">💍</span>
-            <span class="pi-label">Jewellery</span>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Aurora Gold Necklace',8500,'💍','Gold')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Women · Jewellery</p>
-          <h3 class="product-name">Aurora Gold Necklace</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR 8,500</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 5 -->
-      <div class="product-card reveal" data-category="cosmetics">
-        <div class="product-img-wrap">
-          <div class="product-img-placeholder">
-            <span class="pi-icon">💄</span>
-            <span class="pi-label">Cosmetics</span>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Velvet Noir Lip Kit',3500,'💄','Deep Red')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Cosmetics · Lips</p>
-          <h3 class="product-name">Velvet Noir Lip Kit</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR 3,500</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 6 -->
-      <div class="product-card reveal reveal-delay-1" data-category="women">
-        <div class="product-img-wrap">
-          <span class="product-badge">Sale</span>
-          <div class="product-img-placeholder">
-            <span class="pi-icon">👜</span>
-            <span class="pi-label">Handbag</span>
-          </div>
-          <div class="product-actions">
-            <button onclick="addToCart('Champagne Leather Tote',18000,'👜','Champagne')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Women · Bags</p>
-          <h3 class="product-name">Champagne Leather Tote</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR 18,000</span>
-            <span class="product-price-old">PKR 24,000</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ADD YOUR OWN PRODUCTS BELOW THIS LINE ── -->
-      <!--
-      <div class="product-card" data-category="women">
-        <div class="product-img-wrap">
-          <img src="images/your-product.jpg" alt="Product Name" style="width:100%;height:100%;object-fit:cover;">
-          <div class="product-actions">
-            <button onclick="addToCart('Product Name', PRICE_IN_PKR, 'emoji', 'Variant')">Add to Bag</button>
-            <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-          </div>
-        </div>
-        <div class="product-info">
-          <p class="product-category">Category</p>
-          <h3 class="product-name">Product Name</h3>
-          <div class="product-pricing">
-            <span class="product-price">PKR X,XXX</span>
-          </div>
-        </div>
-      </div>
-      -->
-
+    <div class="products-grid" id="shop-products-grid">
+      <!-- Products are loaded dynamically from the backend (see js/products-render.js).
+           This grid intentionally starts empty; it is populated by JavaScript on page load
+           so that products added/edited/deleted in the admin panel show up automatically. -->
+      <p style="grid-column:1/-1;text-align:center;padding:60px 0;opacity:0.5;">Loading products…</p>
     </div>
   </div>
 </section>
@@ -309,7 +160,9 @@
   </button>
 </div>
 
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
+<script src="js/products-render.js"></script>
 <script>
 /* ── Auto-filter from URL ?cat= parameter ── */
 document.addEventListener('DOMContentLoaded', () => {
