@@ -15,7 +15,7 @@ const router = express.Router();
    Render restart/redeploy, so we stream straight to Cloudinary instead) ── */
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 },  /* 25MB max (covers short product videos) */
+  limits: { fileSize: 100 * 1024 * 1024 },  /* 100MB max (covers product videos comfortably) */
   fileFilter: (req, file, cb) => {
     const okImage = file.mimetype.startsWith('image/');
     const okVideo = file.mimetype.startsWith('video/');
@@ -38,7 +38,12 @@ function streamUpload(buffer, resourceType) {
 /* ── POST /api/upload — single file (image or video), admin only ── */
 router.post('/', requireAdmin, (req, res) => {
   upload.single('file')(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: err.message || 'Upload failed.' });
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'File is too large. Maximum allowed size is 100MB.' });
+      }
+      return res.status(400).json({ error: err.message || 'Upload failed.' });
+    }
     if (!req.file) return res.status(400).json({ error: 'No file provided.' });
 
     if (!isCloudinaryAvailable()) {
