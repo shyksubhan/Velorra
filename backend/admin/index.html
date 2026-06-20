@@ -200,6 +200,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <i class="fa-solid fa-envelope"></i><span>Messages</span>
       <span class="nav-badge" id="unread-badge" style="display:none">0</span>
     </div>
+    <div class="nav-item" onclick="showPage('reviews')" id="nav-reviews">
+      <i class="fa-solid fa-star"></i><span>Reviews</span>
+      <span class="nav-badge" id="reviews-badge" style="display:none">0</span>
+    </div>
     <div class="nav-item" onclick="showPage('subscribers')" id="nav-subscribers">
       <i class="fa-solid fa-users"></i><span>Subscribers</span>
     </div>
@@ -299,6 +303,30 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   <div class="table-wrap">
     <table><thead><tr><th>From</th><th>Email</th><th>Subject</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
     <tbody id="messages-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ── REVIEWS ── -->
+<div id="page-reviews" class="page" style="display:none">
+  <div class="page-header">
+    <h1>Reviews</h1>
+    <div class="ml-auto">
+      <button class="btn btn-outline" onclick="loadReviews()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header">
+      <h3>Customer Reviews</h3>
+      <select class="filter-sel" id="reviews-filter" onchange="loadReviews()" style="margin-left:auto;">
+        <option value="all">All Reviews</option>
+        <option value="pending">Pending Approval</option>
+        <option value="approved">Approved</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr><th>Customer</th><th>Order</th><th>Rating</th><th>Review</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="reviews-body"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Loading…</td></tr></tbody>
+    </table>
   </div>
 </div>
 
@@ -803,6 +831,7 @@ function showPage(name) {
   if (name === 'products')  loadProducts();
   if (name === 'messages')  loadMessages();
   if (name === 'subscribers') loadSubscribers();
+  if (name === 'reviews')   loadReviews();
   if (name === 'roles')     loadRoles();
   if (name === 'settings')  loadSystemInfo();
 }
@@ -1635,6 +1664,72 @@ function velorraConfirm({ title = 'Are you sure?', message = 'This action cannot
     cancelBtn.onmouseenter = () => { cancelBtn.style.background = 'rgba(255,255,255,0.1)'; cancelBtn.style.color = '#fff'; };
     cancelBtn.onmouseleave = () => { cancelBtn.style.background = 'rgba(255,255,255,0.05)'; cancelBtn.style.color = '#aaa'; };
   });
+}
+
+/* ═══════════════════ REVIEWS ═══════════════════ */
+async function loadReviews() {
+  const tbody = document.getElementById('reviews-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Loading…</td></tr>';
+  try {
+    const filter = document.getElementById('reviews-filter')?.value || 'all';
+    const res  = await apiFetch('/reviews/all');
+    let reviews = res.reviews || [];
+
+    if (filter === 'pending')  reviews = reviews.filter(r => !r.approved);
+    if (filter === 'approved') reviews = reviews.filter(r =>  r.approved);
+
+    const pendingCount = (res.reviews || []).filter(r => !r.approved).length;
+    const badge = document.getElementById('reviews-badge');
+    if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount ? 'inline-block' : 'none'; }
+
+    if (!reviews.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">No reviews found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = reviews.map(r => `
+      <tr>
+        <td>
+          <div style="font-weight:600;font-size:.85rem">${r.customerName || 'Customer'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.customerEmail || ''}</div>
+          ${r.city ? `<div style="font-size:.72rem;color:var(--muted)">${r.city}</div>` : ''}
+        </td>
+        <td style="font-size:.8rem;color:var(--gold)">${r.orderId || '—'}</td>
+        <td style="font-size:1rem;letter-spacing:1px;color:#c9a84c">${'★'.repeat(r.rating||5)}${'☆'.repeat(5-(r.rating||5))}</td>
+        <td style="font-size:.82rem;max-width:260px;line-height:1.5">${r.text || ''}</td>
+        <td style="font-size:.75rem;color:var(--muted)">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-PK',{dateStyle:'medium'}) : '—'}</td>
+        <td>
+          <span class="badge" style="
+            background:${r.approved ? 'rgba(34,197,94,.15)' : 'rgba(251,191,36,.15)'};
+            color:${r.approved ? 'var(--green)' : '#fbbf24'}">
+            ${r.approved ? 'Approved' : 'Pending'}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            ${!r.approved
+              ? `<button class="btn btn-success" onclick="approveReview('${r.id}',true)"><i class="fa-solid fa-check"></i> Approve</button>`
+              : `<button class="btn btn-outline" onclick="approveReview('${r.id}',false)" style="font-size:.75rem">Hide</button>`
+            }
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Failed to load reviews.</td></tr>';
+  }
+}
+
+async function approveReview(id, approve) {
+  try {
+    const res = await fetch(`${API}/reviews/${id}/approve`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('velorra_admin_token')}` },
+      body: JSON.stringify({ approved: approve }),
+    });
+    if (res.ok) { toast(approve ? 'Review approved — now visible on homepage ✓' : 'Review hidden.', 'success'); loadReviews(); }
+    else toast('Failed to update review.', 'error');
+  } catch { toast('Connection error.', 'error'); }
 }
 </script>
 

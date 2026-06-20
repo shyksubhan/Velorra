@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
       city:          (city || '').trim(),
       customerName:  (customerName || 'Customer').trim(),
       customerEmail: (customerEmail || '').trim().toLowerCase(),
-      approved:      false,   /* Admin must approve before showing on homepage */
+      approved:      false,   /* Requires admin approval before showing on homepage */
       createdAt:     new Date().toISOString(),
     };
 
@@ -96,10 +96,12 @@ router.get('/', async (req, res) => {
     if (isFirebaseAvailable()) {
       const snap = await getDB().collection('reviews')
         .where('approved', '==', true)
-        .orderBy('createdAt', 'desc')
-        .limit(limit)
         .get();
-      return res.json({ reviews: snap.docs.map(d => ({ ...d.data(), id: d.id })) });
+      const reviews = snap.docs
+        .map(d => ({ ...d.data(), id: d.id }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, limit);
+      return res.json({ reviews });
     }
     const reviews = (store.reviews || []).filter(r => r.approved).slice(0, limit);
     return res.json({ reviews });
@@ -112,8 +114,11 @@ router.get('/', async (req, res) => {
 router.get('/all', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
-      const snap = await getDB().collection('reviews').orderBy('createdAt', 'desc').get();
-      return res.json({ reviews: snap.docs.map(d => ({ ...d.data(), id: d.id })) });
+      const snap = await getDB().collection('reviews').get();
+      const reviews = snap.docs
+        .map(d => ({ ...d.data(), id: d.id }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return res.json({ reviews });
     }
     return res.json({ reviews: store.reviews || [] });
   } catch (err) {
@@ -138,6 +143,23 @@ router.patch('/:id/approve', requireAdmin, async (req, res) => {
     return res.json({ message: approved ? 'Review approved and now visible.' : 'Review hidden.' });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update review.' });
+  }
+});
+
+/* ── DELETE /api/reviews/:id — Admin: delete a review ── */
+router.delete('/:id', requireAdmin, async (req, res) => {
+  try {
+    if (isFirebaseAvailable()) {
+      await getDB().collection('reviews').doc(req.params.id).delete();
+    } else {
+      if (!store.reviews) return res.status(404).json({ error: 'Review not found.' });
+      const idx = store.reviews.findIndex(r => r.id === req.params.id);
+      if (idx < 0) return res.status(404).json({ error: 'Review not found.' });
+      store.reviews.splice(idx, 1);
+    }
+    return res.json({ message: 'Review deleted.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to delete review.' });
   }
 });
 
