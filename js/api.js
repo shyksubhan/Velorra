@@ -104,3 +104,13 @@ async function checkBackend() {
     return false;
   }
 }
+
+/* ── Submit a review ── */
+async function apiSubmitReview({ orderId, rating, text, city, customerName, customerEmail }) {
+  return apiPost('/reviews', { orderId, rating, text, city, customerName, customerEmail });
+}
+
+/* ── Get all approved reviews ── */
+async function apiGetReviews() {
+  return apiGet('/reviews');
+}

@@ -79,13 +79,13 @@
       <span class="marquee-item">Gentle On Your Hair<span class="marquee-dot"></span></span>
       <span class="marquee-item">New Arrivals Every Week<span class="marquee-dot"></span></span>
       <span class="marquee-item">Easy Returns &amp; Exchanges<span class="marquee-dot"></span></span>
-      <span class="marquee-item">Exclusive Members Offer — 10% Off<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Exclusive Members Access<span class="marquee-dot"></span></span>
       <span class="marquee-item">Cash on Delivery Available<span class="marquee-dot"></span></span>
       <span class="marquee-item">Free Delivery Over PKR 5,000<span class="marquee-dot"></span></span>
       <span class="marquee-item">Gentle On Your Hair<span class="marquee-dot"></span></span>
       <span class="marquee-item">New Arrivals Every Week<span class="marquee-dot"></span></span>
       <span class="marquee-item">Easy Returns &amp; Exchanges<span class="marquee-dot"></span></span>
-      <span class="marquee-item">Exclusive Members Offer — 10% Off<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Exclusive Members Access<span class="marquee-dot"></span></span>
       <span class="marquee-item">Cash on Delivery Available<span class="marquee-dot"></span></span>
     </div>
   </div>
@@ -192,30 +192,13 @@
       </div>
     </div>
   </section>
-  <!-- TESTIMONIALS -->
+  <!-- REVIEWS (Dynamic — real customer reviews only) -->
   <section id="testimonials">
     <div class="container">
       <p class="section-label" style="text-align:center">What Our Clients Say</p>
       <h2 class="section-title" style="text-align:center;margin-bottom:48px">Voices of <em>Velorra</em></h2>
-      <div class="testimonial-slider">
-        <div class="testimonial-card reveal">
-          <div class="t-stars">★★★★★</div>
-          <p class="t-text">&ldquo;The silk scrunchies are absolutely gorgeous — my hair has never felt better and the colours are so elegant. I've ordered three times already!&rdquo;</p>
-          <div class="t-author">Ayesha M.</div>
-          <div class="t-loc">Lahore, Pakistan</div>
-        </div>
-        <div class="testimonial-card reveal reveal-delay-2">
-          <div class="t-stars">★★★★★</div>
-          <p class="t-text">&ldquo;The pearl catcher clip is my absolute favourite — I get compliments every single day. Beautiful packaging too. Velorra is my go-to now!&rdquo;</p>
-          <div class="t-author">Sana K.</div>
-          <div class="t-loc">Karachi, Pakistan</div>
-        </div>
-        <div class="testimonial-card reveal reveal-delay-3">
-          <div class="t-stars">★★★★★</div>
-          <p class="t-text">&ldquo;Ordered the floral fancy set for my daughter's birthday — she was overjoyed! Fast delivery and the quality is truly premium. Will definitely order again.&rdquo;</p>
-          <div class="t-author">Hina R.</div>
-          <div class="t-loc">Islamabad, Pakistan</div>
-        </div>
+      <div class="testimonial-slider" id="reviews-container">
+        <p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem">Loading reviews…</p>
       </div>
     </div>
   </section>
@@ -225,7 +208,7 @@
       <div class="newsletter-inner reveal">
         <p class="section-label">Stay In The Loop</p>
         <h2 class="section-title">Join the <em>Velorra</em> Circle</h2>
-        <p>Subscribe for exclusive previews, early access to new arrivals, and a <strong>10% welcome discount</strong> on your first order.</p>
+        <p>Subscribe for exclusive previews and early access to new arrivals — be the first to know about new drops.</p>
         <form class="newsletter-form">
           <input type="email" placeholder="Your email address" required />
           <button type="submit" class="btn-primary">Subscribe</button>
@@ -322,5 +305,34 @@
   <script src="js/products-render.js"></script>
   <script src="js/three-hero.js"></script>
   <script src="js/search.js"></script>
+  <script>
+    /* ── Load Real Reviews on Homepage ── */
+    (async function loadReviews() {
+      const container = document.getElementById('reviews-container');
+      if (!container) return;
+      try {
+        const data = await apiGetReviews();
+        const reviews = data.reviews || [];
+        if (!reviews.length) {
+          container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem">No reviews yet — be the first to share your experience!</p>';
+          return;
+        }
+        container.innerHTML = reviews.map((r, i) => `
+          <div class="testimonial-card reveal${i===1?' reveal-delay-2':i===2?' reveal-delay-3':''}">
+            <div class="t-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+            <p class="t-text">&ldquo;${r.text}&rdquo;</p>
+            <div class="t-author">${r.customerName}</div>
+            <div class="t-loc">${r.city ? r.city + ', Pakistan' : 'Pakistan'}</div>
+          </div>`).join('');
+        /* Re-observe new reveal elements */
+        const obs = new IntersectionObserver(entries => {
+          entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+        }, { threshold: 0.12 });
+        container.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+      } catch {
+        container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem">No reviews yet.</p>';
+      }
+    })();
+  </script>
 </body>
 </html>
