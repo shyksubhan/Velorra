@@ -70,58 +70,57 @@ router.post('/register', async (req, res) => {
 });
 
 /* ============================================================
-   GET /api/auth/login — Test route
-   ============================================================ */
-router.get('/login', (req, res) => {
-  res.json({
-    status: 'working'
-  });
-});
-
-/* ============================================================
    POST /api/auth/login
    ============================================================ */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: 'Email and password are required.' });
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
 
     const normalEmail = email.trim().toLowerCase();
 
     /* ── Admin login (checks both admin panel users AND env credentials) ── */
     initSuperAdmin();
     const adminUser = store.findAdminUser(normalEmail);
-
     if (adminUser && adminUser.active) {
       const passMatch = adminUser.passwordHash
         ? await bcrypt.compare(password, adminUser.passwordHash)
-        : password === process.env.ADMIN_PASSWORD;
+        : password === process.env.ADMIN_PASSWORD;     /* fallback for plain text in env */
 
       if (passMatch) {
         adminUser.lastLogin = new Date().toISOString();
-
-        const token = signToken({
-          uid: adminUser.id,
-          email: adminUser.username,
-          isAdmin: true,
-          role: adminUser.role
-        });
-
+        const token = signToken({ uid: adminUser.id, email: adminUser.username, isAdmin: true, role: adminUser.role });
         return res.json({
           message: `Welcome, ${adminUser.fname}! ✓`,
           token,
-          user: {
-            id: adminUser.id,
-            fname: adminUser.fname,
-            lname: adminUser.lname,
-            email: adminUser.username,
-            isAdmin: true,
-            role: adminUser.role
-          }
+          user: { id: adminUser.id, fname: adminUser.fname, lname: adminUser.lname, email: adminUser.username, isAdmin: true, role: adminUser.role },
         });
       }
     }
+
+    /* ── Customer login ── */
+    if (isFirebaseAvailable()) {
+      const db = getDB();
+      const snap = await db.collection('users').where('email', '==', normalEmail).limit(1).get();
+      if (snap.empty) return res.status(401).json({ error: 'No account found with this email.' });
+      const u = snap.docs[0].data();
+      if (!await bcrypt.compare(password, u.passwordHash)) return res.status(401).json({ error: 'Incorrect password.' });
+      const token = signToken({ uid: u.id, email: normalEmail, isAdmin: false });
+      return res.json({ message: `Welcome back, ${u.fname}! ✓`, token, user: { id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone } });
+    }
+
+    const u = store.findUser(normalEmail);
+    if (!u) return res.status(401).json({ error: 'No account found with this email.' });
+    if (!await bcrypt.compare(password, u.passwordHash)) return res.status(401).json({ error: 'Incorrect password.' });
+    const token = signToken({ uid: u.id, email: normalEmail, isAdmin: false });
+    return res.json({ message: `Welcome back, ${u.fname}! ✓`, token, user: { id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone } });
+
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
 /* ============================================================
    GET /api/auth/me
    ============================================================ */
