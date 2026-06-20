@@ -196,20 +196,20 @@
       const list = document.getElementById('order-history-list');
       if (!wrap || !list) return;
       wrap.style.display = 'block';
-      list.innerHTML = '<p style="color:var(--muted);font-size:.8rem">Loading orders…</p>';
+      list.innerHTML = '<p style="color:var(--muted);font-size:.8rem">Loading your orders…</p>';
       try {
-        const user = getCurrentUser();
         const data = await apiGetUserOrders(email);
         const orders = data.orders || [];
 
         if (!orders.length) {
-          /* Show helpful message — explain guest checkout issue */
           list.innerHTML = `
-            <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">No orders found for <strong style="color:var(--gold)">${email}</strong>.</p>
-            <p style="color:var(--muted);font-size:.76rem;line-height:1.6;background:rgba(201,168,76,0.06);border:1px solid var(--border);border-radius:8px;padding:12px;">
-              ⚠️ Agar aapne order karte waqt alag email use ki thi, toh orders wahan dikhenge.<br><br>
-              Order track karne ke liye <a href="policy.html?page=track" style="color:var(--gold)">Track Order →</a> use karein.
-            </p>`;
+            <div style="background:rgba(201,168,76,0.06);border:1px solid var(--border);border-radius:8px;padding:16px;">
+              <p style="color:var(--text);font-size:.82rem;margin:0 0 8px;font-weight:600;">No orders found</p>
+              <p style="color:var(--muted);font-size:.76rem;line-height:1.7;margin:0 0 10px;">
+                If you placed an order using a different email address, your orders will be linked to that email.
+              </p>
+              <a href="policy.html?page=track" style="color:var(--gold);font-size:.76rem;">Track your order by reference number →</a>
+            </div>`;
           return;
         }
 
@@ -236,7 +236,12 @@
             </div>
           </div>`).join('');
       } catch(err) {
-        list.innerHTML = '<p style="color:var(--muted);font-size:.8rem">Orders load nahi ho sake. Internet check karein aur dobara try karein.</p>';
+        list.innerHTML = `
+          <div style="background:rgba(201,168,76,0.06);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <p style="color:var(--text);font-size:.82rem;margin:0 0 8px;font-weight:600;">Could not load orders</p>
+            <p style="color:var(--muted);font-size:.76rem;line-height:1.7;margin:0 0 10px;">Please check your connection and try refreshing the page.</p>
+            <a href="policy.html?page=track" style="color:var(--gold);font-size:.76rem;">Track your order by reference number →</a>
+          </div>`;
       }
     }
 

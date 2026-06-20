@@ -97,14 +97,21 @@ router.get('/user/:email', async (req, res) => {
   try {
     const email = req.params.email.toLowerCase();
     if (isFirebaseAvailable()) {
+      /* Note: no orderBy here to avoid requiring a composite index in Firebase */
       const snap = await getDB().collection('orders')
         .where('delivery.email', '==', email)
-        .orderBy('createdAt', 'desc').get();
-      return res.json({ orders: snap.docs.map(d => ({ ...d.data(), id: d.id })) });
+        .get();
+      const orders = snap.docs
+        .map(d => ({ ...d.data(), id: d.id }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return res.json({ orders });
     }
-    const orders = store.orders.filter(o => o.delivery?.email?.toLowerCase() === email);
+    const orders = store.orders
+      .filter(o => o.delivery?.email?.toLowerCase() === email)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return res.json({ orders, total: orders.length });
   } catch (err) {
+    console.error('Get user orders error:', err);
     return res.status(500).json({ error: 'Failed to fetch orders.' });
   }
 });
