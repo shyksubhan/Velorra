@@ -302,6 +302,50 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
+<!-- ── SUBSCRIBERS ── -->
+<div id="page-subscribers" class="page" style="display:none">
+  <div class="page-header">
+    <h1>Subscribers</h1>
+    <div class="ml-auto">
+      <button class="btn btn-outline" onclick="loadSubscribers()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <button class="btn btn-outline" onclick="exportExcel('subscribers')"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Email</th><th>Subscribed On</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="subscribers-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ── USERS & ROLES ── -->
+<div id="page-roles" class="page" style="display:none">
+  <div class="page-header">
+    <h1>Users &amp; Roles</h1>
+    <div class="ml-auto">
+      <button class="btn btn-outline" id="activity-btn" onclick="loadStaffActivity()"><i class="fa-solid fa-chart-bar"></i> Staff Activity</button>
+      <button class="btn btn-gold" onclick="openRoleModal()"><i class="fa-solid fa-user-plus"></i> Add User</button>
+    </div>
+  </div>
+
+  <!-- Restricted notice (shown to non-super-admins) -->
+  <div id="roles-restricted" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:80px 20px;text-align:center;">
+    <i class="fa-solid fa-lock" style="font-size:2.2rem;color:var(--muted);"></i>
+    <p style="color:var(--muted);font-size:0.9rem;max-width:360px;">Only the Super Admin can manage users and roles. Contact your administrator if you need access.</p>
+  </div>
+
+  <!-- Staff activity (collapsible) -->
+  <div id="staff-activity-wrap" class="table-wrap" style="display:none;margin-bottom:24px;">
+    <table><thead><tr><th>Name</th><th>Role</th><th>Replies</th><th>Orders Updated</th><th>Last Active</th><th>Status</th></tr></thead>
+    <tbody id="activity-body"></tbody></table>
+  </div>
+
+  <!-- Users table -->
+  <div id="roles-table-wrap" class="table-wrap" style="display:none">
+    <table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="roles-body"></tbody></table>
+  </div>
+</div>
+
 <!-- ── SETTINGS ── -->
 <div id="page-settings" class="page" style="display:none">
   <div class="page-header"><h1>Settings</h1></div>
@@ -469,6 +513,27 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('role-modal')">Cancel</button>
       <button class="btn btn-gold" onclick="saveAdminUser()"><i class="fa-solid fa-check"></i> Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reply To Message Modal -->
+<div class="modal-overlay" id="reply-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Reply To Message</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('reply-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="reply-message-id"/>
+      <div class="form-group">
+        <label>Your Reply</label>
+        <textarea id="reply-text" rows="5" placeholder="Type your reply to this message…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('reply-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="submitReply()"><i class="fa-solid fa-paper-plane"></i> Send Reply</button>
     </div>
   </div>
 </div>
@@ -1294,14 +1359,24 @@ async function loadStaffActivity() {
 }
 
 /* ═══════════════════ MESSAGE REPLY ═══════════════════ */
-async function replyToMessage(id) {
-  const replyText = prompt('Type your reply to this message:');
-  if (!replyText?.trim()) return;
+function replyToMessage(id) {
+  document.getElementById('reply-message-id').value = id;
+  document.getElementById('reply-text').value = '';
+  openModal('reply-modal');
+}
+
+async function submitReply() {
+  const id = document.getElementById('reply-message-id').value;
+  const replyText = document.getElementById('reply-text').value.trim();
+  if (!replyText) { toast('Please write a reply before sending.', 'error'); return; }
   try {
     const res  = await apiFetch(`/contact/${id}/reply`, { method: 'POST', body: JSON.stringify({ replyText }) });
     const data = await res.json();
-    if (res.ok) { toast('Reply recorded. ✓', 'success'); loadMessages(); }
-    else toast(data.error || 'Reply failed.', 'error');
+    if (res.ok) {
+      toast('Reply recorded. ✓', 'success');
+      closeModal('reply-modal');
+      loadMessages();
+    } else toast(data.error || 'Reply failed.', 'error');
   } catch { toast('Reply failed.', 'error'); }
 }
 
