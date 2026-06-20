@@ -175,25 +175,26 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ============================================================
    AI CHATBOT
    ============================================================ */
-const chatResponses = {
-  greeting: ['Hello! Welcome to Velorra. How can I assist you today?', 'Hi there! I\'m your personal Velorra style assistant. Ask me anything!'],
-  shipping:  ['We offer free shipping on orders over PKR 5,000. Standard delivery is 3–5 business days across Pakistan.'],
-  returns:   ['Velorra offers a 14-day return policy. Items must be unworn with original tags. Visit our Returns page for details.'],
-  sizes:     ['We carry sizes XS–XXL for clothing. Each product page has a detailed size guide. Need help finding your size?'],
-  payment:   ['We accept Cash on Delivery, Easypaisa, JazzCash, bank transfer, and all major credit/debit cards.'],
-  discount:  ['Subscribe to our newsletter for 10% off your first order! We also run seasonal sales.'],
-  default:   ['That\'s a great question! Let me connect you with our team. You can also email us at hello@velorra.com.', 'I\'d love to help! For specific queries, reach us on Instagram @velorra or WhatsApp +92 XXX XXXXXXX.']
-};
+/* ============================================================
+   VELORRA — AI Chatbot (Real Claude AI)
+   ============================================================ */
+const chatHistory = [];
 
-function getBotResponse(msg) {
-  const m = msg.toLowerCase();
-  if (/hi|hello|hey|salam/.test(m))   return chatResponses.greeting[Math.floor(Math.random()*2)];
-  if (/ship|deliver|dispatch/.test(m)) return chatResponses.shipping[0];
-  if (/return|refund|exchange/.test(m))return chatResponses.returns[0];
-  if (/size|fit|measure/.test(m))      return chatResponses.sizes[0];
-  if (/pay|payment|cod|jazz|easy/.test(m)) return chatResponses.payment[0];
-  if (/discount|sale|offer|promo/.test(m)) return chatResponses.discount[0];
-  return chatResponses.default[Math.floor(Math.random()*2)];
+async function getAIResponse(userMsg) {
+  chatHistory.push({ role: 'user', content: userMsg });
+  try {
+    const res  = await fetch('https://velorra-vvp3.onrender.com/api/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ messages: chatHistory }),
+    });
+    const data = await res.json();
+    const reply = data.reply || "I'm having a small issue right now. Please try WhatsApp for immediate help.";
+    chatHistory.push({ role: 'assistant', content: reply });
+    return reply;
+  } catch (err) {
+    return "I'm having a small technical issue right now 🙏 Please try again in a moment, or reach us directly on WhatsApp for immediate help.";
+  }
 }
 
 function toggleChat() {
@@ -201,7 +202,7 @@ function toggleChat() {
   win?.classList.toggle('active');
 }
 
-function sendChat() {
+async function sendChat() {
   const input = document.getElementById('chat-input');
   const msgs  = document.getElementById('chat-messages');
   if (!input || !msgs || !input.value.trim()) return;
@@ -213,11 +214,10 @@ function sendChat() {
   msgs.innerHTML += `<div class="msg bot typing" id="typing-ind"><span></span><span></span><span></span></div>`;
   msgs.scrollTop = msgs.scrollHeight;
 
-  setTimeout(() => {
-    document.getElementById('typing-ind')?.remove();
-    msgs.innerHTML += `<div class="msg bot">${getBotResponse(userMsg)}</div>`;
-    msgs.scrollTop = msgs.scrollHeight;
-  }, 900 + Math.random() * 400);
+  const reply = await getAIResponse(userMsg);
+  document.getElementById('typing-ind')?.remove();
+  msgs.innerHTML += `<div class="msg bot">${reply}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 document.addEventListener('DOMContentLoaded', () => {

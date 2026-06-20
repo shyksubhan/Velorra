@@ -7,23 +7,23 @@ const VELORRA_CONFIG = {
      Format: country code + number, no spaces, no +
      Example: Pakistan 0300-1234567 → '923001234567'          */
   whatsapp: {
-    number:  '923000000000',          // ← REPLACE with your number
+    number:  '923314978295',          // ← REPLACE with your number
     message: 'Hi! I found you on Velorra and I have a question.',
   },
   /* ── Social Media ──
      Replace these URLs with your actual profile links         */
   social: {
-    instagram: 'https://www.instagram.com/velorra',   // ← your Instagram URL
-    facebook:  'https://www.facebook.com/velorra',    // ← your Facebook URL
+    instagram: 'https://www.instagram.com/shyk._.subhan/',   // ← your Instagram URL
+    facebook:  'https://www.facebook.com/subhan.imran.5623',    // ← your Facebook URL
     whatsapp:  '',                                    // auto-built from number above
     tiktok:    '',                                    // optional — leave blank to hide
   },
   /* ── Contact ── */
   contact: {
-    email:    'hello@velorra.com',
-    phone:    '+92 300 000 0000',
+    email:    'isubhan3755@gmail.com',
+    phone:    '+92 331 4978295',
     location: 'Lahore, Punjab, Pakistan',
-    hours:    'Monday – Saturday: 10:00am – 7:00pm',
+    hours:    'Monday – Saturday',
   },
 };
 /* Auto-build WhatsApp URL */
