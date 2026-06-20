@@ -1673,7 +1673,14 @@ async function loadReviews() {
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Loading…</td></tr>';
   try {
     const filter = document.getElementById('reviews-filter')?.value || 'all';
-    const res  = await apiFetch('/reviews/all');
+    const raw = await apiFetch('/reviews/all');
+    const res = await raw.json();
+
+    if (!raw.ok) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">${res.error || 'Could not load reviews (status ' + raw.status + ').'}</td></tr>`;
+      return;
+    }
+
     let reviews = res.reviews || [];
 
     if (filter === 'pending')  reviews = reviews.filter(r => !r.approved);

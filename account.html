@@ -98,6 +98,12 @@
           <h2 class="ck-panel-title" style="text-align:center">Hello, <em id="acc-name-disp">there</em></h2>
           <div class="gold-rule" style="margin:16px auto 28px"></div>
         </div>
+        <!-- ORDER HISTORY — shown above quick links -->
+        <div id="order-history-wrap" style="margin-bottom:24px;display:none">
+          <p class="section-label" style="margin-bottom:12px">Your Orders</p>
+          <div id="order-history-list"><p style="color:var(--muted);font-size:.8rem">Loading orders…</p></div>
+          <div class="gold-rule" style="margin-top:20px"></div>
+        </div>
         <div class="account-dashboard">
           <a href="shop.html" class="acc-dash-card">
             <span>&#128717;</span>
@@ -119,12 +125,6 @@
             <strong>Support</strong>
             <span>Get help</span>
           </a>
-        </div>
-        <!-- ORDER HISTORY (shown when logged in) -->
-        <div id="order-history-wrap" style="margin-top:24px;display:none">
-          <div class="gold-rule" style="margin-bottom:20px"></div>
-          <p class="section-label" style="margin-bottom:12px">Your Orders</p>
-          <div id="order-history-list"><p style="color:var(--muted);font-size:.8rem">Loading orders…</p></div>
         </div>
         <button onclick="signOut()" class="btn-outline" style="width:100%;margin-top:24px;text-align:center;padding:14px">Sign Out</button>
       </div>
@@ -293,12 +293,14 @@
         if (result.ok) {
           showToast('Thank you for your review! ✓');
           closeReviewModal();
+        } else if (result.status === 409) {
+          showToast('You\'ve already reviewed this order.');
         } else {
           showToast(result.data?.error || 'Could not submit. Please try again.');
         }
-      } catch {
-        showToast('Review submitted! ✓');
-        closeReviewModal();
+      } catch (err) {
+        console.error('Review submit failed:', err);
+        showToast('Connection error — please check your internet and try again.');
       } finally {
         btn.disabled = false; btn.textContent = 'Submit Review';
       }

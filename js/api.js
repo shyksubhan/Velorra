@@ -33,7 +33,13 @@ async function apiPost(endpoint, data, requireAuth = false) {
     headers: apiHeaders(requireAuth),
     body: JSON.stringify(data),
   });
-  return { ok: res.ok, status: res.status, data: await res.json() };
+  let body;
+  try {
+    body = await res.json();
+  } catch {
+    body = { error: 'Server returned an unexpected response. Please try again.' };
+  }
+  return { ok: res.ok, status: res.status, data: body };
 }
 
 /* ── Generic PATCH ── */
