@@ -37,6 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
     return subtotal >= 5000 ? 0 : 200;
   };
   renderSummary();
+
+  /* ── Auto-fill delivery form if user is logged in ── */
+  const loggedInUser = getCurrentUser();
+  if (loggedInUser) {
+    const f = document.getElementById('delivery-form');
+    if (f) {
+      const set = (name, val) => { const el = f.querySelector(`[name="${name}"]`); if (el && val) el.value = val; };
+      set('fname', loggedInUser.fname);
+      set('lname', loggedInUser.lname);
+      set('email', loggedInUser.email);
+      set('phone', loggedInUser.phone);
+    }
+  }
+
   /* Update fee when delivery option changes */
   document.querySelectorAll('input[name="delivery"]').forEach(r =>
     r.addEventListener('change', renderSummary)
