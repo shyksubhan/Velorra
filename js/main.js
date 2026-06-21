@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ).join('');
   }
   /* ── Update account icon if logged in ── */
-  const user = JSON.parse(localStorage.getItem('velorra_user') || 'null');
+  const user = JSON.parse(localStorage.getItem('bkt_user') || 'null');
   if (user) {
     document.querySelectorAll('a[href="account.html"]').forEach(el => {
       el.setAttribute('title', `Hi, ${user.fname}`);

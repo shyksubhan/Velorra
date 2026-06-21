@@ -3,34 +3,35 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Velorra Admin Panel</title>
+<title>BKT Jewelry Admin Panel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
 <!-- SheetJS for Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
-  --bg:#0a0a0a; --card:#111; --card2:#161616; --border:#222;
-  --gold:#c9a84c; --gold2:#e8c97a; --text:#f0f0f0; --muted:#888;
+  --bg:#faf7f2; --card:#ffffff; --card2:#f5f0e8; --border:#e8d5b0;
+  --gold:#b8883a; --gold2:#d4a855; --text:#2c1f14; --muted:#9a8070;
   --green:#22c55e; --red:#ef4444; --blue:#3b82f6; --orange:#f59e0b;
   --sidebar:240px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;display:flex;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:'Lato','Segoe UI',sans-serif;display:flex;min-height:100vh;}
 
 /* ── Login Screen ── */
 #login-screen{
   position:fixed;inset:0;z-index:9999;
-  background:linear-gradient(135deg,#0a0a0a 60%,#111);
+  background:linear-gradient(135deg,#f5ede0 60%,#faf7f2);
   display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;
 }
 #login-screen.hidden{display:none!important;}
-.login-box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px 40px;}
-.login-box h1{font-size:1.6rem;margin-bottom:4px;}
+.login-box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px 40px;box-shadow:0 8px 48px rgba(184,136,58,0.12);}
+.login-box h1{font-size:1.6rem;margin-bottom:4px;color:var(--text);}
 .login-box h1 span{color:var(--gold);}
 .login-box p{color:var(--muted);font-size:0.85rem;margin-bottom:32px;}
-.login-box input{width:100%;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-size:0.9rem;margin-bottom:14px;outline:none;transition:border .2s;}
+.login-box input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-size:0.9rem;margin-bottom:14px;outline:none;transition:border .2s;}
 .login-box input:focus{border-color:var(--gold);}
-.login-box button{width:100%;background:var(--gold);color:#000;font-weight:700;border:none;border-radius:8px;padding:14px;cursor:pointer;font-size:1rem;transition:opacity .2s;}
+.login-box button{width:100%;background:var(--gold);color:#fff;font-weight:700;border:none;border-radius:8px;padding:14px;cursor:pointer;font-size:1rem;transition:opacity .2s;}
 .login-box button:hover{opacity:.85;}
 .login-error{color:var(--red);font-size:0.82rem;margin-top:-8px;margin-bottom:8px;display:none;}
 
@@ -40,13 +41,13 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
   display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;
 }
 .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);}
-.sidebar-logo span{font-size:1.4rem;font-weight:700;letter-spacing:-0.5px;}
+.sidebar-logo span{font-size:1.4rem;font-weight:700;letter-spacing:-0.5px;color:var(--text);}
 .sidebar-logo span em{color:var(--gold);font-style:normal;}
 .sidebar-logo small{display:block;color:var(--muted);font-size:0.72rem;margin-top:2px;}
 .sidebar-nav{flex:1;padding:16px 0;overflow-y:auto;}
 .nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;color:var(--muted);cursor:pointer;font-size:0.88rem;transition:all .15s;border-left:3px solid transparent;user-select:none;}
-.nav-item:hover{color:var(--text);background:rgba(201,168,76,.06);}
-.nav-item.active{color:var(--gold);background:rgba(201,168,76,.08);border-left-color:var(--gold);}
+.nav-item:hover{color:var(--text);background:rgba(184,136,58,0.06);}
+.nav-item.active{color:var(--gold);background:rgba(184,136,58,0.08);border-left-color:var(--gold);}
 .nav-item i{width:18px;text-align:center;}
 .nav-badge{background:var(--red);color:#fff;border-radius:10px;font-size:0.65rem;padding:1px 6px;margin-left:auto;}
 .sidebar-footer{padding:16px 24px;border-top:1px solid var(--border);}
@@ -98,7 +99,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .badge-delivered{background:rgba(34,197,94,.15);color:var(--green);}
 .badge-cancelled{background:rgba(239,68,68,.15);color:var(--red);}
 .badge-new      {background:rgba(239,68,68,.15);color:var(--red);}
-.badge-role-super_admin{background:rgba(201,168,76,.2);color:var(--gold);}
+.badge-role-super_admin{background:rgba(184,136,58,.2);color:var(--gold);}
 .badge-role-admin{background:rgba(59,130,246,.15);color:var(--blue);}
 .badge-role-supervisor{background:rgba(34,197,94,.15);color:var(--green);}
 
@@ -182,7 +183,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <!-- ═══════════════════════════════════════════ SIDEBAR ════════ -->
 <div id="sidebar">
   <div class="sidebar-logo">
-    <span>Vel<em>orra</em></span>
+    <span>BKT <em>Jewelry</em></span>
     <small>Admin Panel v2.0</small>
   </div>
   <nav class="sidebar-nav">
@@ -572,7 +573,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <!-- ════════════════════════════ JAVASCRIPT ═════════════════════ -->
 <script>
 const API = 'https://velorra-vvp3.onrender.com/api';
-let adminToken  = localStorage.getItem('velorra_admin_token') || null;
+let adminToken  = localStorage.getItem('bkt_admin_token') || null;
 let currentUser = null;
 let notifications = [];
 let sseSource    = null;
@@ -655,7 +656,7 @@ async function doLogin() {
 
     adminToken  = data.token;
     currentUser = data.user;
-    localStorage.setItem('velorra_admin_token', adminToken);
+    localStorage.setItem('bkt_admin_token', adminToken);
 
     /* ← THE FIX: hide login screen BEFORE calling initDashboard */
     hideLogin();
@@ -727,7 +728,7 @@ function logout() {
 function clearSession() {
   adminToken  = null;
   currentUser = null;
-  localStorage.removeItem('velorra_admin_token');
+  localStorage.removeItem('bkt_admin_token');
   if (sseSource) { sseSource.close(); sseSource = null; }
 }
 
@@ -1099,7 +1100,7 @@ function renderEmojiPicker(category, selectedEmoji) {
     <div onclick="selectEmoji('${e}')" title="${e}" style="
       width:40px;height:40px;display:flex;align-items:center;justify-content:center;
       font-size:1.4rem;cursor:pointer;border-radius:8px;border:2px solid ${e===current?'var(--gold)':'var(--border)'};
-      background:${e===current?'rgba(201,168,76,0.15)':'var(--bg)'};
+      background:${e===current?'rgba(184,136,58,0.15)':'var(--bg)'};
       transition:all .2s;">${e}</div>`).join('');
 }
 
@@ -1182,7 +1183,7 @@ async function saveProduct() {
 }
 
 async function deleteProduct(id) {
-  const ok = await velorraConfirm({ title: 'Delete Product?', message: 'This product will be permanently removed. This cannot be undone.', confirmText: 'Delete Product', icon: '🗑️' });
+  const ok = await bktConfirm({ title: 'Delete Product?', message: 'This product will be permanently removed. This cannot be undone.', confirmText: 'Delete Product', icon: '🗑️' });
   if (!ok) return;
   try {
     const res = await apiFetch(`/products/${id}`, { method: 'DELETE' });
@@ -1208,7 +1209,7 @@ function renderMessages(messages) {
   const tbody = document.getElementById('messages-body');
   if (!messages.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-envelope-open"></i><p>No messages yet</p></div></td></tr>`; return; }
   tbody.innerHTML = messages.map(m => `
-    <tr style="${m.read ? '' : 'background:rgba(201,168,76,.04)'}">
+    <tr style="${m.read ? '' : 'background:rgba(184,136,58,.04)'}">
       <td><strong>${m.name}</strong>${!m.read ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
       <td><a href="mailto:${m.email}" style="color:var(--gold)">${m.email}</a></td>
       <td>${m.subject || '—'}</td>
@@ -1234,7 +1235,7 @@ function viewMessage(id) {
       <div><small style="color:var(--muted)">Date</small><p>${new Date(m.createdAt).toLocaleString()}</p></div>
     </div>
     <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap">${m.message}</div>
-    <div style="margin-top:16px"><a href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject||'Your enquiry at Velorra')}" class="btn btn-gold"><i class="fa-solid fa-reply"></i> Reply via Email</a></div>
+    <div style="margin-top:16px"><a href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject||'Your enquiry at BKT Jewelry')}" class="btn btn-gold"><i class="fa-solid fa-reply"></i> Reply via Email</a></div>
   `;
   openModal('message-modal');
   if (!m.read) markRead(id);
@@ -1247,7 +1248,7 @@ async function markRead(id) {
 }
 
 async function deleteMessage(id) {
-  const ok = await velorraConfirm({ title: 'Delete Message?', message: 'This message will be permanently deleted.', confirmText: 'Delete Message', icon: '✉️' });
+  const ok = await bktConfirm({ title: 'Delete Message?', message: 'This message will be permanently deleted.', confirmText: 'Delete Message', icon: '✉️' });
   if (!ok) return;
   const res = await apiFetch(`/contact/${id}`, { method: 'DELETE' });
   if (res.ok) { allMessages = allMessages.filter(m => m.id !== id); renderMessages(allMessages); toast('Message deleted.', 'success'); }
@@ -1280,7 +1281,7 @@ function renderSubscribers(subs) {
 }
 
 async function removeSubscriber(id) {
-  const ok = await velorraConfirm({ title: 'Remove Subscriber?', message: 'This subscriber will be removed from the newsletter list.', confirmText: 'Remove', icon: '📧' });
+  const ok = await bktConfirm({ title: 'Remove Subscriber?', message: 'This subscriber will be removed from the newsletter list.', confirmText: 'Remove', icon: '📧' });
   if (!ok) return;
   const res = await apiFetch(`/newsletter/${id}`, { method: 'DELETE' });
   if (res.ok) { allSubscribers = allSubscribers.filter(s => s.id !== id); renderSubscribers(allSubscribers); toast('Subscriber removed.', 'success'); }
@@ -1350,7 +1351,7 @@ async function toggleUserStatus(id, active) {
 }
 
 async function deleteAdminUser(id) {
-  const ok = await velorraConfirm({ title: 'Delete Admin User?', message: 'This user will lose access immediately. This cannot be undone.', confirmText: 'Delete User', icon: '👤' });
+  const ok = await bktConfirm({ title: 'Delete Admin User?', message: 'This user will lose access immediately. This cannot be undone.', confirmText: 'Delete User', icon: '👤' });
   if (!ok) return;
   const res = await apiFetch(`/auth/admin-users/${id}`, { method: 'DELETE' });
   if (res.ok) { toast('User deleted.', 'success'); loadRoles(); }
@@ -1461,12 +1462,12 @@ async function exportExcel(type) {
 
     if (type === 'subscribers') {
       rows = allSubscribers.length ? allSubscribers : (await (await apiFetch('/newsletter')).json()).subscribers || [];
-      filename  = `Velorra_Subscribers_${today()}.xlsx`;
+      filename  = `BKT_Subscribers_${today()}.xlsx`;
       sheetName = 'Subscribers';
       rows = rows.map((s, i) => ({ '#': i+1, Email: s.email, 'Subscribed At': fmtDate(s.subscribedAt), Status: 'Active' }));
     } else if (type === 'orders') {
       rows = allOrders.length ? allOrders : (await (await apiFetch('/orders')).json()).orders || [];
-      filename  = `Velorra_Orders_${today()}.xlsx`;
+      filename  = `BKT_Orders_${today()}.xlsx`;
       sheetName = 'Orders';
       rows = rows.map(o => ({
         'Order Ref':    o.id,
@@ -1561,17 +1562,17 @@ function today() {
   transition:all .25s ease;">
   <div id="velorra-confirm-box" style="
     background:linear-gradient(145deg,#1a1a1a,#111);
-    border:1px solid rgba(201,168,76,0.3);
+    border:1px solid rgba(184,136,58,0.3);
     border-radius:20px;
     padding:0;
     width:100%;max-width:400px;
     margin:20px;
-    box-shadow:0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.1);
+    box-shadow:0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(184,136,58,0.1);
     transform:scale(0.85) translateY(20px);
     transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
     overflow:hidden;">
     <!-- Top accent bar -->
-    <div style="height:3px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);"></div>
+    <div style="height:3px;background:linear-gradient(90deg,transparent,#b8883a,transparent);"></div>
     <!-- Icon + Content -->
     <div style="padding:32px 32px 24px;text-align:center;">
       <div id="velorra-confirm-icon" style="
@@ -1610,7 +1611,7 @@ function today() {
 
 <script>
 /* ── Custom Confirm Dialog ── */
-function velorraConfirm({ title = 'Are you sure?', message = 'This action cannot be undone.', confirmText = 'Delete', icon = '🗑️', danger = true } = {}) {
+function bktConfirm({ title = 'Are you sure?', message = 'This action cannot be undone.', confirmText = 'Delete', icon = '🗑️', danger = true } = {}) {
   return new Promise(resolve => {
     const overlay = document.getElementById('velorra-confirm-overlay');
     const box     = document.getElementById('velorra-confirm-box');
@@ -1629,10 +1630,10 @@ function velorraConfirm({ title = 'Are you sure?', message = 'This action cannot
       document.getElementById('velorra-confirm-icon').style.background = 'rgba(217,106,106,0.12)';
       document.getElementById('velorra-confirm-icon').style.border = '1px solid rgba(217,106,106,0.25)';
     } else {
-      okBtn.style.background = 'linear-gradient(135deg,#c9a84c,#a8873c)';
-      okBtn.style.boxShadow  = '0 4px 20px rgba(201,168,76,0.3)';
-      document.getElementById('velorra-confirm-icon').style.background = 'rgba(201,168,76,0.12)';
-      document.getElementById('velorra-confirm-icon').style.border = '1px solid rgba(201,168,76,0.25)';
+      okBtn.style.background = 'linear-gradient(135deg,#b8883a,#a8873c)';
+      okBtn.style.boxShadow  = '0 4px 20px rgba(184,136,58,0.3)';
+      document.getElementById('velorra-confirm-icon').style.background = 'rgba(184,136,58,0.12)';
+      document.getElementById('velorra-confirm-icon').style.border = '1px solid rgba(184,136,58,0.25)';
     }
 
     /* Show */
@@ -1707,7 +1708,7 @@ async function loadReviews() {
           ${r.city ? `<div style="font-size:.72rem;color:var(--muted)">${r.city}</div>` : ''}
         </td>
         <td style="font-size:.8rem;color:var(--gold)">${r.orderId || '—'}</td>
-        <td style="font-size:1rem;letter-spacing:1px;color:#c9a84c">${'★'.repeat(r.rating||5)}${'☆'.repeat(5-(r.rating||5))}</td>
+        <td style="font-size:1rem;letter-spacing:1px;color:#b8883a">${'★'.repeat(r.rating||5)}${'☆'.repeat(5-(r.rating||5))}</td>
         <td style="font-size:.82rem;max-width:260px;line-height:1.5">${r.text || ''}</td>
         <td style="font-size:.75rem;color:var(--muted)">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-PK',{dateStyle:'medium'}) : '—'}</td>
         <td>
@@ -1735,7 +1736,7 @@ async function approveReview(id, approve) {
   try {
     const res = await fetch(`${API}/reviews/${id}/approve`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('velorra_admin_token')}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('bkt_admin_token')}` },
       body: JSON.stringify({ approved: approve }),
     });
     if (res.ok) { toast(approve ? 'Review approved — now visible on homepage ✓' : 'Review hidden.', 'success'); loadReviews(); }

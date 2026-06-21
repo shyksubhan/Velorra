@@ -77,19 +77,19 @@ async function apiLogin({ email, password }) {
 /* ── Save auth session ── */
 function saveSession(token, user) {
   localStorage.setItem('velorra_token', token);
-  localStorage.setItem('velorra_user', JSON.stringify(user));
+  localStorage.setItem('bkt_user', JSON.stringify(user));
 }
 
 /* ── Clear auth session ── */
 function clearSession() {
   localStorage.removeItem('velorra_token');
-  localStorage.removeItem('velorra_user');
+  localStorage.removeItem('bkt_user');
 }
 
 /* ── Get current user from localStorage ── */
 function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem('velorra_user') || 'null');
+    return JSON.parse(localStorage.getItem('bkt_user') || 'null');
   } catch { return null; }
 }
 

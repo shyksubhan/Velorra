@@ -1,5 +1,5 @@
 /* ============================================================
-   VELORRA — Extended Page Styles
+   BKT Jewelry — Extended Page Styles
    (checkout, account, search, policy, whatsapp, etc.)
    ============================================================ */
 /* ── Search Overlay ── */
@@ -23,7 +23,7 @@
 .search-icon-big { font-size: 1.4rem; color: var(--gold); }
 #search-input {
   flex: 1; background: none; border: none; outline: none;
-  color: var(--white); font-family: var(--font-display);
+  color: var(--text); font-family: var(--font-display);
   font-size: clamp(1.4rem, 4vw, 2rem);
   font-weight: 300; letter-spacing: 0.05em;
 }
@@ -40,7 +40,7 @@
   border: 1px solid transparent;
   transition: border-color 0.2s, background 0.2s;
 }
-.search-result-item:hover { border-color: var(--border); background: var(--deep); }
+.search-result-item:hover { border-color: var(--border); background: var(--bg-deep); }
 .sr-icon { font-size: 1.2rem; width: 28px; text-align: center; }
 .sr-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .sr-title { font-family: var(--font-display); font-size: 1rem; }
@@ -109,7 +109,7 @@
 .ck-lbl { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
 .ck-step.active .ck-num   { background: var(--gold); color: var(--black); border-color: var(--gold); }
 .ck-step.active .ck-lbl   { color: var(--gold); }
-.ck-step.complete .ck-num { background: var(--deep); color: var(--gold); border-color: var(--gold-dim); }
+.ck-step.complete .ck-num { background: var(--bg-deep); color: var(--gold); border-color: var(--gold-dim); }
 .ck-step-line {
   width: 80px; height: 1px;
   background: var(--border); margin: 0 12px 20px;
@@ -184,12 +184,12 @@
 .card-chip { font-size: 1.8rem; color: var(--gold); }
 .card-number-display {
   font-family: 'Courier New', monospace;
-  font-size: 1.1rem; letter-spacing: 0.2em; color: var(--white);
+  font-size: 1.1rem; letter-spacing: 0.2em; color: var(--text);
   text-align: center;
 }
 .card-bottom-row { display: flex; justify-content: space-between; }
 .card-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-.card-name-display { font-size: 0.82rem; letter-spacing: 0.1em; color: var(--white); }
+.card-name-display { font-size: 0.82rem; letter-spacing: 0.1em; color: var(--text); }
 .card-stripe { height: 44px; background: #0a0a0a; margin: 0 -28px; }
 .card-cvv-row { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 20px; }
 .card-cvv-box {
@@ -217,7 +217,7 @@
 .ck-item-price { font-family: var(--font-display); color: var(--gold-light); }
 .ck-summary-divider { height: 1px; background: var(--border); margin: 14px 0; }
 .ck-summary-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; }
-.ck-total-row { font-family: var(--font-display); font-size: 1.15rem; color: var(--white); font-weight: 300; }
+.ck-total-row { font-family: var(--font-display); font-size: 1.15rem; color: var(--text); font-weight: 300; }
 .ck-trust-badges {
   display: flex; flex-direction: column; gap: 8px;
   margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
@@ -248,7 +248,7 @@
 .account-main { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: calc(var(--nav-h) + 40px) 24px 80px; }
 .account-card-wrap {
   width: 100%; max-width: 480px;
-  background: var(--deep); border: 1px solid var(--border);
+  background: var(--bg-deep); border: 1px solid var(--border);
   padding: 40px; animation: fadeUp 0.5s ease;
 }
 .account-tabs { display: flex; margin-bottom: 32px; border-bottom: 1px solid var(--border); }
@@ -270,7 +270,7 @@
 }
 .acc-dash-card:hover { border-color: var(--gold); }
 .acc-dash-card span:first-child { font-size: 1.6rem; }
-.acc-dash-card strong { color: var(--white); font-size: 0.75rem; letter-spacing: 0.1em; }
+.acc-dash-card strong { color: var(--text); font-size: 0.75rem; letter-spacing: 0.1em; }
 .acc-dash-card span:last-child { color: var(--muted); font-size: 0.65rem; }
 /* ── Policy Pages ── */
 .policy-main { padding: calc(var(--nav-h) + 40px) 0 80px; min-height: 100vh; }
@@ -295,8 +295,8 @@
   border: 1px solid transparent;
   transition: all 0.25s;
 }
-.policy-link:hover  { color: var(--white); background: var(--deep); }
-.policy-link.active { color: var(--gold); border-color: var(--gold-dim); background: var(--deep); font-weight: 500; }
+.policy-link:hover  { color: var(--text); background: var(--bg-deep); }
+.policy-link.active { color: var(--gold); border-color: var(--gold-dim); background: var(--bg-deep); font-weight: 500; }
 .policy-link.active::before { content: '▸ '; }
 .policy-content h2 {
   font-family: var(--font-display); font-size: 2.4rem; font-weight: 300;
@@ -321,7 +321,7 @@
 .faq-item { background: var(--card); border: 1px solid var(--border); overflow: hidden; }
 .faq-question {
   width: 100%; text-align: left; padding: 18px 20px;
-  font-size: 0.88rem; color: var(--white); font-family: var(--font-body);
+  font-size: 0.88rem; color: var(--text); font-family: var(--font-body);
   display: flex; justify-content: space-between; align-items: center;
   transition: color 0.2s; cursor: pointer;
 }
