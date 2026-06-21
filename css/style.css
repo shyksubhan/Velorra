@@ -119,6 +119,22 @@ body > nav.scrolled, header > nav.scrolled {
 .hamburger { display: none; flex-direction: column; gap: 5px; }
 .hamburger span { display: block; width: 24px; height: 1px; background: var(--text); transition: var(--transition); }
 
+/* ── Mobile Nav Dropdown (opened state) ── */
+.nav-links.mobile-open {
+  display: flex !important;
+  flex-direction: column;
+  position: absolute;
+  top: var(--nav-h); left: 0; right: 0;
+  background: rgba(250,247,242,0.98);
+  backdrop-filter: blur(16px);
+  padding: 24px;
+  gap: 20px;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 12px 32px var(--shadow);
+}
+.nav-links.mobile-open a { color: var(--text-mid); opacity: 1; }
+.nav-links.mobile-open a:hover { color: var(--gold); }
+
 /* ── Hero Section ── */
 #hero {
   position: relative;

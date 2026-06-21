@@ -176,16 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const ham = document.querySelector('.hamburger');
   const navLinks = document.querySelector('.nav-links');
   ham?.addEventListener('click', () => {
-    const open = navLinks.style.display === 'flex';
-    navLinks.style.display = open ? 'none' : 'flex';
-    navLinks.style.flexDirection = 'column';
-    navLinks.style.position = 'absolute';
-    navLinks.style.top = '72px'; navLinks.style.left = '0'; navLinks.style.right = '0';
-    navLinks.style.background = 'rgba(10,10,10,0.97)';
-    navLinks.style.padding = '24px';
-    navLinks.style.gap = '20px';
-    navLinks.style.backdropFilter = 'blur(16px)';
-    navLinks.style.borderTop = '1px solid var(--border)';
+    navLinks.classList.toggle('mobile-open');
+  });
+  /* Close mobile menu after a link is tapped, or on outside click */
+  navLinks?.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') navLinks.classList.remove('mobile-open');
+  });
+  document.addEventListener('click', (e) => {
+    if (navLinks?.classList.contains('mobile-open') && !navLinks.contains(e.target) && !ham.contains(e.target)) {
+      navLinks.classList.remove('mobile-open');
+    }
   });
 
 });

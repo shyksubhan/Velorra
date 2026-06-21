@@ -23,13 +23,13 @@
 .search-icon-big { font-size: 1.4rem; color: var(--gold); }
 #search-input {
   flex: 1; background: none; border: none; outline: none;
-  color: var(--text); font-family: var(--font-display);
+  color: var(--bg); font-family: var(--font-display);
   font-size: clamp(1.4rem, 4vw, 2rem);
   font-weight: 300; letter-spacing: 0.05em;
 }
-#search-input::placeholder { color: var(--muted); }
+#search-input::placeholder { color: rgba(250,247,242,0.45); }
 #search-close {
-  font-size: 1.2rem; color: var(--muted);
+  font-size: 1.2rem; color: rgba(250,247,242,0.55);
   transition: color 0.2s;
 }
 #search-close:hover { color: var(--gold); }
