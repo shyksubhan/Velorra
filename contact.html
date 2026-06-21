@@ -22,7 +22,7 @@
     <li><a href="contact.html">Contact</a></li>
   </ul>
   <div class="nav-icons">
-    <button><i class="fa-solid fa-magnifying-glass"></i></button>
+    <button id="search-toggle" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
     <button data-open-cart style="position:relative;">
       <i class="fa-solid fa-bag-shopping"></i>
       <span class="cart-count" style="display:none;">0</span>
@@ -30,6 +30,17 @@
     <button class="hamburger"><span></span><span></span><span></span></button>
   </div>
 </nav>
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay">
+  <div class="search-box">
+    <div class="search-inner">
+      <span class="search-icon-big"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" id="search-input" placeholder="Search hair accessories, scrunchies, pins…" autocomplete="off" />
+      <button id="search-close">&#10005;</button>
+    </div>
+    <div id="search-results"></div>
+  </div>
+</div>
 
 <div class="page-hero">
   <div class="container">
@@ -160,8 +171,8 @@
         <h4>Help</h4>
         <ul>
           <li><a href="contact.html">Contact</a></li>
-          <li><a href="#">Returns</a></li>
-          <li><a href="#">Shipping</a></li>
+          <li><a href="policy.html?page=returns">Returns</a></li>
+          <li><a href="policy.html?page=shipping">Shipping</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -198,5 +209,6 @@
 <script src="js/whatsapp-config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>
+<script src="js/search.js"></script>
 </body>
 </html>
