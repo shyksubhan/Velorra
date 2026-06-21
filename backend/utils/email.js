@@ -32,7 +32,7 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
       <p><strong style="color:#c9a84c;">Total: PKR ${total.toLocaleString()}</strong></p>
       <p style="color:#888;">Delivering to: ${delivery.address}, ${delivery.city}</p>
       <p style="color:#888;">Payment: ${paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod}</p>
-      <p style="color:#555;font-size:.8rem;">Questions? Email hello@velorra.com</p>
+      <p style="color:#555;font-size:.8rem;">Questions? Email bktjewelryoperations@gmail.com</p>
     </body></html>`,
   });
 }
@@ -92,7 +92,7 @@ async function sendNewsletterWelcome(email) {
       <h1 style="color:#c9a84c;">Vel<span style="color:#fff;">orra</span></h1>
       <h2 style="color:#fff;">Welcome to the Circle 💛</h2>
       <p style="color:#888;">You're now part of Velorra's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
-      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? hello@velorra.com</p>
+      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? bktjewelryoperations@gmail.com</p>
     </body>`,
   });
 }

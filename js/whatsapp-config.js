@@ -13,14 +13,14 @@ const VELORRA_CONFIG = {
   /* ── Social Media ──
      Replace these URLs with your actual profile links         */
   social: {
-    instagram: 'https://www.instagram.com/shyk._.subhan/',   // ← your Instagram URL
-    facebook:  'https://www.facebook.com/subhan.imran.5623',    // ← your Facebook URL
+    instagram: 'https://www.instagram.com/bkt_jewelry/',   // ← your Instagram URL
+    facebook:  'https://www.facebook.com/profile.php?id=61590913872614',    // ← your Facebook URL
     whatsapp:  '',                                    // auto-built from number above
     tiktok:    '',                                    // optional — leave blank to hide
   },
   /* ── Contact ── */
   contact: {
-    email:    'isubhan3755@gmail.com',
+    email:    'bktjewelryoperations@gmail.com',
     phone:    '+92 331 4978295',
     location: 'Lahore, Punjab, Pakistan',
     hours:    'Monday – Saturday',
@@ -44,7 +44,7 @@ window.VELORRA_CONFIG = VELORRA_CONFIG;
 
    Usage in HTML:
      <span data-velorra="email"></span>
-     <a href="#" data-velorra="email">hello@velorra.com</a>   (href auto becomes mailto:)
+     <a href="#" data-velorra="email">bktjewelryoperations@gmail.com</a>   (href auto becomes mailto:)
      <span data-velorra="phone"></span>
      <a href="#" data-velorra="phone">+92 300 000 0000</a>     (href auto becomes tel:)
      <span data-velorra="location"></span>
