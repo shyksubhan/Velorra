@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
    the figures never leave the server for admin/supervisor tokens. ── */
 function maskRevenue(payload, role) {
   if (role === 'super_admin') return payload;
-  const { totalRevenue, todayRevenue, monthRevenue, ...rest } = payload;
+  const { totalRevenue, todayRevenue, monthRevenue, todayProfit, ...rest } = payload;
   return rest;
 }
 
@@ -76,6 +76,7 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.monthRevenue = Math.round(orders
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
       .reduce((s, o) => s + (o.total || 0), 0));
+    base.todayProfit = store.dailyStatement().totals.profit;
     return res.json(maskRevenue({ ...base, demoMode: true }, req.user.role));
 
   } catch (err) {
@@ -151,6 +152,42 @@ router.get('/staff-summary', requireRole('super_admin'), (req, res) => {
     return res.json({ staff: store.staffSummary() });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to fetch staff summary.' });
+  }
+});
+
+/* ── GET /api/admin/profit-summary — Lifetime profit/earnings (super_admin ONLY) ──
+   Lifetime view never gets reset/filtered by date — it's the full history of
+   every sale ever recorded in this server's lifetime. ── */
+router.get('/profit-summary', requireRole('super_admin'), async (req, res) => {
+  try {
+    return res.json(store.lifetimeEarnings());
+  } catch (err) {
+    console.error('Profit summary error:', err);
+    return res.status(500).json({ error: 'Failed to compute profit summary.' });
+  }
+});
+
+/* ── GET /api/admin/daily-statement?date=YYYY-MM-DD — One day's statement (super_admin ONLY) ──
+   Defaults to today (server local date) when no date is given. ── */
+router.get('/daily-statement', requireRole('super_admin'), async (req, res) => {
+  try {
+    return res.json(store.dailyStatement(req.query.date));
+  } catch (err) {
+    console.error('Daily statement error:', err);
+    return res.status(500).json({ error: 'Failed to compute daily statement.' });
+  }
+});
+
+/* ── GET /api/admin/daily-statements/history?days=30 — Last N days of statements (super_admin ONLY) ──
+   Capped at 30 days — older days should be pulled from previously
+   downloaded Excel files (lifetime totals remain in /profit-summary). ── */
+router.get('/daily-statements/history', requireRole('super_admin'), async (req, res) => {
+  try {
+    const days = Math.min(parseInt(req.query.days) || 30, 30);
+    return res.json({ statements: store.dailyStatementHistory(days) });
+  } catch (err) {
+    console.error('Statement history error:', err);
+    return res.status(500).json({ error: 'Failed to compute statement history.' });
   }
 });
 

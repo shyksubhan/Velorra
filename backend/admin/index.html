@@ -248,6 +248,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   <div class="stats-grid" id="stats-grid">
     <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-orders">—</div><div class="stat-label">Total Orders</div><div class="stat-sub" id="s-pending-text"></div></div>
     <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">—</div><div class="stat-label">Total Revenue</div></div>
+    <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="s-profit">—</div><div class="stat-label">Today's Profit</div><div class="stat-sub" id="s-profit-sub"></div></div>
     <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-val" id="s-products">—</div><div class="stat-label">Products</div></div>
     <div class="stat-card"><div class="stat-icon">📧</div><div class="stat-val" id="s-subscribers">—</div><div class="stat-label">Subscribers</div></div>
     <div class="stat-card"><div class="stat-icon">✉️</div><div class="stat-val" id="s-msgs">—</div><div class="stat-label">Unread Messages</div></div>
@@ -257,6 +258,28 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="table-header"><h3>Recent Orders</h3></div>
     <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
     <tbody id="recent-orders-body"><tr><td colspan="6" class="empty-state"><div class="spinner"></div></td></tr></tbody></table>
+  </div>
+
+  <!-- ── Lifetime Earnings (super_admin only) ── -->
+  <div class="table-wrap" id="lifetime-earnings-wrap" style="margin-top:24px;">
+    <div class="table-header"><h3>Lifetime Earnings</h3><span style="color:var(--muted);font-size:0.78rem;margin-left:auto" id="lifetime-since"></span></div>
+    <div class="stats-grid" style="padding:20px;margin-bottom:0;">
+      <div class="stat-card"><div class="stat-icon">💵</div><div class="stat-val" id="lt-revenue">—</div><div class="stat-label">Lifetime Revenue</div></div>
+      <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="lt-cost">—</div><div class="stat-label">Lifetime Cost</div></div>
+      <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="lt-profit">—</div><div class="stat-label">Lifetime Net Profit</div></div>
+      <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-val" id="lt-orders">—</div><div class="stat-label">Lifetime Orders Sold</div></div>
+    </div>
+  </div>
+
+  <!-- ── Daily Statements — last 30 days (super_admin only) ── -->
+  <div class="table-wrap" id="daily-statements-wrap" style="margin-top:24px;">
+    <div class="table-header">
+      <h3>Daily Statements <span style="color:var(--muted);font-weight:400;font-size:0.78rem;">— last 30 days</span></h3>
+      <button class="btn btn-outline" onclick="loadDailyStatements()" style="margin-left:auto"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <button class="btn btn-gold" onclick="exportDailyStatementsExcel()"><i class="fa-solid fa-file-excel"></i> Export 30-Day Statement</button>
+    </div>
+    <table><thead><tr><th>Date</th><th>Items Sold</th><th>Orders</th><th>Revenue</th><th>Cost</th><th>Net Profit</th><th></th></tr></thead>
+    <tbody id="daily-statements-body"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody></table>
   </div>
 </div>
 
@@ -288,7 +311,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
   </div>
   <div class="table-wrap">
-    <table><thead><tr><th>Icon</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Featured</th><th>Actions</th></tr></thead>
+    <table><thead><tr><th>Icon</th><th>Name</th><th>Category</th><th class="cost-cell">Purchase</th><th>Sale Price</th><th>Stock</th><th>Featured</th><th>Actions</th></tr></thead>
     <tbody id="products-body"></tbody></table>
   </div>
 </div>
@@ -444,8 +467,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Price (PKR) *</label><input id="p-price" type="number" placeholder="12500"/></div>
+        <div class="form-group"><label>Purchase Price (PKR) * <span style="color:var(--muted);font-weight:400;">— cost you paid</span></label><input id="p-purchase-price" type="number" placeholder="6000"/></div>
+        <div class="form-group"><label>Sale Price (PKR) *</label><input id="p-price" type="number" placeholder="12500"/></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>Old Price (for sale)</label><input id="p-price-old" type="number" placeholder="16000"/></div>
+        <div class="form-group"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Featured on Homepage?</label>
@@ -514,6 +541,20 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="modal-body" id="order-modal-body"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('order-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day Statement Detail Modal -->
+<div class="modal-overlay" id="day-statement-modal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <h3 id="day-statement-title">Daily Statement</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('day-statement-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="day-statement-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('day-statement-modal')">Close</button>
     </div>
   </div>
 </div>
@@ -699,8 +740,16 @@ function applyRolePermissions(role) {
     /* Hide revenue stat card */
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
     if (revenueCard) revenueCard.style.display = 'none';
+    /* Hide daily profit stat card */
+    const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
+    if (profitCard) profitCard.style.display = 'none';
     /* Hide Excel export buttons */
     document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
+    /* Hide cost/purchase-price column in products table — only super admin sees margins */
+    document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
+    /* Hide lifetime earnings + daily statements sections — super admin only */
+    document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
   }
 
   /* Supervisor — restrict to only Orders + Messages in sidebar */
@@ -713,6 +762,11 @@ function applyRolePermissions(role) {
     /* Hide revenue stat card */
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
     if (revenueCard) revenueCard.style.display = 'none';
+    const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
+    if (profitCard) profitCard.style.display = 'none';
+    document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
+    document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
     /* Redirect to orders page */
     showPage('orders');
   }
@@ -844,6 +898,10 @@ function showPage(name) {
 /* ═══════════════════ DASHBOARD ═══════════════════ */
 async function loadDashboard() {
   await Promise.all([loadStats(), loadRecentOrders()]);
+  if (currentUser?.role === 'super_admin') {
+    loadLifetimeEarnings();
+    loadDailyStatements();
+  }
 }
 
 async function loadStats() {
@@ -854,6 +912,10 @@ async function loadStats() {
 
     document.getElementById('s-orders').textContent      = data.orders?.total ?? 0;
     document.getElementById('s-revenue').textContent     = 'PKR ' + (data.totalRevenue || 0).toLocaleString();
+    if (data.todayProfit !== undefined) {
+      document.getElementById('s-profit').textContent = 'PKR ' + (data.todayProfit || 0).toLocaleString();
+      document.getElementById('s-profit-sub').textContent = data.todayProfit > 0 ? 'profit booked today' : 'no profit yet today';
+    }
     document.getElementById('s-products').textContent    = data.products?.total ?? 0;
     document.getElementById('s-subscribers').textContent = data.subscribers?.total ?? 0;
     document.getElementById('s-msgs').textContent        = data.unreadMessages ?? 0;
@@ -891,6 +953,156 @@ async function loadRecentOrders() {
         <td>${fmtDate(o.createdAt)}</td>
       </tr>`).join('');
   } catch {}
+}
+
+/* ═══════════════════ PROFIT — LIFETIME EARNINGS (super_admin only) ═══════════════════ */
+let lifetimeEarningsData = null;
+
+async function loadLifetimeEarnings() {
+  try {
+    const res  = await apiFetch('/admin/profit-summary');
+    const data = await res.json();
+    if (!res.ok) return;
+    lifetimeEarningsData = data;
+    document.getElementById('lt-revenue').textContent = 'PKR ' + (data.totals?.revenue || 0).toLocaleString();
+    document.getElementById('lt-cost').textContent    = 'PKR ' + (data.totals?.cost || 0).toLocaleString();
+    document.getElementById('lt-profit').textContent  = 'PKR ' + (data.totals?.profit || 0).toLocaleString();
+    document.getElementById('lt-orders').textContent  = data.totals?.orders ?? 0;
+    document.getElementById('lifetime-since').textContent = data.since ? `Tracking since ${fmtDate(data.since)}` : '';
+  } catch {}
+}
+
+/* ═══════════════════ PROFIT — DAILY STATEMENTS (super_admin only) ═══════════════════ */
+let dailyStatementsData = [];
+
+async function loadDailyStatements() {
+  const tbody = document.getElementById('daily-statements-body');
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  try {
+    const res  = await apiFetch('/admin/daily-statements/history?days=30');
+    const data = await res.json();
+    if (!res.ok) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><p>${data.error || 'Failed to load statements.'}</p></div></td></tr>`; return; }
+    dailyStatementsData = data.statements || [];
+    renderDailyStatements(dailyStatementsData);
+  } catch { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><p>Failed to load statements.</p></div></td></tr>`; }
+}
+
+function renderDailyStatements(statements) {
+  const tbody = document.getElementById('daily-statements-body');
+  if (!statements.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-receipt"></i><p>No statements yet</p></div></td></tr>`; return; }
+  tbody.innerHTML = statements.map(s => {
+    const itemsSold = s.lines.reduce((sum, l) => sum + (l.qty || 0), 0);
+    return `
+    <tr>
+      <td>${new Date(s.date).toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })}${s.date === today() ? ' <span class="badge badge-new" style="background:rgba(34,197,94,.15);color:var(--green)">Today</span>' : ''}</td>
+      <td>${itemsSold}</td>
+      <td>${s.totals.orders}</td>
+      <td>PKR ${s.totals.revenue.toLocaleString()}</td>
+      <td>PKR ${s.totals.cost.toLocaleString()}</td>
+      <td style="font-weight:700;color:${s.totals.profit > 0 ? 'var(--green)' : 'var(--muted)'}">PKR ${s.totals.profit.toLocaleString()}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewDayStatement('${s.date}')" ${s.lines.length ? '' : 'disabled'}>Details</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function viewDayStatement(dateStr) {
+  const s = dailyStatementsData.find(x => x.date === dateStr);
+  if (!s) return;
+  document.getElementById('day-statement-title').textContent = `Statement — ${new Date(dateStr).toLocaleDateString('en-PK', { day:'2-digit', month:'long', year:'numeric' })}`;
+  if (!s.lines.length) {
+    document.getElementById('day-statement-body').innerHTML = `<div class="empty-state"><i class="fa-solid fa-receipt"></i><p>No sales recorded on this day.</p></div>`;
+  } else {
+    document.getElementById('day-statement-body').innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;">
+          <th style="text-align:left;padding:8px 0;border-bottom:1px solid var(--border);">Product</th>
+          <th style="text-align:center;padding:8px 0;border-bottom:1px solid var(--border);">Qty</th>
+          <th style="text-align:right;padding:8px 0;border-bottom:1px solid var(--border);">Sale</th>
+          <th style="text-align:right;padding:8px 0;border-bottom:1px solid var(--border);">Profit</th>
+        </tr></thead>
+        <tbody>
+          ${s.lines.map(l => `
+            <tr style="font-size:0.85rem;">
+              <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);">${l.product}<br><small style="color:var(--muted)">${l.orderId}</small></td>
+              <td style="text-align:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);">${l.qty}</td>
+              <td style="text-align:right;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);">PKR ${l.revenue.toLocaleString()}</td>
+              <td style="text-align:right;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);color:${l.profit > 0 ? 'var(--green)' : 'var(--red)'}">PKR ${l.profit.toLocaleString()}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="display:flex;justify-content:space-between;padding:14px 0 0;font-weight:700;font-size:1rem;">
+        <span>Net Profit (Day End)</span><span style="color:var(--gold)">PKR ${s.totals.profit.toLocaleString()}</span>
+      </div>`;
+  }
+  openModal('day-statement-modal');
+}
+
+/* Export the visible 30-day statement history as a structured, formatted Excel workbook */
+function exportDailyStatementsExcel() {
+  if (!dailyStatementsData.length) { toast('No statement data to export yet.', 'error'); return; }
+  try {
+    const wb = XLSX.utils.book_new();
+
+    /* ── Sheet 1: Daily Summary ── */
+    const summaryRows = dailyStatementsData.map(s => ({
+      Date:            s.date,
+      'Items Sold':    s.lines.reduce((sum, l) => sum + (l.qty || 0), 0),
+      'Orders':        s.totals.orders,
+      'Revenue (PKR)': s.totals.revenue,
+      'Cost (PKR)':    s.totals.cost,
+      'Net Profit (PKR)': s.totals.profit,
+    }));
+    const totalRow = {
+      Date: 'TOTAL (30 Days)',
+      'Items Sold':    summaryRows.reduce((s,r) => s + r['Items Sold'], 0),
+      'Orders':        summaryRows.reduce((s,r) => s + r['Orders'], 0),
+      'Revenue (PKR)': summaryRows.reduce((s,r) => s + r['Revenue (PKR)'], 0),
+      'Cost (PKR)':    summaryRows.reduce((s,r) => s + r['Cost (PKR)'], 0),
+      'Net Profit (PKR)': summaryRows.reduce((s,r) => s + r['Net Profit (PKR)'], 0),
+    };
+    const wsSummary = XLSX.utils.json_to_sheet([...summaryRows, totalRow]);
+    wsSummary['!cols'] = [{wch:14},{wch:12},{wch:10},{wch:15},{wch:13},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Daily Summary');
+
+    /* ── Sheet 2: Itemised line-by-line sales (every product sold each day) ── */
+    const lineRows = [];
+    dailyStatementsData.forEach(s => {
+      s.lines.forEach(l => {
+        lineRows.push({
+          Date: s.date,
+          'Order Ref': l.orderId,
+          Product: l.product,
+          Qty: l.qty,
+          'Purchase Price (PKR)': l.purchasePrice ?? '',
+          'Sale Price (PKR)': l.salePrice,
+          'Revenue (PKR)': l.revenue,
+          'Cost (PKR)': l.cost,
+          'Profit (PKR)': l.profit,
+        });
+      });
+    });
+    const wsLines = XLSX.utils.json_to_sheet(lineRows.length ? lineRows : [{ Date:'', Note:'No sales in the last 30 days' }]);
+    wsLines['!cols'] = [{wch:13},{wch:14},{wch:24},{wch:6},{wch:18},{wch:15},{wch:14},{wch:12},{wch:13}];
+    XLSX.utils.book_append_sheet(wb, wsLines, 'Itemised Sales');
+
+    /* ── Sheet 3: Lifetime totals snapshot (for context, not just the 30-day window) ── */
+    if (lifetimeEarningsData) {
+      const wsLifetime = XLSX.utils.json_to_sheet([{
+        'Tracking Since':        lifetimeEarningsData.since || '—',
+        'Lifetime Revenue (PKR)': lifetimeEarningsData.totals?.revenue || 0,
+        'Lifetime Cost (PKR)':    lifetimeEarningsData.totals?.cost || 0,
+        'Lifetime Net Profit (PKR)': lifetimeEarningsData.totals?.profit || 0,
+        'Lifetime Orders Sold':   lifetimeEarningsData.totals?.orders || 0,
+      }]);
+      wsLifetime['!cols'] = [{wch:16},{wch:20},{wch:18},{wch:22},{wch:18}];
+      XLSX.utils.book_append_sheet(wb, wsLifetime, 'Lifetime Snapshot');
+    }
+
+    XLSX.writeFile(wb, `Velorra_Daily_Statement_${today()}.xlsx`);
+    toast('30-day statement exported ✓', 'success');
+  } catch (err) {
+    toast('Export failed: ' + err.message, 'error');
+  }
 }
 
 /* ═══════════════════ ORDERS ═══════════════════ */
@@ -964,7 +1176,7 @@ function viewOrder(id) {
 /* ═══════════════════ PRODUCTS ═══════════════════ */
 async function loadProducts() {
   const tbody = document.getElementById('products-body');
-  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
   try {
     const res  = await apiFetch('/products');
     const data = await res.json();
@@ -980,12 +1192,13 @@ function filterProductsTable() {
 
 function renderProducts(products) {
   const tbody = document.getElementById('products-body');
-  if (!products.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-tags"></i><p>No products</p></div></td></tr>`; return; }
+  if (!products.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-tags"></i><p>No products</p></div></td></tr>`; return; }
   tbody.innerHTML = products.map(p => `
     <tr>
       <td style="font-size:1.4rem">${p.emoji || '🛍️'}</td>
       <td><strong>${p.name}</strong>${p.badge ? ` <span class="badge badge-new">${p.badge}</span>` : ''}</td>
       <td style="color:var(--muted);text-transform:capitalize">${p.category}</td>
+      <td class="cost-cell">${p.purchasePrice != null ? 'PKR ' + p.purchasePrice.toLocaleString() : '—'}</td>
       <td>PKR ${(p.price || 0).toLocaleString()}${p.priceOld ? ` <s style="color:var(--muted);font-size:0.78rem">PKR ${p.priceOld.toLocaleString()}</s>` : ''}</td>
       <td><span class="badge ${p.inStock ? 'badge-delivered' : 'badge-cancelled'}">${p.inStock ? 'In Stock' : 'Out of Stock'}</span></td>
       <td>${p.featured ? '⭐ Yes' : 'No'}</td>
@@ -1118,6 +1331,7 @@ function openProductModal(product = null) {
   document.getElementById('p-category').value   = product?.category || '';
   document.getElementById('p-badge').value      = product?.badge || '';
   document.getElementById('p-price').value      = product?.price || '';
+  document.getElementById('p-purchase-price').value = product?.purchasePrice ?? '';
   document.getElementById('p-price-old').value  = product?.priceOld || '';
   document.getElementById('p-featured').value   = product?.featured ? 'true' : 'false';
   document.getElementById('p-instock').value    = product?.inStock !== false ? 'true' : 'false';
@@ -1141,8 +1355,14 @@ async function saveProduct() {
   const name = document.getElementById('p-name').value.trim();
   const cat  = document.getElementById('p-category').value;
   const price= document.getElementById('p-price').value;
+  const purchasePrice = document.getElementById('p-purchase-price').value;
 
   if (!name || !cat || !price) { toast('Name, category, and price are required.', 'error'); return; }
+  if (purchasePrice === '' || purchasePrice === null) { toast('Purchase price is required — what did this product cost you?', 'error'); return; }
+  if (Number(purchasePrice) >= Number(price)) {
+    const proceed = await bktConfirm({ title: 'No profit margin?', message: 'Purchase price is equal to or higher than the sale price, so this product won\'t earn any profit. Save anyway?', confirmText: 'Save Anyway', icon: '⚠️', danger: false });
+    if (!proceed) return;
+  }
 
   const btn = document.getElementById('save-product-btn');
   btn.innerHTML = '<span class="spinner"></span>';
@@ -1153,6 +1373,7 @@ async function saveProduct() {
     emoji:       document.getElementById('p-emoji').value || '🛍️',
     badge:       document.getElementById('p-badge').value || null,
     price:       Number(price),
+    purchasePrice: Number(purchasePrice),
     priceOld:    document.getElementById('p-price-old').value ? Number(document.getElementById('p-price-old').value) : null,
     featured:    document.getElementById('p-featured').value === 'true',
     inStock:     document.getElementById('p-instock').value !== 'false',

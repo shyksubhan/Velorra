@@ -24,14 +24,36 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Order data is incomplete.' });
     }
 
-    const subtotal    = items.reduce((s, i) => s + (i.price * i.qty), 0);
+    /* ── Snapshot productId + purchasePrice onto each line item ──
+       The storefront cart only sends {name, price, emoji, variant, qty} —
+       no product id — so we match by name against the live catalogue at
+       checkout time and freeze the purchase price as it was then. This way
+       later edits to a product's purchase price never change profit on
+       past orders, and the daily/lifetime profit reports stay accurate. */
+    const productSource = isFirebaseAvailable() ? null : store.products;
+    let firestoreProducts = null;
+    if (isFirebaseAvailable()) {
+      const snap = await getDB().collection('products').get();
+      firestoreProducts = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    }
+    const catalogue = firestoreProducts || productSource || [];
+    const enrichedItems = items.map(i => {
+      const match = catalogue.find(p => p.name === i.name);
+      return {
+        ...i,
+        productId:     match?.id ?? i.productId ?? null,
+        purchasePrice: match?.purchasePrice ?? i.purchasePrice ?? 0,
+      };
+    });
+
+    const subtotal    = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const deliveryFee = deliveryMethod === 'express' ? 250 : subtotal < 5000 ? 200 : 0;
     const total       = subtotal + deliveryFee;
     const orderRef    = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
     const order = {
       id: orderRef,
-      items,
+      items: enrichedItems,
       delivery,
       paymentMethod:  paymentMethod || 'cod',
       deliveryMethod: deliveryMethod || 'standard',

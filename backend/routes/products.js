@@ -80,8 +80,11 @@ router.get('/:id', async (req, res) => {
 /* ── POST /api/products (super_admin + admin only — product catalogue is not supervisor's job) ── */
 router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
-    const { name, category, subcategory, price, priceOld, emoji, badge, description, sizes, colors, inStock, featured, images, video } = req.body;
+    const { name, category, subcategory, price, priceOld, purchasePrice, emoji, badge, description, sizes, colors, inStock, featured, images, video } = req.body;
     if (!name || !category || !price) return res.status(400).json({ error: 'Name, category, and price are required.' });
+    if (purchasePrice === undefined || purchasePrice === null || purchasePrice === '') {
+      return res.status(400).json({ error: 'Purchase price is required.' });
+    }
 
     const slug = makeSlug(name);
     const productData = {
@@ -91,6 +94,7 @@ router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
       subcategory: subcategory || '',
       price:       Number(price),
       priceOld:    priceOld ? Number(priceOld) : null,
+      purchasePrice: Number(purchasePrice),
       emoji:       emoji || '🛍️',
       badge:       badge || null,
       description: description || '',
@@ -125,6 +129,9 @@ router.put('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
     const updates = { ...req.body, updatedAt: new Date().toISOString() };
     if (updates.price) updates.price = Number(updates.price);
     if (updates.priceOld) updates.priceOld = Number(updates.priceOld);
+    if (updates.purchasePrice !== undefined && updates.purchasePrice !== null && updates.purchasePrice !== '') {
+      updates.purchasePrice = Number(updates.purchasePrice);
+    }
 
     if (isFirebaseAvailable()) {
       const db = getDB();
