@@ -368,6 +368,7 @@ section { padding: 100px 0; }
   .cat-name { font-size: 1.1rem; }
   .cat-medallion { width: 60px; height: 60px; margin-bottom: 14px; }
   .cat-icon { width: 24px; height: 24px; }
+  .products-grid { grid-template-columns: 1fr; gap: 20px; }
 }
 
 /* ── Featured Products ── */
@@ -834,4 +835,6 @@ footer {
   .story-stats { gap: 24px; flex-wrap: wrap; }
   .newsletter-form { flex-direction: column; }
   .newsletter-form input { border-right: 1px solid var(--border); }
+  .testimonial-slider { flex-direction: column; }
+  .testimonial-card { min-width: 0; width: 100%; }
 }
