@@ -87,16 +87,12 @@ async function sendNewsletterWelcome(email) {
   await resend.emails.send({
     from: FROM,
     to: email,
-    subject: '💛 Welcome to the Velorra Circle — Your 10% Discount Inside',
+    subject: '💛 Welcome to the Velorra Circle',
     html: `<body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;text-align:center;color:#ccc;">
       <h1 style="color:#c9a84c;">Vel<span style="color:#fff;">orra</span></h1>
       <h2 style="color:#fff;">Welcome to the Circle 💛</h2>
-      <p style="color:#888;">You're now part of Velorra's exclusive circle.</p>
-      <div style="background:#1a1a1a;border:1px solid #c9a84c;border-radius:12px;padding:32px;margin:24px auto;display:inline-block;">
-        <p style="color:#c9a84c;font-size:2.5rem;font-weight:bold;margin:0;">10% OFF</p>
-        <p style="color:#555;font-size:.8rem;">Applied automatically at checkout</p>
-      </div>
-      <p style="color:#888;font-size:.85rem;">Questions? hello@velorra.com</p>
+      <p style="color:#888;">You're now part of Velorra's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
+      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? hello@velorra.com</p>
     </body>`,
   });
 }

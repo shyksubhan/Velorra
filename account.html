@@ -39,7 +39,12 @@
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" placeholder="••••••••" required/>
+            <div class="password-field-wrap">
+              <input type="password" name="password" id="signin-password" placeholder="••••••••" required/>
+              <button type="button" class="password-toggle-btn" onclick="toggleVelorraPassword('signin-password', this)" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
           <div style="text-align:right;margin-top:-8px;margin-bottom:16px">
             <a href="#" style="font-size:.7rem;color:var(--gold)">Forgot password?</a>
@@ -75,11 +80,21 @@
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" placeholder="Min 8 characters" minlength="8" required/>
+            <div class="password-field-wrap">
+              <input type="password" name="password" id="signup-password" placeholder="Min 8 characters" minlength="8" required/>
+              <button type="button" class="password-toggle-btn" onclick="toggleVelorraPassword('signup-password', this)" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label>Confirm Password</label>
-            <input type="password" name="confirm" placeholder="Repeat password" required/>
+            <div class="password-field-wrap">
+              <input type="password" name="confirm" id="signup-confirm" placeholder="Repeat password" required/>
+              <button type="button" class="password-toggle-btn" onclick="toggleVelorraPassword('signup-confirm', this)" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
           <label style="display:flex;gap:10px;align-items:flex-start;font-size:.75rem;color:var(--muted);margin-bottom:20px;cursor:pointer">
             <input type="checkbox" required style="margin-top:3px;accent-color:var(--gold)"/>

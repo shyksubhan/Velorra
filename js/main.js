@@ -166,14 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const result = await apiSubscribeNewsletter(email);
       if (result.ok) {
-        showToast(result.data.message || 'Welcome to Velorra ✓');
+        showToast(result.data.message || "Welcome to the Velorra Circle! 💛 You'll be the first to hear about new arrivals and offers.");
         input.value = '';
       } else {
         showToast(result.data.error || 'Please try again.');
       }
     } catch {
       /* Backend not available — graceful fallback */
-      showToast('Welcome to Velorra ✓');
+      showToast("Welcome to the Velorra Circle! 💛 You'll be the first to hear about new arrivals and offers.");
       input.value = '';
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Subscribe'; }
@@ -272,3 +272,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+/* ── Show/Hide Password Toggle ──
+   Usage: <button onclick="toggleVelorraPassword('field-id', this)"><i class="fa-regular fa-eye"></i></button> */
+window.toggleVelorraPassword = (inputId, btn) => {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector('i');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  if (icon) icon.className = showing ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash';
+  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+};
