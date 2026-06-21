@@ -7,7 +7,7 @@
 const express = require('express');
 const multer  = require('multer');
 const { cloudinary, isCloudinaryAvailable } = require('../utils/cloudinary');
-const { requireAdmin } = require('../middleware/auth');
+const { requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -35,8 +35,8 @@ function streamUpload(buffer, resourceType) {
   });
 }
 
-/* ── POST /api/upload — single file (image or video), admin only ── */
-router.post('/', requireAdmin, (req, res) => {
+/* ── POST /api/upload — single file (image or video), super_admin + admin only ── */
+router.post('/', requireRole('super_admin', 'admin'), (req, res) => {
   upload.single('file')(req, res, async (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {

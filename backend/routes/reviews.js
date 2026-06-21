@@ -8,7 +8,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../utils/firebase');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireRole } = require('../middleware/auth');
 const store = require('../utils/store');
 
 const router = express.Router();
@@ -146,8 +146,8 @@ router.patch('/:id/approve', requireAdmin, async (req, res) => {
   }
 });
 
-/* ── DELETE /api/reviews/:id — Admin: delete a review ── */
-router.delete('/:id', requireAdmin, async (req, res) => {
+/* ── DELETE /api/reviews/:id — super_admin + admin only (supervisor can approve/hide but not delete) ── */
+router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       await getDB().collection('reviews').doc(req.params.id).delete();

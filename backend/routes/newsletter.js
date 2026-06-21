@@ -3,7 +3,7 @@
    ============================================================ */
 const express = require('express');
 const { getDB }        = require('../utils/firebase');
-const { requireAdmin }  = require('../middleware/auth');
+const { requireAdmin, requireRole } = require('../middleware/auth');
 const store             = require('../utils/store');
 const { sendNewsletterWelcome } = require('../utils/email');
 
@@ -47,8 +47,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-/* ── GET /api/newsletter (admin) ── */
-router.get('/', requireAdmin, async (req, res) => {
+/* ── GET /api/newsletter (super_admin + admin only — not part of supervisor's job) ── */
+router.get('/', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       const snap = await getDB().collection('subscribers').orderBy('subscribedAt', 'desc').get();
@@ -60,8 +60,8 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 });
 
-/* ── DELETE /api/newsletter/:id (admin) ── */
-router.delete('/:id', requireAdmin, async (req, res) => {
+/* ── DELETE /api/newsletter/:id (super_admin + admin only) ── */
+router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       await getDB().collection('subscribers').doc(req.params.id).delete();

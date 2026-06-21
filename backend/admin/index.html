@@ -533,8 +533,8 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div class="form-group"><label>Password *</label><input type="password" id="r-password" placeholder="Min 8 characters"/></div>
       <div class="form-group"><label>Role *</label>
         <select id="r-role">
-          <option value="admin">Admin — Can see all data &amp; modify, except earnings &amp; Excel exports</option>
-          <option value="supervisor">Supervisor — Can view messages &amp; orders, update status, reply to messages</option>
+          <option value="admin">Admin — Sees all data &amp; can modify, except earnings &amp; Excel exports</option>
+          <option value="supervisor">Support Staff — Messages, orders (view + status + reply), and review approvals only</option>
         </select>
       </div>
     </div>
@@ -676,7 +676,11 @@ function onLoginSuccess() {
 
   applyRolePermissions(currentUser.role);
 
-  loadDashboard();
+  /* Supervisors don't have dashboard access (server blocks /admin/stats for
+     them) — they're redirected to the Orders page by applyRolePermissions,
+     so skip the dashboard fetch entirely for them. */
+  if (currentUser.role !== 'supervisor') loadDashboard();
+
   connectSSE();
 }
 
@@ -1213,7 +1217,7 @@ function renderMessages(messages) {
       <td style="display:flex;gap:6px">
         <button class="btn btn-outline btn-sm" onclick="viewMessage('${m.id}')">View</button>
         <button class="btn btn-success btn-sm" onclick="replyToMessage('${m.id}')">${m.replied ? '✓ Replied' : 'Reply'}</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')">Delete</button>
+        ${currentUser?.role !== 'supervisor' ? `<button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')">Delete</button>` : ''}
       </td>
     </tr>`).join('');
 }
@@ -1540,7 +1544,7 @@ function fmtDate(iso) {
 }
 
 function formatRole(role) {
-  return { super_admin:'Super Admin', admin:'Admin', supervisor:'Supervisor' }[role] || role;
+  return { super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff' }[role] || role;
 }
 
 function today() {

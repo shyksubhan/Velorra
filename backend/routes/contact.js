@@ -3,7 +3,7 @@
    ============================================================ */
 const express = require('express');
 const { getDB }        = require('../utils/firebase');
-const { requireAdmin }  = require('../middleware/auth');
+const { requireAdmin, requireRole } = require('../middleware/auth');
 const store             = require('../utils/store');
 const { sendContactNotification } = require('../utils/email');
 
@@ -127,8 +127,8 @@ router.post('/:id/reply', requireAdmin, async (req, res) => {
   }
 });
 
-/* ── DELETE /api/contact/:id (admin) ── */
-router.delete('/:id', requireAdmin, async (req, res) => {
+/* ── DELETE /api/contact/:id — super_admin + admin only (supervisor can view/reply but not delete) ── */
+router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       await getDB().collection('messages').doc(req.params.id).delete();

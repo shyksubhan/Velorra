@@ -18,8 +18,17 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'admin', 'index.html'));
 });
 
-/* ── GET /api/admin/stats — REAL stats from shared store ── */
-router.get('/stats', requireAdmin, async (req, res) => {
+/* ── Strip confidential earnings fields unless the caller is super_admin ──
+   Mirrors the dashboard's client-side hiding, but enforced server-side so
+   the figures never leave the server for admin/supervisor tokens. ── */
+function maskRevenue(payload, role) {
+  if (role === 'super_admin') return payload;
+  const { totalRevenue, todayRevenue, monthRevenue, ...rest } = payload;
+  return rest;
+}
+
+/* ── GET /api/admin/stats — REAL stats from shared store (super_admin + admin only) ── */
+router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       const db = getDB();
@@ -44,7 +53,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
         .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
         .reduce((s, o) => s + (o.total || 0), 0);
 
-      return res.json({
+      return res.json(maskRevenue({
         orders:         { total: ordersSnap.size, statuses: statusCounts },
         products:       { total: productsSnap.size },
         subscribers:    { total: subscribersSnap.size },
@@ -53,7 +62,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
         todayRevenue:   Math.round(todayRevenue),
         monthRevenue:   Math.round(monthRevenue),
         demoMode:       false,
-      });
+      }, req.user.role));
     }
 
     /* Demo mode — read from shared store */
@@ -67,16 +76,16 @@ router.get('/stats', requireAdmin, async (req, res) => {
     base.monthRevenue = Math.round(orders
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
       .reduce((s, o) => s + (o.total || 0), 0));
-    return res.json({ ...base, demoMode: true });
+    return res.json(maskRevenue({ ...base, demoMode: true }, req.user.role));
 
   } catch (err) {
     console.error('Stats error:', err);
-    return res.json({ ...store.stats(), demoMode: true });
+    return res.json(maskRevenue({ ...store.stats(), demoMode: true }, req.user.role));
   }
 });
 
-/* ── GET /api/admin/recent-orders ── */
-router.get('/recent-orders', requireAdmin, async (req, res) => {
+/* ── GET /api/admin/recent-orders (super_admin + admin only — supervisor uses /api/orders) ── */
+router.get('/recent-orders', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     if (isFirebaseAvailable()) {
@@ -89,8 +98,8 @@ router.get('/recent-orders', requireAdmin, async (req, res) => {
   }
 });
 
-/* ── GET /api/admin/export/:type — Export data ── */
-router.get('/export/:type', requireAdmin, async (req, res) => {
+/* ── GET /api/admin/export/:type — Export data (super_admin ONLY — admin & supervisor blocked) ── */
+router.get('/export/:type', requireRole('super_admin'), async (req, res) => {
   try {
     const { type } = req.params;
     let data = [];

@@ -3,7 +3,7 @@
    ============================================================ */
 const express = require('express');
 const { getDB }       = require('../utils/firebase');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireRole } = require('../middleware/auth');
 const store            = require('../utils/store');
 
 const router = express.Router();
@@ -77,8 +77,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-/* ── POST /api/products (admin) ── */
-router.post('/', requireAdmin, async (req, res) => {
+/* ── POST /api/products (super_admin + admin only — product catalogue is not supervisor's job) ── */
+router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const { name, category, subcategory, price, priceOld, emoji, badge, description, sizes, colors, inStock, featured, images, video } = req.body;
     if (!name || !category || !price) return res.status(400).json({ error: 'Name, category, and price are required.' });
@@ -119,8 +119,8 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-/* ── PUT /api/products/:id (admin) ── */
-router.put('/:id', requireAdmin, async (req, res) => {
+/* ── PUT /api/products/:id (super_admin + admin only) ── */
+router.put('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const updates = { ...req.body, updatedAt: new Date().toISOString() };
     if (updates.price) updates.price = Number(updates.price);
@@ -144,8 +144,8 @@ router.put('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-/* ── DELETE /api/products/:id (admin) ── */
-router.delete('/:id', requireAdmin, async (req, res) => {
+/* ── DELETE /api/products/:id (super_admin + admin only) ── */
+router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       const db = getDB();
