@@ -172,7 +172,11 @@ router.post('/login', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     if (req.user.isAdmin) {
-      const u = store.adminUsers.find(u => u.id === req.user.uid) || store.adminUsers[0];
+      const u = req.user.uid === 'super-admin-1'
+        ? store.adminUsers.find(u => u.id === 'super-admin-1')
+        : store.findAdminUserById(req.user.uid);
+      if (!u) return res.status(401).json({ error: 'Your account no longer exists. Please sign in again.' });
+      if (u.active === false) return res.status(401).json({ error: 'Your account has been deactivated.' });
       return res.json({ id: u.id, fname: u.fname, lname: u.lname, email: u.username, isAdmin: true, role: u.role });
     }
     if (isFirebaseAvailable()) {
@@ -199,17 +203,17 @@ router.patch('/change-password', requireAuth, async (req, res) => {
     if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters.' });
 
     if (req.user.isAdmin) {
-      const adminUser = store.adminUsers.find(u => u.id === req.user.uid) || store.adminUsers[0];
+      if (req.user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Only the Super Admin can change their own password here. Ask your Super Admin to reset it for you from Users & Roles.' });
+      }
+      const adminUser = store.adminUsers.find(u => u.id === 'super-admin-1');
+      if (!adminUser) return res.status(401).json({ error: 'Your account no longer exists. Please sign in again.' });
       const match = adminUser.passwordHash
         ? await bcrypt.compare(currentPassword, adminUser.passwordHash)
         : currentPassword === process.env.ADMIN_PASSWORD;
       if (!match) return res.status(401).json({ error: 'Current password is incorrect.' });
       adminUser.passwordHash = await bcrypt.hash(newPassword, 12);
-      /* Persist to Firebase if available (non-super_admin) */
-      if (isFirebaseAvailable() && adminUser.role !== 'super_admin') {
-        try { await getDB().collection('adminUsers').doc(adminUser.id).update({ passwordHash: adminUser.passwordHash }); } catch {}
-      }
-      if (adminUser.role === 'super_admin') process.env.ADMIN_PASSWORD = newPassword;
+      process.env.ADMIN_PASSWORD = newPassword;
       return res.json({ message: 'Password changed successfully.' });
     }
 

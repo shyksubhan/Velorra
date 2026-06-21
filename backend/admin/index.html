@@ -281,6 +281,17 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <table><thead><tr><th>Date</th><th>Items Sold</th><th>Orders</th><th>Revenue</th><th>Cost</th><th>Net Profit</th><th></th></tr></thead>
     <tbody id="daily-statements-body"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody></table>
   </div>
+
+  <!-- ── Monthly Statements — since site launch date (super_admin only) ── -->
+  <div class="table-wrap" id="monthly-statements-wrap" style="margin-top:24px;">
+    <div class="table-header">
+      <h3>Monthly Statements <span style="color:var(--muted);font-weight:400;font-size:0.78rem;" id="monthly-since-label">— since launch</span></h3>
+      <button class="btn btn-outline" onclick="loadMonthlyStatements()" style="margin-left:auto"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <button class="btn btn-gold" onclick="exportMonthlyStatementsExcel()"><i class="fa-solid fa-file-excel"></i> Export Monthly Statement</button>
+    </div>
+    <table><thead><tr><th>Month</th><th>Items Sold</th><th>Orders</th><th>Revenue</th><th>Cost</th><th>Net Profit</th></tr></thead>
+    <tbody id="monthly-statements-body"><tr><td colspan="6" class="empty-state"><div class="spinner"></div></td></tr></tbody></table>
+  </div>
 </div>
 
 <!-- ── ORDERS ── -->
@@ -409,6 +420,14 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="form-group"><label>New Password</label><input type="password" id="pw-new" placeholder="At least 8 characters"/></div>
     <div class="form-group"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="Repeat new password"/></div>
     <button class="btn btn-gold" onclick="changePassword()">Update Password</button>
+  </div>
+
+  <div class="settings-section" id="launch-date-section">
+    <h3><i class="fa-solid fa-flag" style="color:var(--gold);margin-right:8px"></i>Site Launch Date</h3>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Monthly &amp; lifetime profit statements only count sales from this date onward. Set it to the day Velorra actually went live.</p>
+    <div id="launch-date-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
+    <div class="form-group" style="max-width:240px;"><label>Launch Date</label><input type="date" id="launch-date-input"/></div>
+    <button class="btn btn-gold" onclick="saveLaunchDate()">Save Launch Date</button>
   </div>
 
   <div class="settings-section">
@@ -737,6 +756,9 @@ function applyRolePermissions(role) {
 
   /* Admin — hide earnings stats + Excel export buttons */
   if (role === 'admin') {
+    /* Hide Settings nav entirely — Change Password access is super_admin only now */
+    document.getElementById('nav-settings')?.style.setProperty('display', 'none');
+    document.getElementById('launch-date-section')?.style.setProperty('display', 'none');
     /* Hide revenue stat card */
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
     if (revenueCard) revenueCard.style.display = 'none';
@@ -750,6 +772,7 @@ function applyRolePermissions(role) {
     /* Hide lifetime earnings + daily statements sections — super admin only */
     document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
     document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
   }
 
   /* Supervisor — restrict to only Orders + Messages in sidebar */
@@ -767,6 +790,7 @@ function applyRolePermissions(role) {
     document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
     document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
     document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
     /* Redirect to orders page */
     showPage('orders');
   }
@@ -901,6 +925,7 @@ async function loadDashboard() {
   if (currentUser?.role === 'super_admin') {
     loadLifetimeEarnings();
     loadDailyStatements();
+    loadMonthlyStatements();
   }
 }
 
@@ -1100,6 +1125,98 @@ function exportDailyStatementsExcel() {
 
     XLSX.writeFile(wb, `Velorra_Daily_Statement_${today()}.xlsx`);
     toast('30-day statement exported ✓', 'success');
+  } catch (err) {
+    toast('Export failed: ' + err.message, 'error');
+  }
+}
+
+/* ═══════════════════ PROFIT — MONTHLY STATEMENTS (super_admin only) ═══════════════════ */
+let monthlyStatementsData = [];
+
+async function loadMonthlyStatements() {
+  const tbody = document.getElementById('monthly-statements-body');
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  try {
+    const res  = await apiFetch('/admin/monthly-statements');
+    const data = await res.json();
+    if (!res.ok) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>${data.error || 'Failed to load statements.'}</p></div></td></tr>`; return; }
+    monthlyStatementsData = data.statements || [];
+    document.getElementById('monthly-since-label').textContent = data.since ? `— since ${new Date(data.since).toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })}` : '— since launch';
+    renderMonthlyStatements(monthlyStatementsData);
+  } catch { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>Failed to load statements.</p></div></td></tr>`; }
+}
+
+function renderMonthlyStatements(statements) {
+  const tbody = document.getElementById('monthly-statements-body');
+  if (!statements.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-calendar"></i><p>No statements yet</p></div></td></tr>`; return; }
+  tbody.innerHTML = statements.map(s => {
+    const itemsSold = s.lines.reduce((sum, l) => sum + (l.qty || 0), 0);
+    const isCurrentMonth = s.month === new Date().toISOString().slice(0,7);
+    const [y, m] = s.month.split('-');
+    const label = new Date(Number(y), Number(m)-1, 1).toLocaleDateString('en-PK', { month:'long', year:'numeric' });
+    return `
+    <tr>
+      <td>${label}${isCurrentMonth ? ' <span class="badge badge-new" style="background:rgba(34,197,94,.15);color:var(--green)">Current</span>' : ''}</td>
+      <td>${itemsSold}</td>
+      <td>${s.totals.orders}</td>
+      <td>PKR ${s.totals.revenue.toLocaleString()}</td>
+      <td>PKR ${s.totals.cost.toLocaleString()}</td>
+      <td style="font-weight:700;color:${s.totals.profit > 0 ? 'var(--green)' : 'var(--muted)'}">PKR ${s.totals.profit.toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* Export month-by-month statement history (since launch) as a structured Excel workbook */
+function exportMonthlyStatementsExcel() {
+  if (!monthlyStatementsData.length) { toast('No statement data to export yet.', 'error'); return; }
+  try {
+    const wb = XLSX.utils.book_new();
+
+    /* ── Sheet 1: Monthly Summary ── */
+    const summaryRows = monthlyStatementsData.map(s => ({
+      Month:           s.month,
+      'Items Sold':    s.lines.reduce((sum, l) => sum + (l.qty || 0), 0),
+      'Orders':        s.totals.orders,
+      'Revenue (PKR)': s.totals.revenue,
+      'Cost (PKR)':    s.totals.cost,
+      'Net Profit (PKR)': s.totals.profit,
+    }));
+    const totalRow = {
+      Month: `TOTAL (since ${monthlyStatementsData[monthlyStatementsData.length-1]?.month || ''})`,
+      'Items Sold':    summaryRows.reduce((s,r) => s + r['Items Sold'], 0),
+      'Orders':        summaryRows.reduce((s,r) => s + r['Orders'], 0),
+      'Revenue (PKR)': summaryRows.reduce((s,r) => s + r['Revenue (PKR)'], 0),
+      'Cost (PKR)':    summaryRows.reduce((s,r) => s + r['Cost (PKR)'], 0),
+      'Net Profit (PKR)': summaryRows.reduce((s,r) => s + r['Net Profit (PKR)'], 0),
+    };
+    const wsSummary = XLSX.utils.json_to_sheet([...summaryRows, totalRow]);
+    wsSummary['!cols'] = [{wch:14},{wch:12},{wch:10},{wch:15},{wch:13},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Monthly Summary');
+
+    /* ── Sheet 2: Itemised line-by-line sales for every month ── */
+    const lineRows = [];
+    monthlyStatementsData.forEach(s => {
+      s.lines.forEach(l => {
+        lineRows.push({
+          Month: s.month,
+          'Order Ref': l.orderId,
+          Date: (l.date || '').slice(0,10),
+          Product: l.product,
+          Qty: l.qty,
+          'Purchase Price (PKR)': l.purchasePrice ?? '',
+          'Sale Price (PKR)': l.salePrice,
+          'Revenue (PKR)': l.revenue,
+          'Cost (PKR)': l.cost,
+          'Profit (PKR)': l.profit,
+        });
+      });
+    });
+    const wsLines = XLSX.utils.json_to_sheet(lineRows.length ? lineRows : [{ Month:'', Note:'No sales recorded since launch' }]);
+    wsLines['!cols'] = [{wch:10},{wch:14},{wch:13},{wch:24},{wch:6},{wch:18},{wch:15},{wch:14},{wch:12},{wch:13}];
+    XLSX.utils.book_append_sheet(wb, wsLines, 'Itemised Sales');
+
+    XLSX.writeFile(wb, `Velorra_Monthly_Statement_${today()}.xlsx`);
+    toast('Monthly statement exported ✓', 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
   }
@@ -1674,6 +1791,44 @@ async function loadSystemInfo() {
       Server Time: ${new Date(data.timestamp).toLocaleString()}
     `;
   } catch {}
+  if (currentUser?.role === 'super_admin') loadLaunchDate();
+}
+
+/* ═══════════════════ SITE LAUNCH DATE (super_admin only) ═══════════════════ */
+async function loadLaunchDate() {
+  try {
+    const res  = await apiFetch('/admin/site-launch-date');
+    const data = await res.json();
+    if (res.ok) document.getElementById('launch-date-input').value = data.siteLaunchDate;
+  } catch {}
+}
+
+async function saveLaunchDate() {
+  const date = document.getElementById('launch-date-input').value;
+  if (!date) { showLaunchDateMsg('Pick a date first.', 'error'); return; }
+  const ok = await bktConfirm({
+    title: 'Update launch date?',
+    message: 'All daily, monthly, and lifetime profit statements will recalculate starting from this date. Sales before it will no longer be counted.',
+    confirmText: 'Update', icon: '🚩', danger: false,
+  });
+  if (!ok) return;
+  try {
+    const res  = await apiFetch('/admin/site-launch-date', { method: 'PUT', body: JSON.stringify({ date }) });
+    const data = await res.json();
+    if (res.ok) {
+      showLaunchDateMsg('Launch date updated ✓ Statements will reflect this on next refresh.', 'success');
+      toast('Site launch date updated.', 'success');
+    } else showLaunchDateMsg(data.error || 'Failed to update.', 'error');
+  } catch { showLaunchDateMsg('Network error.', 'error'); }
+}
+
+function showLaunchDateMsg(text, type) {
+  const el = document.getElementById('launch-date-msg');
+  el.textContent  = text;
+  el.style.display = 'block';
+  el.style.background = type === 'success' ? 'rgba(34,197,94,.1)' : 'rgba(239,68,68,.1)';
+  el.style.color  = type === 'success' ? 'var(--green)' : 'var(--red)';
+  el.style.border = type === 'success' ? '1px solid rgba(34,197,94,.3)' : '1px solid rgba(239,68,68,.3)';
 }
 
 /* ═══════════════════ EXCEL EXPORT ═══════════════════ */

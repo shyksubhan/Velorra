@@ -133,6 +133,23 @@ const store = {
     },
   ],
 
+  /* ── Site launch date ──
+     Monthly/lifetime statements should only ever count from the day the
+     store actually went live — not from whatever the server happened to
+     boot on. Defaults to process.env.SITE_LAUNCH_DATE if set, otherwise
+     falls back to "today" the first time the server starts (super_admin
+     can correct this once from Settings → it's stored here so it persists
+     for the life of the server process). */
+  siteLaunchDate: (process.env.SITE_LAUNCH_DATE && !isNaN(new Date(process.env.SITE_LAUNCH_DATE)))
+    ? new Date(process.env.SITE_LAUNCH_DATE).toISOString().slice(0, 10)
+    : new Date().toISOString().slice(0, 10),
+
+  setSiteLaunchDate(dateStr) {
+    if (!dateStr || isNaN(new Date(dateStr))) throw new Error('Invalid date.');
+    this.siteLaunchDate = new Date(dateStr).toISOString().slice(0, 10);
+    return this.siteLaunchDate;
+  },
+
   /* ── SSE notification listeners ── */
   _notifListeners: new Set(),
 
@@ -215,24 +232,52 @@ const store = {
     return { date: target, ...stmt };
   },
 
-  /* History of daily statements for the last N days (default 30), newest first */
+  /* History of daily statements for the last N days (default 30), newest first.
+     Never goes earlier than the site's launch date. */
   dailyStatementHistory(days = 30) {
     const out = [];
+    const launch = this.siteLaunchDate;
     for (let i = 0; i < days; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().slice(0, 10);
+      if (dateStr < launch) break;  /* stop once we go before launch — nothing to show */
       out.push(this.dailyStatement(dateStr));
     }
     return out;
   },
 
-  /* Lifetime earnings — every sale ever recorded, no date filter */
+  /* Statement for one calendar month (monthStr = 'YYYY-MM') */
+  monthlyStatement(monthStr) {
+    const stmt = this._buildStatement(o => (o.createdAt || '').slice(0, 7) === monthStr);
+    return { month: monthStr, ...stmt };
+  },
+
+  /* History of monthly statements, starting from the site's launch month up
+     to the current month (newest first). This is the "monthly statement"
+     view — unlike daily history it is NOT capped at 30 days; it always
+     starts the count from siteLaunchDate, however long ago that was. */
+  monthlyStatementHistory() {
+    const launch = new Date(this.siteLaunchDate + 'T00:00:00');
+    const launchMonth = new Date(launch.getFullYear(), launch.getMonth(), 1);
+    const now = new Date();
+    const out = [];
+    let cursor = new Date(now.getFullYear(), now.getMonth(), 1);
+    while (cursor >= launchMonth) {
+      const monthStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`;
+      out.push(this.monthlyStatement(monthStr));
+      cursor.setMonth(cursor.getMonth() - 1);
+    }
+    return out;
+  },
+
+  /* Lifetime earnings — every sale ever recorded since launch, no other date filter */
   lifetimeEarnings() {
-    const stmt = this._buildStatement(() => true);
+    const launch = this.siteLaunchDate;
+    const stmt = this._buildStatement(o => (o.createdAt || '').slice(0, 10) >= launch);
     /* Also bucket by day so the UI can show a quick trend if desired */
     const byDay = {};
-    this.orders.filter(o => o.status !== 'Cancelled').forEach(o => {
+    this.orders.filter(o => o.status !== 'Cancelled' && (o.createdAt || '').slice(0, 10) >= launch).forEach(o => {
       const day = (o.createdAt || '').slice(0, 10);
       if (!byDay[day]) byDay[day] = { date: day, revenue: 0, cost: 0, profit: 0 };
       (o.items || []).forEach(item => {
@@ -245,7 +290,7 @@ const store = {
     const days = Object.values(byDay)
       .map(d => ({ ...d, revenue: Math.round(d.revenue), cost: Math.round(d.cost), profit: Math.round(d.profit) }))
       .sort((a, b) => new Date(b.date) - new Date(a.date));
-    return { ...stmt, byDay: days, since: days.length ? days[days.length - 1].date : null };
+    return { ...stmt, byDay: days, since: launch };
   },
 
   /* ── Helpers ── */
@@ -255,6 +300,9 @@ const store = {
   findAdminUser(usernameOrEmail) {
     const v = (usernameOrEmail || '').toLowerCase();
     return this.adminUsers.find(u => u.username === v || u.email === v);
+  },
+  findAdminUserById(id) {
+    return this.adminUsers.find(u => u.id === id);
   },
 
   /* ── Staff summary (per-staff activity counts) ── */

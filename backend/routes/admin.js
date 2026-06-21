@@ -191,4 +191,35 @@ router.get('/daily-statements/history', requireRole('super_admin'), async (req, 
   }
 });
 
+/* ── GET /api/admin/monthly-statements — Month-by-month statements since launch (super_admin ONLY) ──
+   Unlike the 30-day daily history, this always starts from siteLaunchDate,
+   however long ago that was — it is never capped. ── */
+router.get('/monthly-statements', requireRole('super_admin'), async (req, res) => {
+  try {
+    return res.json({ statements: store.monthlyStatementHistory(), since: store.siteLaunchDate });
+  } catch (err) {
+    console.error('Monthly statements error:', err);
+    return res.status(500).json({ error: 'Failed to compute monthly statements.' });
+  }
+});
+
+/* ── GET /api/admin/site-launch-date — Read the configured launch date (super_admin ONLY) ── */
+router.get('/site-launch-date', requireRole('super_admin'), (req, res) => {
+  return res.json({ siteLaunchDate: store.siteLaunchDate });
+});
+
+/* ── PUT /api/admin/site-launch-date — Set/correct the launch date (super_admin ONLY) ──
+   All daily/monthly/lifetime statements key off this date, so super_admin
+   can set it once to match the real go-live day of the store. ── */
+router.put('/site-launch-date', requireRole('super_admin'), (req, res) => {
+  try {
+    const { date } = req.body;
+    if (!date) return res.status(400).json({ error: 'A date is required.' });
+    const saved = store.setSiteLaunchDate(date);
+    return res.json({ message: 'Site launch date updated.', siteLaunchDate: saved });
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid date.' });
+  }
+});
+
 module.exports = router;
