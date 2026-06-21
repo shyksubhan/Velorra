@@ -26,13 +26,25 @@ async function apiGet(endpoint) {
   return res.json();
 }
 
-/* ── Generic POST ── */
+/* ── Generic POST ──
+   NOTE: our backend is on Render's free tier, which can take 30-60s
+   to wake up after being idle. We give it generous time before giving
+   up, so a slow cold-start doesn't look like "nothing happened". */
 async function apiPost(endpoint, data, requireAuth = false) {
-  const res = await fetch(`${VELORRA_API}${endpoint}`, {
-    method: 'POST',
-    headers: apiHeaders(requireAuth),
-    body: JSON.stringify(data),
-  });
+  let res;
+  try {
+    res = await fetch(`${VELORRA_API}${endpoint}`, {
+      method: 'POST',
+      headers: apiHeaders(requireAuth),
+      body: JSON.stringify(data),
+      signal: AbortSignal.timeout(75000),
+    });
+  } catch (err) {
+    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+      return { ok: false, status: 0, data: { error: 'Server took too long to respond. Please try again in a moment.' } };
+    }
+    throw err;
+  }
   let body;
   try {
     body = await res.json();

@@ -152,15 +152,15 @@
       <div style="margin-bottom:14px;">
         <label style="font-size:.78rem;color:var(--muted,#888);display:block;margin-bottom:6px;">Your Review</label>
         <textarea id="review-text" rows="4" placeholder="Tell us about your experience with this product…"
-          style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border,#2a2a2a);border-radius:8px;color:var(--text,#f0f0f0);padding:12px;font-family:inherit;font-size:.82rem;resize:vertical;box-sizing:border-box;"></textarea>
+          style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border,#2a2a2a);border-radius:8px;color:var(--text,#f0f0f0);padding:12px;font-family:inherit;font-size:.82rem;resize:vertical;box-sizing:border-box;cursor:text;caret-color:var(--gold,#c9a84c);"></textarea>
       </div>
       <!-- City -->
       <div style="margin-bottom:22px;">
         <label style="font-size:.78rem;color:var(--muted,#888);display:block;margin-bottom:6px;">Your City <span style="opacity:.5">(optional)</span></label>
         <input type="text" id="review-city" placeholder="e.g. Lahore"
-          style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border,#2a2a2a);border-radius:8px;color:var(--text,#f0f0f0);padding:10px 12px;font-family:inherit;font-size:.82rem;box-sizing:border-box;" />
+          style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border,#2a2a2a);border-radius:8px;color:var(--text,#f0f0f0);padding:10px 12px;font-family:inherit;font-size:.82rem;box-sizing:border-box;cursor:text;caret-color:var(--gold,#c9a84c);" />
       </div>
-      <button id="review-submit-btn" class="btn-primary" style="width:100%;text-align:center;padding:14px;">Submit Review</button>
+      <button id="review-submit-btn" class="btn-primary" style="width:100%;text-align:center;padding:14px;cursor:pointer;">Submit Review</button>
     </div>
   </div>
 
@@ -226,13 +226,16 @@
                 color:${o.status==='Delivered'?'#4caf82':o.status==='Shipped'?'#c9a84c':'#4c8ce0'}">
                 ${o.status || 'Pending'}
               </span>
-              ${o.status === 'Delivered' ? `
-              <button onclick="openReviewModal('${o.id}', '${(o.items?.map(i=>i.name)||[]).join(', ').replace(/'/g,"&#39;")}')"
+              ${o.status === 'Delivered' ? (
+                isOrderReviewed(o.id)
+                ? `<span style="font-size:.72rem;color:#4caf82;padding:4px 12px;border:1px solid rgba(76,175,130,.4);border-radius:10px;">✓ Review Submitted</span>`
+                : `<button onclick="openReviewModal('${o.id}', '${(o.items?.map(i=>i.name)||[]).join(', ').replace(/'/g,"&#39;")}')"
                 style="background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:.72rem;padding:4px 12px;border-radius:10px;cursor:pointer;font-family:inherit;transition:all .2s;"
                 onmouseover="this.style.background='var(--gold)';this.style.color='#000'"
                 onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">
                 ✦ Leave a Review
-              </button>` : ''}
+              </button>`
+              ) : ''}
             </div>
           </div>`).join('');
       } catch(err) {
@@ -247,6 +250,25 @@
 
     /* ── Review Modal ── */
     let _reviewOrderId = null;
+
+    /* Track which orders the customer has already reviewed.
+       This is a client-side safety net so the button can never be
+       clicked twice in a row, even if the backend's own duplicate
+       check is slow to respond (e.g. server waking up). */
+    function getReviewedOrders() {
+      try { return JSON.parse(localStorage.getItem('velorra_reviewed_orders') || '[]'); }
+      catch { return []; }
+    }
+    function isOrderReviewed(orderId) {
+      return getReviewedOrders().includes(orderId);
+    }
+    function markOrderReviewed(orderId) {
+      const list = getReviewedOrders();
+      if (!list.includes(orderId)) {
+        list.push(orderId);
+        localStorage.setItem('velorra_reviewed_orders', JSON.stringify(list));
+      }
+    }
 
     function openReviewModal(orderId, productNames) {
       _reviewOrderId = orderId;
@@ -279,26 +301,40 @@
 
       const user = getCurrentUser();
       const btn = document.getElementById('review-submit-btn');
+      const orderIdAtSubmit = _reviewOrderId;
       btn.disabled = true; btn.textContent = 'Submitting…';
+
+      /* Our server can take 30–60s to wake up if it's been idle.
+         Let the customer know instead of leaving them staring at silence. */
+      const slowNoticeTimer = setTimeout(() => {
+        showToast('Still connecting — server is waking up, please wait…');
+      }, 6000);
 
       try {
         const result = await apiSubmitReview({
-          orderId:      _reviewOrderId,
+          orderId:      orderIdAtSubmit,
           rating:       _selectedStars,
           text,
           city,
           customerName: user ? `${user.fname} ${user.lname?.[0]||''}.`.trim() : 'Customer',
           customerEmail: user?.email || '',
         });
+        clearTimeout(slowNoticeTimer);
         if (result.ok) {
+          markOrderReviewed(orderIdAtSubmit);
           showToast('Thank you for your review! ✓');
           closeReviewModal();
+          if (user?.email) loadOrderHistory(user.email); /* refresh so button becomes "Review Submitted" */
         } else if (result.status === 409) {
+          markOrderReviewed(orderIdAtSubmit); /* backend confirms one already exists — sync local flag too */
           showToast('You\'ve already reviewed this order.');
+          closeReviewModal();
+          if (user?.email) loadOrderHistory(user.email);
         } else {
           showToast(result.data?.error || 'Could not submit. Please try again.');
         }
       } catch (err) {
+        clearTimeout(slowNoticeTimer);
         console.error('Review submit failed:', err);
         showToast('Connection error — please check your internet and try again.');
       } finally {

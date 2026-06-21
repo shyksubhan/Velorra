@@ -17,17 +17,27 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(animCursor);
     };
     animCursor();
-    document.querySelectorAll('a, button, .product-card, .cat-card').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        cursor.style.width = '18px'; cursor.style.height = '18px';
-        cursorRing.style.width = '52px'; cursorRing.style.height = '52px';
-        cursorRing.style.borderColor = 'rgba(201,168,76,0.45)';
-      });
-      el.addEventListener('mouseleave', () => {
-        cursor.style.width = '10px'; cursor.style.height = '10px';
-        cursorRing.style.width = '36px'; cursorRing.style.height = '36px';
-        cursorRing.style.borderColor = 'var(--gold)';
-      });
+
+    /* Use event delegation (mouseover/mouseout on document) instead of
+       binding listeners to a fixed snapshot of elements at page load.
+       This way, buttons/links revealed later (e.g. inside a modal that
+       was `display:none` on load) still scale the cursor correctly. */
+    const HOVER_SELECTOR = 'a, button, .product-card, .cat-card';
+    document.addEventListener('mouseover', e => {
+      const target = e.target.closest(HOVER_SELECTOR);
+      if (!target) return;
+      cursor.style.width = '18px'; cursor.style.height = '18px';
+      cursorRing.style.width = '52px'; cursorRing.style.height = '52px';
+      cursorRing.style.borderColor = 'rgba(201,168,76,0.45)';
+    });
+    document.addEventListener('mouseout', e => {
+      const target = e.target.closest(HOVER_SELECTOR);
+      if (!target) return;
+      const related = e.relatedTarget && e.relatedTarget.closest ? e.relatedTarget.closest(HOVER_SELECTOR) : null;
+      if (related === target) return; /* still inside the same interactive element */
+      cursor.style.width = '10px'; cursor.style.height = '10px';
+      cursorRing.style.width = '36px'; cursorRing.style.height = '36px';
+      cursorRing.style.borderColor = 'var(--gold)';
     });
   }
 
