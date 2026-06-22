@@ -1,6 +1,6 @@
 /* ============================================================
    VELORRA — Payments Routes
-   Supports: COD, JazzCash, EasyPaisa, Card (Stripe test mode)
+   Supports: COD, Card (Stripe test mode), Bank Transfer
    ============================================================ */
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
@@ -8,7 +8,7 @@ const store = require('../utils/store');
 
 const router = express.Router();
 
-const PAYMENT_METHODS = ['cod', 'jazzcash', 'easypaisa', 'card', 'bank_transfer'];
+const PAYMENT_METHODS = ['cod', 'card', 'bank_transfer'];
 
 /* ── POST /api/payments/initiate ──
    Called when customer selects a payment method at checkout.
@@ -38,113 +38,6 @@ router.post('/initiate', async (req, res) => {
           amount,
           orderRef,
         });
-
-      case 'jazzcash': {
-        /*
-          Real JazzCash integration requires:
-          - Merchant ID (from JazzCash merchant portal)
-          - Password + IntegritySalt (from JazzCash)
-          - Generate HMAC SHA256 hash and redirect to JazzCash hosted page
-
-          For now, returns sandbox-ready structure.
-          Set JAZZCASH_MERCHANT_ID, JAZZCASH_PASSWORD, JAZZCASH_INTEGRITY_SALT in .env for production.
-        */
-        const merchantId = process.env.JAZZCASH_MERCHANT_ID || 'SANDBOX_MERCHANT';
-        const isLive     = !!process.env.JAZZCASH_MERCHANT_ID;
-
-        if (isLive) {
-          /* Build JazzCash payment form data */
-          const crypto = require('crypto');
-          const pp_Amount         = String(Math.round(amount * 100)); /* in paisas */
-          const pp_BillReference  = orderRef;
-          const pp_Description    = `BKT Jewelry Order ${orderRef}`;
-          const pp_MerchantID     = merchantId;
-          const pp_Password       = process.env.JAZZCASH_PASSWORD;
-          const pp_ReturnURL      = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/api/payments/jazzcash-callback`;
-          const pp_TxnCurrency    = 'PKR';
-          const pp_TxnDateTime    = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
-          const pp_TxnRefNo       = txnId;
-          const pp_TxnType        = 'MWALLET';
-          const pp_Version        = '1.1';
-          const pp_MobileNumber   = customerPhone || '';
-
-          const hashString = [
-            process.env.JAZZCASH_INTEGRITY_SALT,
-            pp_Amount, pp_BillReference, pp_Description,
-            pp_MerchantID, pp_Password, pp_ReturnURL,
-            pp_TxnCurrency, pp_TxnDateTime, pp_TxnRefNo, pp_TxnType, pp_Version, pp_MobileNumber
-          ].join('&');
-
-          const pp_SecureHash = crypto.createHmac('sha256', process.env.JAZZCASH_INTEGRITY_SALT || '').update(hashString).digest('hex').toUpperCase();
-
-          return res.json({
-            method:        'jazzcash',
-            txnId,
-            status:        'redirect',
-            redirectUrl:   'https://payments.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform/',
-            formData:      { pp_MerchantID, pp_Password, pp_TxnRefNo, pp_Amount, pp_TxnCurrency, pp_TxnDateTime, pp_BillReference, pp_Description, pp_TxnType, pp_Version, pp_ReturnURL, pp_MobileNumber, pp_SecureHash },
-            amount,
-            orderRef,
-          });
-        }
-
-        /* Sandbox / Demo mode */
-        return res.json({
-          method:        'jazzcash',
-          txnId,
-          status:        'demo',
-          amount,
-          orderRef,
-          instructions:  `Send PKR ${amount.toLocaleString()} to JazzCash account: 0300-0000000 (BKT Jewelry). Use order reference "${orderRef}" as your payment message. Screenshot required.`,
-          demoMode:      true,
-          setupRequired: 'Set JAZZCASH_MERCHANT_ID, JAZZCASH_PASSWORD, JAZZCASH_INTEGRITY_SALT in .env to enable live JazzCash payments.',
-        });
-      }
-
-      case 'easypaisa': {
-        /*
-          Real EasyPaisa integration requires EasyPaisa merchant credentials.
-          Set EASYPAISA_STORE_ID, EASYPAISA_HASH_KEY in .env for production.
-        */
-        const isLive = !!process.env.EASYPAISA_STORE_ID;
-
-        if (isLive) {
-          /* Build EasyPaisa OTC/MA transaction */
-          const crypto      = require('crypto');
-          const storeId     = process.env.EASYPAISA_STORE_ID;
-          const hashKey     = process.env.EASYPAISA_HASH_KEY;
-          const orderId     = orderRef;
-          const transAmount = amount.toFixed(2);
-          const mobileNum   = customerPhone || '03000000000';
-          const emailAddr   = customerEmail || '';
-          const expiryDate  = new Date(Date.now() + 3600000).toISOString().split('T')[0].replace(/-/g, '') + '235959'; /* +1 hour */
-
-          const postData = `amount=${transAmount}&orderRefNum=${orderId}&storeId=${storeId}&expiryDate=${expiryDate}&postBackURL=${process.env.FRONTEND_URL || 'http://localhost:3001'}/api/payments/easypaisa-callback&mobileNum=${mobileNum}&emailAddr=${emailAddr}`;
-          const hash = crypto.createHmac('sha256', hashKey).update(postData).digest('base64');
-
-          return res.json({
-            method:      'easypaisa',
-            txnId,
-            status:      'redirect',
-            redirectUrl: 'https://easypay.easypaisa.com.pk/tpg/',
-            formData:    { storeId, orderId, transactionAmount: transAmount, mobileAccountNo: mobileNum, emailAddress: emailAddr, transactionType: 'MA', tokenExpiry: expiryDate, encryptedHashRequest: hash },
-            amount,
-            orderRef,
-          });
-        }
-
-        /* Demo mode */
-        return res.json({
-          method:        'easypaisa',
-          txnId,
-          status:        'demo',
-          amount,
-          orderRef,
-          instructions:  `Send PKR ${amount.toLocaleString()} to EasyPaisa account: 0300-0000000 (BKT Jewelry). Use "${orderRef}" as the account title message.`,
-          demoMode:      true,
-          setupRequired: 'Set EASYPAISA_STORE_ID, EASYPAISA_HASH_KEY in .env to enable live EasyPaisa payments.',
-        });
-      }
 
       case 'card': {
         /*
@@ -223,28 +116,6 @@ router.post('/verify', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: 'Payment verification failed.' });
   }
-});
-
-/* ── GET /api/payments/jazzcash-callback ── JazzCash redirect callback ── */
-router.get('/jazzcash-callback', async (req, res) => {
-  const { pp_TxnRefNo, pp_ResponseCode, pp_BillReference } = req.query;
-  if (pp_ResponseCode === '000') {
-    /* Payment successful */
-    const order = store.findOrder(pp_BillReference);
-    if (order) { order.paymentStatus = 'received'; order.txnId = pp_TxnRefNo; }
-    return res.redirect(`/?payment=success&ref=${pp_BillReference}`);
-  }
-  return res.redirect(`/?payment=failed&ref=${pp_BillReference}`);
-});
-
-/* ── POST /api/payments/easypaisa-callback ── */
-router.post('/easypaisa-callback', async (req, res) => {
-  const { orderRefNum, transactionId, responseCode } = req.body;
-  if (responseCode === '0000') {
-    const order = store.findOrder(orderRefNum);
-    if (order) { order.paymentStatus = 'received'; order.txnId = transactionId; }
-  }
-  res.sendStatus(200);
 });
 
 /* ── POST /api/payments/stripe-webhook ── Stripe event webhook ── */
