@@ -141,7 +141,7 @@ app.get('/api/health', (req, res) => {
   try { firebaseStatus = getDB() ? 'connected' : 'demo'; } catch { firebaseStatus = 'demo'; }
   res.json({
     status:    'ok',
-    service:   'Velorra Backend',
+    service:   'BKT Jewelry Backend',
     version:   '2.0.0',
     firebase:  firebaseStatus,
     demoMode:  firebaseStatus === 'demo',

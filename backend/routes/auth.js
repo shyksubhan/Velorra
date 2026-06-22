@@ -93,7 +93,7 @@ router.post('/register', async (req, res) => {
       const userData = { id: ref.id, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, isAdmin: false, createdAt: new Date().toISOString() };
       await ref.set(userData);
       const token = signToken({ uid: ref.id, email: normalEmail, isAdmin: false });
-      return res.status(201).json({ message: 'Account created! Welcome to Velorra 💧', token, user: { id: ref.id, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
+      return res.status(201).json({ message: 'Account created! Welcome to BKT Jewelry 💧', token, user: { id: ref.id, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
     }
 
     /* In-memory */
@@ -102,7 +102,7 @@ router.post('/register', async (req, res) => {
     const userData = { id: uid, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, isAdmin: false, createdAt: new Date().toISOString() };
     store.users.push(userData);
     const token = signToken({ uid, email: normalEmail, isAdmin: false });
-    return res.status(201).json({ message: 'Account created! Welcome to Velorra 💧', token, user: { id: uid, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
+    return res.status(201).json({ message: 'Account created! Welcome to BKT Jewelry 💧', token, user: { id: uid, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
 
   } catch (err) {
     console.error('Register error:', err);

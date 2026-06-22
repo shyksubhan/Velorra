@@ -7,7 +7,7 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM = 'Velorra <onboarding@resend.dev>';
+const FROM = 'BKT Jewelry <onboarding@resend.dev>';
 const TO   = process.env.EMAIL_TO;
 
 /* ── Order Confirmation Email (to customer) ── */
@@ -23,9 +23,9 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
   await resend.emails.send({
     from: FROM,
     to,
-    subject: `Order Confirmed — ${orderRef} | Velorra`,
+    subject: `Order Confirmed — ${orderRef} | BKT Jewelry`,
     html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;color:#ccc;">
-      <h1 style="color:#c9a84c;">Vel<span style="color:#fff;">orra</span></h1>
+      <h1 style="color:#c9a84c;">BKT <span style="color:#fff;">Jewelry</span></h1>
       <h2 style="color:#fff;">Order Confirmed ✓</h2>
       <p>Thank you ${delivery.fname}! Your order <strong style="color:#c9a84c;">${orderRef}</strong> has been placed.</p>
       <table width="100%" style="margin:24px 0;">${itemRows}</table>
@@ -87,11 +87,11 @@ async function sendNewsletterWelcome(email) {
   await resend.emails.send({
     from: FROM,
     to: email,
-    subject: '💛 Welcome to the Velorra Circle',
+    subject: '💛 Welcome to BKT Jewelry',
     html: `<body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;text-align:center;color:#ccc;">
-      <h1 style="color:#c9a84c;">Vel<span style="color:#fff;">orra</span></h1>
+      <h1 style="color:#c9a84c;">BKT <span style="color:#fff;">Jewelry</span></h1>
       <h2 style="color:#fff;">Welcome to the Circle 💛</h2>
-      <p style="color:#888;">You're now part of Velorra's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
+      <p style="color:#888;">You're now part of BKT Jewelry's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
       <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? bktjewelryoperations@gmail.com</p>
     </body>`,
   });

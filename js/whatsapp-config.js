@@ -8,7 +8,7 @@ const VELORRA_CONFIG = {
      Example: Pakistan 0300-1234567 → '923001234567'          */
   whatsapp: {
     number:  '923314978295',          // ← REPLACE with your number
-    message: 'Hi! I found you on Velorra and I have a question.',
+    message: 'Hi! I found you on BKT Jewelry and I have a question.',
   },
   /* ── Social Media ──
      Replace these URLs with your actual profile links         */

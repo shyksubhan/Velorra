@@ -57,7 +57,7 @@ router.post('/initiate', async (req, res) => {
           const crypto = require('crypto');
           const pp_Amount         = String(Math.round(amount * 100)); /* in paisas */
           const pp_BillReference  = orderRef;
-          const pp_Description    = `Velorra Order ${orderRef}`;
+          const pp_Description    = `BKT Jewelry Order ${orderRef}`;
           const pp_MerchantID     = merchantId;
           const pp_Password       = process.env.JAZZCASH_PASSWORD;
           const pp_ReturnURL      = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/api/payments/jazzcash-callback`;
@@ -95,7 +95,7 @@ router.post('/initiate', async (req, res) => {
           status:        'demo',
           amount,
           orderRef,
-          instructions:  `Send PKR ${amount.toLocaleString()} to JazzCash account: 0300-0000000 (Velorra). Use order reference "${orderRef}" as your payment message. Screenshot required.`,
+          instructions:  `Send PKR ${amount.toLocaleString()} to JazzCash account: 0300-0000000 (BKT Jewelry). Use order reference "${orderRef}" as your payment message. Screenshot required.`,
           demoMode:      true,
           setupRequired: 'Set JAZZCASH_MERCHANT_ID, JAZZCASH_PASSWORD, JAZZCASH_INTEGRITY_SALT in .env to enable live JazzCash payments.',
         });
@@ -140,7 +140,7 @@ router.post('/initiate', async (req, res) => {
           status:        'demo',
           amount,
           orderRef,
-          instructions:  `Send PKR ${amount.toLocaleString()} to EasyPaisa account: 0300-0000000 (Velorra). Use "${orderRef}" as the account title message.`,
+          instructions:  `Send PKR ${amount.toLocaleString()} to EasyPaisa account: 0300-0000000 (BKT Jewelry). Use "${orderRef}" as the account title message.`,
           demoMode:      true,
           setupRequired: 'Set EASYPAISA_STORE_ID, EASYPAISA_HASH_KEY in .env to enable live EasyPaisa payments.',
         });
@@ -172,7 +172,7 @@ router.post('/initiate', async (req, res) => {
         const paymentIntent = await stripe.paymentIntents.create({
           amount:      Math.round(amount * 100), /* Stripe uses smallest currency unit */
           currency:    'pkr',
-          description: `Velorra Order ${orderRef}`,
+          description: `BKT Jewelry Order ${orderRef}`,
           metadata:    { orderRef },
         });
 
@@ -194,7 +194,7 @@ router.post('/initiate', async (req, res) => {
           status:       'pending',
           amount,
           orderRef,
-          instructions: `Transfer PKR ${amount.toLocaleString()} to:\nBank: HBL\nAccount Title: Velorra\nAccount No: 1234-5678-9012\nIBAN: PK00HABB0000000000000000\nReference: ${orderRef}\n\nEmail your transfer receipt to bktjewelryoperations@gmail.com with your order number.`,
+          instructions: `Transfer PKR ${amount.toLocaleString()} to:\nBank: HBL\nAccount Title: BKT Jewelry\nAccount No: 1234-5678-9012\nIBAN: PK00HABB0000000000000000\nReference: ${orderRef}\n\nEmail your transfer receipt to bktjewelryoperations@gmail.com with your order number.`,
         });
     }
 

@@ -25,21 +25,21 @@ router.post('/', async (req, res) => {
     if (isFirebaseAvailable()) {
       const db = getDB();
       const existing = await db.collection('subscribers').where('email', '==', normalEmail).limit(1).get();
-      if (!existing.empty) return res.json({ message: "You're already part of the Velorra Circle! 💛", alreadySubscribed: true });
+      if (!existing.empty) return res.json({ message: "You're already part of the BKT Jewelry Circle! 💛", alreadySubscribed: true });
       const ref = await db.collection('subscribers').add({ email: normalEmail, subscribedAt: new Date().toISOString(), active: true });
       sendNewsletterWelcome(normalEmail).catch(e => console.error('Welcome email failed:', e.message));
-      return res.status(201).json({ message: "Welcome to the Velorra Circle! 💛 You'll be the first to hear about new arrivals and offers.", id: ref.id });
+      return res.status(201).json({ message: "Welcome to BKT Jewelry! 💛 You'll be the first to hear about new arrivals and offers.", id: ref.id });
     }
 
     /* In-memory via shared store */
     if (store.subscribers.find(s => s.email === normalEmail)) {
-      return res.json({ message: "You're already part of the Velorra Circle! 💛", alreadySubscribed: true });
+      return res.json({ message: "You're already part of the BKT Jewelry Circle! 💛", alreadySubscribed: true });
     }
     const sub = { id: 'sub-' + Date.now(), email: normalEmail, subscribedAt: new Date().toISOString(), active: true };
     store.subscribers.unshift(sub);
     store.emit('new_subscriber', { email: normalEmail });
     sendNewsletterWelcome(normalEmail).catch(e => console.error('Welcome email failed:', e.message));
-    return res.status(201).json({ message: "Welcome to the Velorra Circle! 💛 You'll be the first to hear about new arrivals and offers.", id: sub.id });
+    return res.status(201).json({ message: "Welcome to BKT Jewelry! 💛 You'll be the first to hear about new arrivals and offers.", id: sub.id });
 
   } catch (err) {
     console.error('Newsletter error:', err);

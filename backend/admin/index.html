@@ -1123,7 +1123,7 @@ function exportDailyStatementsExcel() {
       XLSX.utils.book_append_sheet(wb, wsLifetime, 'Lifetime Snapshot');
     }
 
-    XLSX.writeFile(wb, `Velorra_Daily_Statement_${today()}.xlsx`);
+    XLSX.writeFile(wb, `BKT JEWELRY - Daily Statement - ${today()}.xlsx`);
     toast('30-day statement exported ✓', 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
@@ -1215,7 +1215,7 @@ function exportMonthlyStatementsExcel() {
     wsLines['!cols'] = [{wch:10},{wch:14},{wch:13},{wch:24},{wch:6},{wch:18},{wch:15},{wch:14},{wch:12},{wch:13}];
     XLSX.utils.book_append_sheet(wb, wsLines, 'Itemised Sales');
 
-    XLSX.writeFile(wb, `Velorra_Monthly_Statement_${today()}.xlsx`);
+    XLSX.writeFile(wb, `BKT JEWELRY - Monthly Statement - ${today()}.xlsx`);
     toast('Monthly statement exported ✓', 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
@@ -1838,12 +1838,12 @@ async function exportExcel(type) {
 
     if (type === 'subscribers') {
       rows = allSubscribers.length ? allSubscribers : (await (await apiFetch('/newsletter')).json()).subscribers || [];
-      filename  = `BKT_Subscribers_${today()}.xlsx`;
+      filename  = `BKT JEWELRY - Subscribers - ${today()}.xlsx`;
       sheetName = 'Subscribers';
       rows = rows.map((s, i) => ({ '#': i+1, Email: s.email, 'Subscribed At': fmtDate(s.subscribedAt), Status: 'Active' }));
     } else if (type === 'orders') {
       rows = allOrders.length ? allOrders : (await (await apiFetch('/orders')).json()).orders || [];
-      filename  = `BKT_Orders_${today()}.xlsx`;
+      filename  = `BKT JEWELRY - Orders - ${today()}.xlsx`;
       sheetName = 'Orders';
       rows = rows.map(o => ({
         'Order Ref':    o.id,
@@ -1861,7 +1861,7 @@ async function exportExcel(type) {
       }));
     } else if (type === 'messages') {
       rows = allMessages.length ? allMessages : (await (await apiFetch('/contact')).json()).messages || [];
-      filename  = `Velorra_Messages_${today()}.xlsx`;
+      filename  = `BKT JEWELRY - Messages - ${today()}.xlsx`;
       sheetName = 'Messages';
       rows = rows.map(m => ({
         Name:    m.name,

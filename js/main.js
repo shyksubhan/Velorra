@@ -129,14 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const result = await apiSubscribeNewsletter(email);
       if (result.ok) {
-        showToast(result.data.message || "Welcome to the Velorra Circle! 💛 You'll be the first to hear about new arrivals and offers.");
+        showToast(result.data.message || "Welcome to BKT Jewelry! 💛 You'll be the first to hear about new arrivals and offers.");
         input.value = '';
       } else {
         showToast(result.data.error || 'Please try again.');
       }
     } catch {
       /* Backend not available — graceful fallback */
-      showToast("Welcome to the Velorra Circle! 💛 You'll be the first to hear about new arrivals and offers.");
+      showToast("Welcome to BKT Jewelry! 💛 You'll be the first to hear about new arrivals and offers.");
       input.value = '';
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Subscribe'; }
