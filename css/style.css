@@ -679,7 +679,19 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   padding: calc(var(--nav-h) + 60px) 0 60px;
   background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg) 100%);
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
+.page-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1600&q=50&fit=crop') center/cover no-repeat;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+.page-hero > * { position: relative; z-index: 1; }
 .page-hero h1 { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 400; color: var(--text); }
 .filter-bar {
   display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
