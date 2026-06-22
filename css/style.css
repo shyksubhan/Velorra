@@ -864,6 +864,17 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
+/* Row 3 — 3 cards centered */
+.cat-row-3 {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+.cat-row-3 .cat-card {
+  width: calc((100% - 40px) / 4);
+  flex-shrink: 0;
+}
 .cat-img-card {
   position: relative;
   overflow: hidden;
@@ -957,13 +968,18 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 }
 @media (max-width: 1100px) {
   .cat-grid { grid-template-columns: repeat(3, 1fr); }
+  .cat-row-3 .cat-card { width: calc((100% - 40px) / 3); }
 }
 @media (max-width: 768px) {
   .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .cat-img-card .cat-name { font-size: 0.92rem; }
   .cat-img-info { padding: 16px 14px 14px; }
   .cat-cta-pill { display: none; }
+  .cat-row-3 { gap: 14px; }
+  .cat-row-3 .cat-card { width: calc(50% - 7px); }
 }
 @media (max-width: 400px) {
   .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .cat-row-3 { gap: 10px; }
+  .cat-row-3 .cat-card { width: calc(50% - 5px); }
 }
