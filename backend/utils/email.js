@@ -97,9 +97,76 @@ async function sendNewsletterWelcome(email) {
   });
 }
 
+
+
+/* ── Reply Email (to customer, from admin) ── */
+async function sendReplyEmail({ to, customerName, originalMessage, replyText }) {
+  const resend = getResend();
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Re: Your message to BKT Jewelry`,
+    html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#faf7f2;font-family:Georgia,serif;color:#2c1f14;">
+      <h2 style="color:#b8883a;">BKT <span style="color:#2c1f14;">Jewelry</span></h2>
+      <p>Dear ${customerName || 'Valued Customer'},</p>
+      <p style="line-height:1.8;">${replyText.replace(/\n/g, '<br>')}</p>
+      <hr style="border:none;border-top:1px solid #e8d5b0;margin:24px 0;"/>
+      <p style="color:#9a8070;font-size:.82rem;">Your original message:</p>
+      <blockquote style="border-left:3px solid #b8883a;padding:10px 16px;background:#f5f0e8;color:#5a4030;font-size:.85rem;margin:8px 0;">
+        ${originalMessage}
+      </blockquote>
+      <p style="color:#9a8070;font-size:.78rem;margin-top:24px;">
+        BKT Jewelry — hello@bktjewelry.com
+      </p>
+    </body></html>`,
+  });
+}
+
+/* ── Bulk Promotion Email (to all subscribers) ── */
+async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
+  const resend = getResend();
+  const results = { sent: 0, failed: 0, errors: [] };
+
+  for (const email of subscribers) {
+    try {
+      await resend.emails.send({
+        from: FROM,
+        to: email,
+        subject,
+        html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#faf7f2;font-family:Georgia,serif;color:#2c1f14;text-align:center;">
+          <h2 style="color:#b8883a;letter-spacing:.15em;">BKT <span style="color:#2c1f14;">JEWELRY</span></h2>
+          <hr style="border:none;border-top:1px solid #e8d5b0;margin:20px auto;width:80px;"/>
+          <div style="max-width:520px;margin:0 auto;text-align:left;line-height:1.9;color:#5a4030;">
+            ${body.replace(/\n/g, '<br>')}
+          </div>
+          ${promoCode ? `
+          <div style="margin:32px auto;max-width:300px;border:1px solid #b8883a;padding:20px;text-align:center;background:#fff;">
+            <p style="font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:#9a8070;margin:0 0 10px;">Your Exclusive Code</p>
+            <p style="font-family:monospace;font-size:1.6rem;color:#b8883a;font-weight:700;letter-spacing:.2em;margin:0;">${promoCode}</p>
+          </div>` : ''}
+          <p style="color:#9a8070;font-size:.72rem;margin-top:32px;">
+            You're receiving this because you subscribed to BKT Jewelry.<br/>
+            <a href="https://velorra-vvp3.onrender.com/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}" 
+               style="color:#b8883a;">Unsubscribe</a>
+          </p>
+        </body></html>`,
+      });
+      results.sent++;
+      /* Small delay to avoid rate limiting */
+      await new Promise(r => setTimeout(r, 120));
+    } catch (err) {
+      results.failed++;
+      results.errors.push({ email, error: err.message });
+    }
+  }
+  return results;
+}
+
 module.exports = {
   sendOrderConfirmation,
   sendNewOrderNotification,
   sendContactNotification,
   sendNewsletterWelcome,
+  sendReplyEmail,
+  sendBulkPromotion,
 };

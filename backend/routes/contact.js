@@ -5,7 +5,7 @@ const express = require('express');
 const { getDB }        = require('../utils/firebase');
 const { requireAdmin, requireRole } = require('../middleware/auth');
 const store             = require('../utils/store');
-const { sendContactNotification } = require('../utils/email');
+const { sendContactNotification, sendReplyEmail } = require('../utils/email');
 
 const router = express.Router();
 
@@ -120,7 +120,33 @@ router.post('/:id/reply', requireAdmin, async (req, res) => {
       });
     }
 
-    return res.json({ message: 'Reply recorded.' });
+    /* ── Send reply email to customer ── */
+    let customerEmail, customerName, originalMessage;
+    try {
+      if (isFirebaseAvailable()) {
+        const doc = await getDB().collection('messages').doc(req.params.id).get();
+        customerEmail = doc.data()?.email;
+        customerName  = doc.data()?.name;
+        originalMessage = doc.data()?.message;
+      } else {
+        const msg = store.messages.find(m => m.id === req.params.id);
+        customerEmail   = msg?.email;
+        customerName    = msg?.name;
+        originalMessage = msg?.message;
+      }
+      if (customerEmail) {
+        sendReplyEmail({
+          to: customerEmail,
+          customerName,
+          originalMessage,
+          replyText: replyText.trim(),
+        }).catch(e => console.error('Reply email failed:', e.message));
+      }
+    } catch (emailErr) {
+      console.error('Could not fetch message for reply email:', emailErr.message);
+    }
+
+    return res.json({ message: 'Reply sent to customer ✓' });
   } catch (err) {
     console.error('Reply error:', err);
     return res.status(500).json({ error: 'Failed to save reply.' });
