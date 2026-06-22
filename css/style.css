@@ -364,6 +364,21 @@ section { padding: 100px 0; }
   transition: opacity var(--transition), transform var(--transition);
 }
 .cat-card:hover .cat-cta { opacity: 1; transform: translateY(0); }
+.cat-card-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(160deg, rgba(10,8,5,0.72) 0%, rgba(10,8,5,0.55) 60%, rgba(30,20,5,0.78) 100%);
+  transition: background var(--transition);
+}
+.cat-card:hover .cat-card-overlay {
+  background: linear-gradient(160deg, rgba(10,8,5,0.60) 0%, rgba(10,8,5,0.42) 60%, rgba(30,20,5,0.65) 100%);
+}
+.cat-card .cat-medallion,
+.cat-card .cat-name,
+.cat-card .cat-rule,
+.cat-card .cat-cta { position: relative; z-index: 2; }
+.cat-card .cat-name { color: #fff; }
+.cat-card .cat-icon { color: var(--champagne); }
+.cat-card:hover .cat-icon { color: var(--gold); }
 @media (max-width: 900px) {
   .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .cat-card { padding: 24px 16px; }
