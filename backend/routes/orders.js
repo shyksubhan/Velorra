@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
     });
 
     const subtotal    = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
-    const deliveryFee = deliveryMethod === 'express' ? 250 : subtotal < 5000 ? 200 : 0;
+    const deliveryFee = subtotal < 5000 ? 200 : 0;
     const total       = subtotal + deliveryFee;
     const orderRef    = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 

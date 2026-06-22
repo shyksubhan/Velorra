@@ -20,7 +20,7 @@ const VELORRA_SEARCH_INDEX = [
   /* Pages */
   { type: 'page', title: 'Our Story',        keywords: 'about velorra story brand lahore founded history',   url: 'about.html',                    badge: 'Page' },
   { type: 'page', title: 'Contact Us',       keywords: 'contact email phone whatsapp address location',     url: 'contact.html',                  badge: 'Page' },
-  { type: 'page', title: 'Shipping Info',    keywords: 'shipping delivery days free express standard',      url: 'policy.html?page=shipping',     badge: 'Policy' },
+  { type: 'page', title: 'Shipping Info',    keywords: 'shipping delivery days free standard',      url: 'policy.html?page=shipping',     badge: 'Policy' },
   { type: 'page', title: 'Returns Policy',   keywords: 'returns refund exchange 14 day policy',             url: 'policy.html?page=returns',      badge: 'Policy' },
   { type: 'page', title: 'Size Guide',       keywords: 'size guide xs s m l xl xxl measurements chart fit', url: 'policy.html?page=sizeguide',    badge: 'Guide'  },
   { type: 'page', title: 'FAQs',            keywords: 'faq questions answers help support',                 url: 'policy.html?page=faqs',         badge: 'Help'   },

@@ -32,8 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (totalEl)    totalEl.textContent     = 'PKR ' + (subtotal + delivery).toLocaleString();
   };
   const getDeliveryFee = (subtotal) => {
-    const method = document.querySelector('input[name="delivery"]:checked')?.value;
-    if (method === 'express') return 250;
     return subtotal >= 5000 ? 0 : 200;
   };
   renderSummary();
