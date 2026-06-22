@@ -60,6 +60,11 @@
       <button class="filter-btn" data-filter="pins">Pins</button>
       <button class="filter-btn" data-filter="ponies">Ponies</button>
       <button class="filter-btn" data-filter="fancy">Fancy</button>
+      <button class="filter-btn" data-filter="bracelets">Bracelets</button>
+      <button class="filter-btn" data-filter="rings">Rings</button>
+      <button class="filter-btn" data-filter="earrings">Earrings</button>
+      <button class="filter-btn" data-filter="necklace">Necklace</button>
+      <button class="filter-btn" data-filter="gift-items">Gift Items</button>
       <button class="filter-btn" data-filter="sale">Sale</button>
     </div>
     <div class="products-grid" id="shop-products-grid">
@@ -103,7 +108,12 @@
           <li><a href="shop.html?cat=hair-bands">Hair Bands</a></li>
           <li><a href="shop.html?cat=pins">Pins</a></li>
           <li><a href="shop.html?cat=ponies">Ponies</a></li>
-          <li><a href="shop.html?cat=fancy">Fancy</a></li>
+          <li><a href="shop.html?cat=fancy">Fancy Accessories</a></li>
+          <li><a href="shop.html?cat=bracelets">Bracelets</a></li>
+          <li><a href="shop.html?cat=rings">Rings</a></li>
+          <li><a href="shop.html?cat=earrings">Earrings</a></li>
+          <li><a href="shop.html?cat=necklace">Necklace</a></li>
+          <li><a href="shop.html?cat=gift-items">Gift Items</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -166,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
     if (heading) {
-      const labels = { scrunchies:'Scrunchies', catchers:'Catchers', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', sale:'Sale' };
+      const labels = { scrunchies:'Scrunchies', catchers:'Catchers', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
       if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
     }
   }
