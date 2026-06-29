@@ -42,6 +42,7 @@ function velorraProductCardHTML(p) {
       </div>
       <div class="product-actions">
         <button onclick="addToCart('${safeName}',${Number(p.price)},'${emoji}','${variant}')">Add to Bag</button>
+        <button class="buy-now-btn" onclick="buyNow('${safeName}',${Number(p.price)},'${emoji}','${variant}')">Buy It Now</button>
         <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
       </div>
     </div>`;

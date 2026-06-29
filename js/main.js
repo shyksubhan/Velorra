@@ -72,6 +72,30 @@ document.addEventListener('DOMContentLoaded', () => {
     openCart();
   };
 
+  /* ── Buy It Now ──
+     Goes straight to checkout with just this single item. The
+     customer's existing bag is stashed (not lost) so it can be
+     restored if they leave checkout without completing the order. */
+  window.buyNow = (name, price, emoji, variant) => {
+    const existingCart = localStorage.getItem('velorra_cart');
+    if (existingCart && existingCart !== '[]') {
+      localStorage.setItem('velorra_cart_stashed', existingCart);
+    }
+    const buyNowCart = [{ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', qty: 1 }];
+    localStorage.setItem('velorra_cart', JSON.stringify(buyNowCart));
+    window.location.href = 'checkout.html';
+  };
+
+  /* ── Buy It Now: restore stashed bag if the customer left checkout
+     without completing the order (i.e. they're on any page other
+     than checkout.html and a stash exists) ── */
+  const stashedCart = localStorage.getItem('velorra_cart_stashed');
+  if (stashedCart && !window.location.pathname.endsWith('checkout.html')) {
+    localStorage.setItem('velorra_cart', stashedCart);
+    localStorage.removeItem('velorra_cart_stashed');
+    cart = JSON.parse(stashedCart);
+  }
+
   /* ── Cart Drawer ── */
   const drawer  = document.getElementById('cart-drawer');
   const overlay = document.getElementById('overlay');

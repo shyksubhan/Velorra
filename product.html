@@ -117,7 +117,7 @@
       <p>© 2025 <span class="gold-text">Velorra Jewelry</span>. All rights reserved.</p>
       <div class="footer-pay">
         <span class="pay-badge">COD</span>
-        <span class="pay-badge">Card</span>
+        <span class="pay-badge">Bank Deposit</span>
       </div>
     </div>
   </div>
@@ -131,7 +131,7 @@
   <div class="cart-items" id="cart-items"><div class="cart-empty">Your bag is empty.</div></div>
   <div class="cart-footer">
     <div class="cart-total"><span>Total</span><span id="cart-total-val">PKR 0</span></div>
-    <a href="contact.html" class="btn-primary cart-checkout" style="display:block;clip-path:none;text-align:center;padding:16px;">Checkout</a>
+    <a href="checkout.html" class="btn-primary cart-checkout" style="display:block;clip-path:none;text-align:center;padding:16px;">Checkout</a>
   </div>
 </div>
 
@@ -233,6 +233,9 @@
           <button class="btn-primary" id="pd-add-btn" ${product.inStock === false ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
             ${product.inStock === false ? 'Out of Stock' : 'Add to Bag'}
           </button>
+          <button class="btn-outline" id="pd-buynow-btn" ${product.inStock === false ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+            Buy It Now
+          </button>
           <div class="pd-wishlist"><i class="fa-regular fa-heart"></i></div>
         </div>
       </div>
@@ -274,6 +277,17 @@
       const color = root.querySelector('.color-opt.active')?.dataset.color;
       const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
       window.addToCart(product.name, Number(product.price), emoji, variant);
+    });
+  }
+
+  /* Buy it now — straight to checkout with just this item */
+  const buyNowBtn = document.getElementById('pd-buynow-btn');
+  if (buyNowBtn && product.inStock !== false) {
+    buyNowBtn.addEventListener('click', () => {
+      const size = root.querySelector('.size-opt.active')?.dataset.size;
+      const color = root.querySelector('.color-opt.active')?.dataset.color;
+      const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
+      window.buyNow(product.name, Number(product.price), emoji, variant);
     });
   }
 

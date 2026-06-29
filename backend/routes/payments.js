@@ -8,7 +8,7 @@ const store = require('../utils/store');
 
 const router = express.Router();
 
-const PAYMENT_METHODS = ['cod', 'card', 'bank_transfer'];
+const PAYMENT_METHODS = ['cod', 'bank_deposit'];
 
 /* ── POST /api/payments/initiate ──
    Called when customer selects a payment method at checkout.
@@ -39,55 +39,20 @@ router.post('/initiate', async (req, res) => {
           orderRef,
         });
 
-      case 'card': {
-        /*
-          Stripe integration for card payments.
-          Set STRIPE_SECRET_KEY in .env — use sk_test_... for testing.
-          The frontend uses Stripe.js with your STRIPE_PUBLISHABLE_KEY.
-        */
-        if (!process.env.STRIPE_SECRET_KEY) {
-          return res.json({
-            method:        'card',
-            txnId,
-            status:        'demo',
-            amount,
-            orderRef,
-            instructions:  'Card payment is in demo mode. Set STRIPE_SECRET_KEY in .env to enable live card payments.',
-            demoMode:      true,
-            publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || null,
-            setupRequired: 'Set STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY in .env to enable card payments.',
-          });
-        }
-
-        const Stripe = require('stripe');
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount:      Math.round(amount * 100), /* Stripe uses smallest currency unit */
-          currency:    'pkr',
-          description: `Velorra Jewelry Order ${orderRef}`,
-          metadata:    { orderRef },
-        });
-
+      case 'bank_deposit':
         return res.json({
-          method:       'card',
-          txnId,
-          status:       'requires_payment',
-          clientSecret: paymentIntent.client_secret,
-          publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-          amount,
-          orderRef,
-        });
-      }
-
-      case 'bank_transfer':
-        return res.json({
-          method:       'bank_transfer',
+          method:       'bank_deposit',
           txnId,
           status:       'pending',
           amount,
           orderRef,
-          instructions: `Transfer PKR ${amount.toLocaleString()} to:\nBank: HBL\nAccount Title: Velorra Jewelry\nAccount No: 1234-5678-9012\nIBAN: PK00HABB0000000000000000\nReference: ${orderRef}\n\nEmail your transfer receipt to velorrajewelry@gmail.com with your order number.`,
+          bankDetails: {
+            bankName:      'Bank Alfalah',
+            accountTitle:  'MUHAMMAD SUBHAN',
+            accountNumber: '09601009896691',
+            iban:          'PK45ALFH096000100989669',
+          },
+          instructions: `Deposit PKR ${amount.toLocaleString()} to:\nBank: Bank Alfalah\nAccount Title: MUHAMMAD SUBHAN\nAccount Number: 09601009896691\nIBAN: PK45ALFH096000100989669\n\nAfter placing your order, please send a screenshot of the payment to our WhatsApp along with your order reference (${orderRef}).`,
         });
     }
 
@@ -118,22 +83,7 @@ router.post('/verify', async (req, res) => {
   }
 });
 
-/* ── POST /api/payments/stripe-webhook ── Stripe event webhook ── */
-router.post('/stripe-webhook', express.raw({ type: 'application/json' }), (req, res) => {
-  try {
-    if (!process.env.STRIPE_WEBHOOK_SECRET) return res.sendStatus(200);
-    const Stripe = require('stripe');
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const event  = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
-    if (event.type === 'payment_intent.succeeded') {
-      const pi    = event.data.object;
-      const order = store.findOrder(pi.metadata?.orderRef);
-      if (order) { order.paymentStatus = 'received'; order.txnId = pi.id; }
-    }
-    res.sendStatus(200);
-  } catch (err) {
-    return res.status(400).json({ error: err.message });
-  }
-});
+/* ── Stripe webhook removed — card payments are no longer supported.
+   Payment methods are now: Cash on Delivery (COD) and Bank Deposit. ── */
 
 module.exports = router;

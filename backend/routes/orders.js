@@ -46,8 +46,14 @@ router.post('/', async (req, res) => {
       };
     });
 
-    const subtotal    = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
-    const deliveryFee = subtotal < 5000 ? 200 : 0;
+    const subtotal   = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
+    const payMethod  = paymentMethod || 'cod';
+    /* ── Delivery fee rules ──
+       Bank Deposit → always FREE delivery.
+       COD          → PKR 200, waived once subtotal reaches PKR 5,000. */
+    const deliveryFee = payMethod === 'bank_deposit'
+      ? 0
+      : (subtotal >= 5000 ? 0 : 200);
     const total       = subtotal + deliveryFee;
     const orderRef    = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
@@ -55,7 +61,7 @@ router.post('/', async (req, res) => {
       id: orderRef,
       items: enrichedItems,
       delivery,
-      paymentMethod:  paymentMethod || 'cod',
+      paymentMethod:  payMethod,
       deliveryMethod: deliveryMethod || 'standard',
       subtotal,
       deliveryFee,

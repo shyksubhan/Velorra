@@ -467,6 +467,8 @@ section { padding: 100px 0; }
   transition: background var(--transition);
 }
 .product-actions button:hover { background: var(--gold-dim); }
+.product-actions button.buy-now-btn { background: var(--bg-deep, #1a1a1a); }
+.product-actions button.buy-now-btn:hover { background: var(--gold); color: #fff; }
 .product-actions button.wishlist-btn { flex: 0 0 50px; background: var(--bg-deep); color: var(--gold); }
 .product-info { padding: 20px 20px 24px; }
 .product-name {
@@ -797,8 +799,8 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 .size-opt:hover, .size-opt.active { border-color: var(--gold); color: var(--gold); }
 .color-opt { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color var(--transition); }
 .color-opt.active { border-color: var(--gold); }
-.pd-add-row { display: flex; gap: 12px; margin-top: 28px; }
-.pd-add-row .btn-primary { flex: 1; padding: 18px; text-align: center; clip-path: none; }
+.pd-add-row { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+.pd-add-row .btn-primary, .pd-add-row .btn-outline { flex: 1; padding: 18px; text-align: center; clip-path: none; min-width: 140px; }
 .pd-wishlist { width: 54px; height: 54px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--muted); cursor: pointer; transition: all var(--transition); }
 .pd-wishlist:hover { border-color: var(--gold); color: var(--gold); }
 

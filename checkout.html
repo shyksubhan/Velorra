@@ -120,65 +120,46 @@
                       <strong>&#128179; Cash on Delivery</strong>
                       <span>Pay when your order arrives</span>
                     </div>
-                    <div class="ck-option-price">No extra fee</div>
+                    <div class="ck-option-price" id="cod-fee-label">PKR 200 delivery</div>
                   </div>
                 </label>
                 <label class="ck-option-card">
-                  <input type="radio" name="payment" value="card"/>
+                  <input type="radio" name="payment" value="bank_deposit"/>
                   <div class="ck-option-body">
                     <div>
-                      <strong>&#9999; Credit / Debit Card</strong>
-                      <span>Visa, Mastercard accepted</span>
+                      <strong>&#127974; Bank Deposit</strong>
+                      <span>Deposit to our bank account</span>
                     </div>
+                    <div class="ck-option-price free-badge">FREE Delivery</div>
                   </div>
                 </label>
               </div>
-              <!-- Card fields (shown only when card selected) -->
-              <div id="card-fields" style="display:none">
-                <div class="card-preview" id="card-preview-3d">
-                  <div class="card-3d-inner">
-                    <div class="card-3d-front">
-                      <div class="card-chip">&#9646;</div>
-                      <div class="card-number-display" id="card-disp-num">•••• •••• •••• ••••</div>
-                      <div class="card-bottom-row">
-                        <div>
-                          <div class="card-label">Card Holder</div>
-                          <div class="card-name-display" id="card-disp-name">YOUR NAME</div>
-                        </div>
-                        <div>
-                          <div class="card-label">Expires</div>
-                          <div id="card-disp-exp">MM/YY</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-3d-back">
-                      <div class="card-stripe"></div>
-                      <div class="card-cvv-row">
-                        <div class="card-label">CVV</div>
-                        <div class="card-cvv-box" id="card-disp-cvv">•••</div>
-                      </div>
-                    </div>
+              <!-- Bank Deposit details (shown only when bank deposit selected) -->
+              <div id="bank-deposit-fields" style="display:none">
+                <div class="bank-details-box">
+                  <p class="bank-details-title">Bank Account Details</p>
+                  <div class="bank-detail-row">
+                    <span>Bank</span>
+                    <strong>Bank Alfalah</strong>
                   </div>
-                </div>
-                <div class="ck-form" style="margin-top:24px">
-                  <div class="form-group">
-                    <label>Card Number</label>
-                    <input type="text" id="inp-card-num" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number"/>
+                  <div class="bank-detail-row">
+                    <span>Account Title</span>
+                    <strong>MUHAMMAD SUBHAN</strong>
                   </div>
-                  <div class="form-group">
-                    <label>Name on Card</label>
-                    <input type="text" id="inp-card-name" placeholder="Name on Card" autocomplete="cc-name"/>
+                  <div class="bank-detail-row">
+                    <span>Account Number</span>
+                    <strong class="bank-copy-val" data-copy="09601009896691">09601009896691 <i class="fa-regular fa-copy"></i></strong>
                   </div>
-                  <div class="ck-row-2">
-                    <div class="form-group">
-                      <label>Expiry</label>
-                      <input type="text" id="inp-card-exp" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp"/>
-                    </div>
-                    <div class="form-group">
-                      <label>CVV</label>
-                      <input type="text" id="inp-card-cvv" placeholder="•••" maxlength="4" autocomplete="cc-csc"/>
-                    </div>
+                  <div class="bank-detail-row">
+                    <span>IBAN</span>
+                    <strong class="bank-copy-val" data-copy="PK45ALFH096000100989669">PK45ALFH096000100989669 <i class="fa-regular fa-copy"></i></strong>
                   </div>
+                  <p class="bank-details-note">
+                    After placing your order, please send a screenshot of the payment to our WhatsApp so we can confirm and ship your order.
+                  </p>
+                  <a href="#" id="bank-whatsapp-btn" target="_blank" rel="noopener" class="btn-whatsapp">
+                    <i class="fa-brands fa-whatsapp"></i> Send Payment Screenshot
+                  </a>
                 </div>
               </div>
               <div class="ck-btn-row">
@@ -204,6 +185,7 @@
               <h2 class="ck-panel-title" style="text-align:center">Order <em>Placed!</em></h2>
               <p>Thank you for shopping with Velorra Jewelry. Your order confirmation has been sent to your email. We'll notify you when it ships.</p>
               <div class="order-ref" id="order-ref-num"></div>
+              <div id="order-success-bank-note" style="display:none;margin-top:18px"></div>
               <a href="shop.html" class="btn-primary" style="margin-top:28px;display:inline-block">Continue Shopping</a>
             </div>
           </div>

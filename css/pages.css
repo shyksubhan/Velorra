@@ -151,6 +151,39 @@
 .ck-option-body span   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; display: block; }
 .ck-option-price { font-family: var(--font-display); color: var(--gold-light); font-size: 0.95rem; white-space: nowrap; }
 .free-badge { color: #5dbf7a !important; }
+/* Bank Deposit details box */
+.bank-details-box {
+  background: var(--card); border: 1px solid var(--gold-dim);
+  padding: 24px; margin-top: 4px;
+}
+.bank-details-title {
+  font-family: var(--font-display); font-size: 1rem; color: var(--gold);
+  letter-spacing: 0.05em; margin-bottom: 16px;
+}
+.bank-detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.85rem; gap: 12px;
+}
+.bank-detail-row:last-of-type { border-bottom: none; }
+.bank-detail-row span { color: var(--muted); }
+.bank-detail-row strong { color: var(--text); font-weight: 500; text-align: right; }
+.bank-copy-val { cursor: pointer; transition: color 0.2s; }
+.bank-copy-val:hover { color: var(--gold-light); }
+.bank-copy-val i { font-size: 0.75rem; margin-left: 6px; color: var(--gold); }
+.bank-details-note {
+  font-size: 0.78rem; color: var(--muted); line-height: 1.6;
+  margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.btn-whatsapp {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 14px; width: 100%; padding: 14px;
+  background: #25D366; color: #0a0a0a; font-weight: 600;
+  text-decoration: none; font-size: 0.88rem;
+  border-radius: 4px; transition: opacity 0.2s;
+}
+.btn-whatsapp:hover { opacity: 0.88; }
+.btn-whatsapp i { font-size: 1.1rem; }
 /* 3D Card preview */
 .card-preview {
   perspective: 1000px; width: 100%; max-width: 380px;

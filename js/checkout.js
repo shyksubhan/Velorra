@@ -26,14 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="ck-item-price">PKR ${(item.price * item.qty).toLocaleString()}</span>
       </div>`).join('');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const delivery = getDeliveryFee(subtotal);
+    const delivery = getDeliveryFee(subtotal, getSelectedPayment());
     if (subtotalEl) subtotalEl.textContent  = 'PKR ' + subtotal.toLocaleString();
     if (delivEl)    delivEl.textContent     = delivery === 0 ? 'FREE' : 'PKR ' + delivery.toLocaleString();
     if (totalEl)    totalEl.textContent     = 'PKR ' + (subtotal + delivery).toLocaleString();
   };
-  const getDeliveryFee = (subtotal) => {
+  const getDeliveryFee = (subtotal, paymentMethod) => {
+    if (paymentMethod === 'bank_deposit') return 0;
     return subtotal >= 5000 ? 0 : 200;
   };
+  const getSelectedPayment = () =>
+    document.querySelector('input[name="payment"]:checked')?.value || 'cod';
   renderSummary();
 
   /* ── Auto-fill delivery form if user is logged in ── */
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* build confirm summary */
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const fee      = getDeliveryFee(subtotal);
+    const fee      = getDeliveryFee(subtotal, method);
     const d        = orderData.delivery || {};
     document.getElementById('order-summary-full').innerHTML = `
       <div class="confirm-section">
@@ -117,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="confirm-section">
         <h4>Payment</h4>
-        <p>${method === 'cod' ? '💵 Cash on Delivery' : method === 'card' ? '💳 Credit/Debit Card' : '📲 ' + method}</p>
+        <p>${method === 'cod' ? '💵 Cash on Delivery' : method === 'bank_deposit' ? '🏦 Bank Deposit' : '📲 ' + method}</p>
+        ${method === 'bank_deposit' ? '<p style="font-size:.78rem;margin-top:6px">Remember to send your payment screenshot on WhatsApp after placing the order.</p>' : ''}
       </div>
       <div class="confirm-section">
         <div class="ck-summary-row"><span>Subtotal</span><span>PKR ${subtotal.toLocaleString()}</span></div>
@@ -126,6 +130,22 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
     goToStep(3);
   });
+  /* ── Show "send screenshot to WhatsApp" reminder on success screen ── */
+  const showBankDepositSuccessNote = (payMethod, orderRef) => {
+    const note = document.getElementById('order-success-bank-note');
+    if (!note) return;
+    if (payMethod !== 'bank_deposit') { note.style.display = 'none'; return; }
+    const num = window.VELORRA_CONFIG?.whatsapp?.number;
+    const msg = encodeURIComponent(`Hi! I just placed order ${orderRef} on Velorra Jewelry and paid via Bank Deposit. Here is my payment screenshot:`);
+    note.innerHTML = `
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">
+        Please send a screenshot of your payment to our WhatsApp so we can confirm and ship your order.
+      </p>
+      <a href="https://wa.me/${num}?text=${msg}" target="_blank" rel="noopener" class="btn-whatsapp">
+        <i class="fa-brands fa-whatsapp"></i> Send Payment Screenshot
+      </a>`;
+    note.style.display = 'block';
+  };
   /* ── Place order ── (real backend) */
   window.placeOrder = async () => {
     const btn = document.querySelector('[onclick="placeOrder()"]');
@@ -140,8 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const subtotal   = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const delivMethod = orderData.delivery?.delivery || 'standard';
-    const fee        = getDeliveryFee(subtotal);
     const payMethod  = orderData.payment || 'cod';
+    const fee        = getDeliveryFee(subtotal, payMethod);
 
     try {
       const result = await apiPlaceOrder({
@@ -161,7 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         /* Success */
         const ref = result.data.orderRef;
         document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
+        showBankDepositSuccessNote(payMethod, ref);
         localStorage.removeItem('velorra_cart');
+        localStorage.removeItem('velorra_cart_stashed');
         document.querySelectorAll('.ck-panel').forEach(p => p.classList.add('hidden'));
         document.getElementById('ck-panel-success')?.classList.remove('hidden');
         document.querySelectorAll('.ck-step').forEach(el => el.classList.add('complete'));
@@ -178,7 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
       document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
+      showBankDepositSuccessNote(payMethod, ref);
       localStorage.removeItem('velorra_cart');
+      localStorage.removeItem('velorra_cart_stashed');
       document.querySelectorAll('.ck-panel').forEach(p => p.classList.add('hidden'));
       document.getElementById('ck-panel-success')?.classList.remove('hidden');
       document.querySelectorAll('.ck-step').forEach(el => el.classList.add('complete'));
@@ -188,40 +212,28 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Payment method toggle ── */
   document.querySelectorAll('input[name="payment"]').forEach(r => {
     r.addEventListener('change', () => {
-      const cf = document.getElementById('card-fields');
-      if (cf) cf.style.display = r.value === 'card' ? 'block' : 'none';
+      const bf = document.getElementById('bank-deposit-fields');
+      if (bf) bf.style.display = r.value === 'bank_deposit' ? 'block' : 'none';
+      renderSummary();
     });
   });
-  /* ── 3D Card live preview ── */
-  const numInput  = document.getElementById('inp-card-num');
-  const nameInput = document.getElementById('inp-card-name');
-  const expInput  = document.getElementById('inp-card-exp');
-  const cvvInput  = document.getElementById('inp-card-cvv');
-  const card3d    = document.getElementById('card-preview-3d');
-  numInput?.addEventListener('input', () => {
-    let v = numInput.value.replace(/\D/g, '').substring(0,16);
-    v = v.replace(/(.{4})/g, '$1 ').trim();
-    numInput.value = v;
-    const disp = document.getElementById('card-disp-num');
-    if (disp) disp.textContent = v || '•••• •••• •••• ••••';
+  /* ── Bank Deposit: copy-to-clipboard for account number / IBAN ── */
+  document.querySelectorAll('.bank-copy-val').forEach(el => {
+    el.addEventListener('click', () => {
+      const val = el.dataset.copy;
+      if (!val) return;
+      navigator.clipboard?.writeText(val).then(() => {
+        showToast('Copied: ' + val);
+      }).catch(() => {});
+    });
   });
-  nameInput?.addEventListener('input', () => {
-    const disp = document.getElementById('card-disp-name');
-    if (disp) disp.textContent = nameInput.value.toUpperCase() || 'YOUR NAME';
-  });
-  expInput?.addEventListener('input', () => {
-    let v = expInput.value.replace(/\D/g,'');
-    if (v.length >= 3) v = v.substring(0,2) + '/' + v.substring(2,4);
-    expInput.value = v;
-    const disp = document.getElementById('card-disp-exp');
-    if (disp) disp.textContent = expInput.value || 'MM/YY';
-  });
-  cvvInput?.addEventListener('focus', () => card3d?.classList.add('flipped'));
-  cvvInput?.addEventListener('blur',  () => card3d?.classList.remove('flipped'));
-  cvvInput?.addEventListener('input', () => {
-    const disp = document.getElementById('card-disp-cvv');
-    if (disp) disp.textContent = cvvInput.value || '•••';
-  });
+  /* ── Bank Deposit: WhatsApp "send screenshot" link ── */
+  const waBtn = document.getElementById('bank-whatsapp-btn');
+  if (waBtn && window.VELORRA_CONFIG) {
+    const num = window.VELORRA_CONFIG.whatsapp.number;
+    const msg = encodeURIComponent('Hi! I just placed an order on Velorra Jewelry and paid via Bank Deposit. Here is my payment screenshot:');
+    waBtn.href = `https://wa.me/${num}?text=${msg}`;
+  }
   /* ── Checkout 3D background (particles) ── */
   initCheckoutThree();
 });

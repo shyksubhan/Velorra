@@ -31,7 +31,16 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
       <table width="100%" style="margin:24px 0;">${itemRows}</table>
       <p><strong style="color:#c9a84c;">Total: PKR ${total.toLocaleString()}</strong></p>
       <p style="color:#888;">Delivering to: ${delivery.address}, ${delivery.city}</p>
-      <p style="color:#888;">Payment: ${paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod}</p>
+      <p style="color:#888;">Payment: ${paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'bank_deposit' ? 'Bank Deposit' : paymentMethod}</p>
+      ${paymentMethod === 'bank_deposit' ? `
+      <div style="margin:18px 0;padding:16px 20px;background:#161616;border:1px solid #2a2a2a;">
+        <p style="color:#c9a84c;margin:0 0 8px;font-weight:bold;">Bank Deposit Details</p>
+        <p style="margin:2px 0;">Bank: Bank Alfalah</p>
+        <p style="margin:2px 0;">Account Title: MUHAMMAD SUBHAN</p>
+        <p style="margin:2px 0;">Account Number: 09601009896691</p>
+        <p style="margin:2px 0;">IBAN: PK45ALFH096000100989669</p>
+        <p style="margin:10px 0 0;color:#aaa;">After placing your order, please send a screenshot of the payment to our WhatsApp.</p>
+      </div>` : ''}
       <p style="color:#555;font-size:.8rem;">Questions? Email velorrajewelry@gmail.com</p>
     </body></html>`,
   });
@@ -52,7 +61,7 @@ async function sendNewOrderNotification({ orderRef, items, delivery, total, paym
       <p><strong>Customer:</strong> ${delivery.fname} ${delivery.lname} (${delivery.email})</p>
       <p><strong>Phone:</strong> ${delivery.phone}</p>
       <p><strong>Address:</strong> ${delivery.address}, ${delivery.city}</p>
-      <p><strong>Payment:</strong> ${paymentMethod}</p>
+      <p><strong>Payment:</strong> ${paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'bank_deposit' ? 'Bank Deposit' : paymentMethod}</p>
       <ul>${itemList}</ul>
       <p style="color:#c9a84c;font-size:1.2rem;"><strong>Total: PKR ${total.toLocaleString()}</strong></p>
     </body>`,
