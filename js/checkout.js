@@ -73,59 +73,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const fd = new FormData(e.target);
     orderData.delivery = Object.fromEntries(fd.entries());
 
-    /* ── Save abandoned checkout ── */
-    /* Strategy:
-       1. Immediately save to backend (so close-tab captures it).
-       2. Keep a 10-min timer as secondary (re-confirms if still open).
-       3. visibilitychange / pagehide listeners ensure save fires on tab close too.
+    /* ── Abandoned checkout tracking ──
+       Rule: ONLY save as abandoned if the user leaves WITHOUT placing the order.
+       - Do NOT save immediately (that would make every order appear as abandoned first).
+       - Snapshot data now in memory, fire ONLY on page-leave or after 10-min idle.
+       - If order is placed: clear snapshot so listeners become no-ops.
     */
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
-    /* Cancel any previous pending abandoned timer */
+    /* Cancel any previous pending timer */
     if (window._abandonedTimer) clearTimeout(window._abandonedTimer);
 
-    /* Snapshot delivery + cart now */
+    /* Snapshot delivery + cart — stored in memory only, NOT sent yet */
     window._abandonedSnapshot = {
       delivery: { ...orderData.delivery },
       items:    cart.map(i => ({ ...i })),
       total:    subtotal,
     };
+    window._abandonedSent = false; /* guard: send only once */
 
-    /* Helper: send abandoned record (returns Promise) */
+    /* Helper: fires on leave or timeout — only if order was NOT placed */
     window._sendAbandoned = () => {
       if (sessionStorage.getItem('velorra_order_placed')) return;
-      const snap = window._abandonedSnapshot;
-      if (!snap) return;
-      const abandonedId = sessionStorage.getItem('velorra_abandoned_id') || null;
-      const payload = JSON.stringify({ id: abandonedId, delivery: snap.delivery, items: snap.items, total: snap.total });
+      if (!window._abandonedSnapshot) return;
+      if (window._abandonedSent) return;
+      window._abandonedSent = true;
 
-      /* Try sendBeacon first (works during pagehide/unload) */
+      const snap = window._abandonedSnapshot;
+      const payload = JSON.stringify({ id: null, delivery: snap.delivery, items: snap.items, total: snap.total });
+
+      /* sendBeacon works even during pagehide/tab-close */
       if (navigator.sendBeacon) {
         const blob = new Blob([payload], { type: 'application/json' });
         navigator.sendBeacon(`${VELORRA_API}/abandoned`, blob);
       } else {
         fetch(`${VELORRA_API}/abandoned`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload,
-          keepalive: true,
-        })
-        .then(r => r.json())
-        .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
-        .catch(() => {});
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: payload, keepalive: true,
+        }).catch(() => {});
       }
     };
 
-    /* 1. Save immediately */
-    fetch(`${VELORRA_API}/abandoned`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: null, delivery: window._abandonedSnapshot.delivery, items: window._abandonedSnapshot.items, total: window._abandonedSnapshot.total }),
-    })
-    .then(r => r.json())
-    .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
-    .catch(() => {});
-
-    /* 2. Register page-leave listeners (once only) */
+    /* Register page-leave listeners once */
     if (!window._abandonedListenersAdded) {
       window._abandonedListenersAdded = true;
       document.addEventListener('visibilitychange', () => {
@@ -134,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('pagehide', () => { window._sendAbandoned?.(); });
     }
 
-    /* 3. Keep 10-min timer as belt-and-suspenders */
+    /* 10-min fallback: fires if user is still on page but idle */
     window._abandonedTimer = setTimeout(() => { window._sendAbandoned?.(); }, 10 * 60 * 1000);
 
     goToStep(2);
