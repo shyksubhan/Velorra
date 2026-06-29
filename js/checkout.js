@@ -2,6 +2,13 @@
    VELORRA — Checkout Logic
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
+  /* ── Redirect to shop if cart is empty ── */
+  const _cartCheck = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
+  if (_cartCheck.length === 0) {
+    window.location.href = 'shop.html';
+    return;
+  }
+
   let currentStep = 1;
   let orderData   = {};
   /* ── Populate summary sidebar ── */
