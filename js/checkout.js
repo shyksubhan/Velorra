@@ -74,58 +74,38 @@ document.addEventListener('DOMContentLoaded', () => {
     orderData.delivery = Object.fromEntries(fd.entries());
 
     /* ── Abandoned checkout tracking ──
-       Rule: ONLY save as abandoned if the user leaves WITHOUT placing the order.
-       - Do NOT save immediately (that would make every order appear as abandoned first).
-       - Snapshot data now in memory, fire ONLY on page-leave or after 10-min idle.
-       - If order is placed: clear snapshot so listeners become no-ops.
+       Save immediately when delivery form is submitted — this guarantees
+       the record appears in admin no matter what happens next
+       (user goes back, closes tab, stays on Step 3 forever, etc.).
+       If the order is placed successfully, the record is marked "converted".
     */
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
-    /* Cancel any previous pending timer */
-    if (window._abandonedTimer) clearTimeout(window._abandonedTimer);
-
-    /* Snapshot delivery + cart — stored in memory only, NOT sent yet */
-    window._abandonedSnapshot = {
-      delivery: { ...orderData.delivery },
-      items:    cart.map(i => ({ ...i })),
-      total:    subtotal,
-    };
-    window._abandonedSent = false; /* guard: send only once */
-
-    /* Helper: fires on leave or timeout — only if order was NOT placed */
-    window._sendAbandoned = () => {
-      if (sessionStorage.getItem('velorra_order_placed')) return;
-      if (!window._abandonedSnapshot) return;
-      if (window._abandonedSent) return;
-      window._abandonedSent = true;
-
-      const snap = window._abandonedSnapshot;
-      const payload = JSON.stringify({ id: null, delivery: snap.delivery, items: snap.items, total: snap.total });
-
-      /* sendBeacon works even during pagehide/tab-close */
-      if (navigator.sendBeacon) {
-        const blob = new Blob([payload], { type: 'application/json' });
-        navigator.sendBeacon(`${VELORRA_API}/abandoned`, blob);
-      } else {
-        fetch(`${VELORRA_API}/abandoned`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: payload, keepalive: true,
-        }).catch(() => {});
+    /* Save to backend immediately — fire and forget, non-blocking */
+    (async () => {
+      try {
+        const existingId = sessionStorage.getItem('velorra_abandoned_id');
+        const res = await fetch(`${VELORRA_API}/abandoned`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id:       existingId || null,
+            delivery: { ...orderData.delivery },
+            items:    cart.map(i => ({ ...i })),
+            total:    subtotal,
+          }),
+          keepalive: true,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.id) sessionStorage.setItem('velorra_abandoned_id', data.id);
+        }
+      } catch (e) {
+        /* Non-critical — don't block checkout */
+        console.warn('Abandoned save failed (non-blocking):', e);
       }
-    };
-
-    /* Register page-leave listeners once */
-    if (!window._abandonedListenersAdded) {
-      window._abandonedListenersAdded = true;
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') window._sendAbandoned?.();
-      });
-      window.addEventListener('pagehide', () => { window._sendAbandoned?.(); });
-    }
-
-    /* 10-min fallback: fires if user is still on page but idle */
-    window._abandonedTimer = setTimeout(() => { window._sendAbandoned?.(); }, 10 * 60 * 1000);
+    })();
 
     goToStep(2);
   });
@@ -213,10 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window._abandonedSnapshot = null; /* prevent page-leave listener from re-firing */
         sessionStorage.setItem('velorra_order_placed', '1');
 
-        /* Mark abandoned checkout as converted (only if it actually existed) */
+        /* Order placed — delete the abandoned record so it disappears from admin */
         const abId = sessionStorage.getItem('velorra_abandoned_id');
         if (abId) {
-          fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {});
+          fetch(`${VELORRA_API}/abandoned/${abId}`, { method: 'DELETE' }).catch(() => {});
           sessionStorage.removeItem('velorra_abandoned_id');
         }
         /* Success */
@@ -240,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
       sessionStorage.setItem('velorra_order_placed', '1');
       const abId = sessionStorage.getItem('velorra_abandoned_id');
-      if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
+      if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}`, { method: 'DELETE' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
       document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
       showBankDepositSuccessNote(payMethod, ref);
