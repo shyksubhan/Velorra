@@ -351,3 +351,93 @@
 .footer-social-item:hover { border-color: var(--gold); color: var(--gold); }
 /* ── Payment badges (icon only) ── */
 .pay-icon { font-size: 1.1rem; padding: 6px 8px; }
+
+/* ══════════════════════════════════════════════
+   MOBILE / TABLET RESPONSIVE — Additional fixes
+   (380px phone → 768px tablet)
+   ══════════════════════════════════════════════ */
+
+/* ── Account page ── */
+@media (max-width: 600px) {
+  .account-card-wrap { padding: 28px 20px; }
+  .account-dashboard { grid-template-columns: 1fr; }
+  .acc-tab { padding: 12px 8px; font-size: 0.6rem; letter-spacing: 0.15em; }
+}
+
+/* ── Shop / Products grid ── */
+@media (max-width: 600px) {
+  .products-grid { grid-template-columns: 1fr 1fr !important; gap: 14px !important; }
+  .product-card-info { padding: 12px 10px; }
+  .product-card-name { font-size: 0.78rem; }
+  .product-card-price { font-size: 0.82rem; }
+  .product-card-actions { flex-direction: column; gap: 8px; }
+}
+@media (max-width: 380px) {
+  .products-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Product detail page ── */
+@media (max-width: 768px) {
+  .product-detail-grid { grid-template-columns: 1fr; }
+  .product-thumbs { flex-direction: row; overflow-x: auto; max-width: 100%; }
+  .product-thumb { flex: 0 0 72px; height: 72px; }
+  .product-price-big { font-size: 1.6rem; }
+  .product-qty-row { flex-wrap: wrap; gap: 10px; }
+  .product-qty-row .btn-primary { flex: 1; min-width: 140px; }
+}
+
+/* ── Checkout page ── */
+@media (max-width: 560px) {
+  .checkout-grid { grid-template-columns: 1fr; }
+  .ck-section { padding: 24px 16px; }
+  .ck-section-title { font-size: 0.95rem; }
+  .ck-row-2 { grid-template-columns: 1fr; }
+}
+
+/* ── Contact page ── */
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; }
+  .contact-info-side { order: 2; }
+  .contact-form-side { order: 1; }
+}
+@media (max-width: 480px) {
+  .contact-form textarea { height: 120px; }
+  .contact-info-item { flex-direction: column; gap: 8px; }
+}
+
+/* ── Reseller page ── */
+@media (max-width: 768px) {
+  .reseller-hero h1 { font-size: 2.2rem; }
+  .shop-details-grid { grid-template-columns: 1fr; }
+  .reseller-form-wrap { padding: 28px 16px; }
+}
+@media (max-width: 480px) {
+  .reseller-hero h1 { font-size: 1.8rem; }
+  .reseller-hero p { font-size: 0.85rem; }
+}
+
+/* ── About page ── */
+@media (max-width: 768px) {
+  .story-grid { grid-template-columns: 1fr; gap: 32px; }
+  .values-grid { grid-template-columns: 1fr; }
+  .team-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .team-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Global nav hamburger mobile menu ── */
+@media (max-width: 768px) {
+  .mobile-menu { display: flex !important; }
+  .hero-title { font-size: 2.6rem !important; }
+  .hero-sub   { font-size: 0.82rem; }
+  .hero-ctas  { flex-direction: column; align-items: center; gap: 12px; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .section-header h2 { font-size: 1.8rem; }
+  footer .container { padding: 0 16px; }
+}
+@media (max-width: 420px) {
+  .hero-title { font-size: 2rem !important; }
+  .container  { padding: 0 16px; }
+  nav         { padding: 0 16px; }
+}
