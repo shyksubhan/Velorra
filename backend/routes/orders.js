@@ -98,6 +98,92 @@ router.post('/', async (req, res) => {
   }
 });
 
+/* ── POST /api/orders/from-abandoned — Convert abandoned checkout to real order (admin) ── */
+router.post('/from-abandoned', requireAdmin, async (req, res) => {
+  try {
+    const { abandonedId } = req.body;
+    if (!abandonedId) return res.status(400).json({ error: 'abandonedId is required.' });
+
+    /* Fetch the abandoned record */
+    let abandoned = null;
+    if (isFirebaseAvailable()) {
+      const doc = await getDB().collection('abandoned').doc(abandonedId).get();
+      if (!doc.exists) return res.status(404).json({ error: 'Abandoned record not found.' });
+      abandoned = doc.data();
+    } else {
+      abandoned = store.abandoned.find(a => a.id === abandonedId);
+      if (!abandoned) return res.status(404).json({ error: 'Abandoned record not found.' });
+    }
+
+    if (abandoned.status === 'converted') {
+      return res.status(409).json({ error: 'This checkout was already converted to an order.' });
+    }
+
+    const delivery = abandoned.delivery || {};
+    const items    = abandoned.items    || [];
+
+    if (!items.length || !delivery.fname || !delivery.email) {
+      return res.status(400).json({ error: 'Abandoned record is missing delivery or items data.' });
+    }
+
+    /* Enrich items with purchasePrice from catalogue */
+    const catalogue = isFirebaseAvailable()
+      ? (await getDB().collection('products').get()).docs.map(d => ({ ...d.data(), id: d.id }))
+      : (store.products || []);
+
+    const enrichedItems = items.map(i => {
+      const match = catalogue.find(p => p.name === i.name);
+      return {
+        ...i,
+        productId:     match?.id ?? i.productId ?? null,
+        purchasePrice: match?.purchasePrice ?? i.purchasePrice ?? 0,
+      };
+    });
+
+    const subtotal   = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
+    const payMethod  = delivery.paymentMethod || 'cod';
+    const deliveryFee = payMethod === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+    const total      = subtotal + deliveryFee;
+    const orderRef   = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
+
+    const order = {
+      id:             orderRef,
+      items:          enrichedItems,
+      delivery,
+      paymentMethod:  payMethod,
+      deliveryMethod: delivery.delivery || 'standard',
+      subtotal,
+      deliveryFee,
+      total,
+      status:         'Pending',
+      source:         'manual_recovery',   /* marks it as admin-recovered */
+      abandonedId,                          /* link back to original abandoned record */
+      createdAt:      new Date().toISOString(),
+      updatedAt:      new Date().toISOString(),
+    };
+
+    if (isFirebaseAvailable()) {
+      await getDB().collection('orders').doc(orderRef).set(order);
+    } else {
+      store.orders.unshift(order);
+    }
+
+    /* Emit SSE so admin panel updates live */
+    store.emit('new_order', {
+      id:            orderRef,
+      customer:      `${delivery.fname} ${delivery.lname}`,
+      total,
+      paymentMethod: payMethod,
+      source:        'manual_recovery',
+    });
+
+    return res.status(201).json({ message: 'Order created from abandoned checkout.', orderRef, order });
+  } catch (err) {
+    console.error('from-abandoned error:', err);
+    return res.status(500).json({ error: 'Failed to convert abandoned checkout to order.' });
+  }
+});
+
 /* ── GET /api/orders (admin) ── */
 router.get('/', requireAdmin, async (req, res) => {
   try {

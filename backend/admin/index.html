@@ -3040,6 +3040,7 @@ function renderAbandoned(list) {
       <td>${statusBadge}</td>
       <td style="display:flex;gap:6px;flex-wrap:wrap">
         ${waLink}
+        ${a.status !== 'converted' ? `<button onclick="convertAbandonedToOrder('${a.id}')" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:var(--gold);border-color:rgba(201,168,76,0.5)" title="Manually resolved — move to Orders"><i class="fa-solid fa-check-double"></i> Resolved</button>` : ''}
         <button onclick="deleteAbandoned('${a.id}')" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>`;
@@ -3050,6 +3051,36 @@ async function deleteAbandoned(id) {
   if (!confirm('Delete this record?')) return;
   await apiFetch(`/abandoned/${id}`, { method: 'DELETE' });
   loadAbandoned();
+}
+
+/* ── Convert abandoned checkout → real order (manually resolved) ── */
+async function convertAbandonedToOrder(id) {
+  const rec = allAbandoned.find(a => a.id === id);
+  if (!rec) return;
+  const d = rec.delivery || {};
+  const customerName = `${d.fname || ''} ${d.lname || ''}`.trim() || 'Unknown';
+  if (!confirm(`Mark "${customerName}" as manually resolved and create an order?\n\nThis will move it from Abandoned to Orders.`)) return;
+
+  try {
+    /* Step 1: Create a real order from abandoned data */
+    const res = await apiFetch('/orders/from-abandoned', {
+      method: 'POST',
+      body: JSON.stringify({ abandonedId: id }),
+    });
+    if (!res.ok) {
+      showToast('Failed to convert: ' + (res.error || 'Unknown error'), 'error');
+      return;
+    }
+    /* Step 2: Mark abandoned record as converted */
+    await apiFetch(`/abandoned/${id}/converted`, { method: 'PATCH' });
+    showToast(`✅ Order created: ${res.orderRef || ''}`, 'success');
+    loadAbandoned();
+    /* Refresh orders badge too */
+    loadStats();
+  } catch (err) {
+    console.error('Convert abandoned error:', err);
+    showToast('Error converting order. Check console.', 'error');
+  }
 }
 
 function exportAbandonedExcel() {
