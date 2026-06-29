@@ -3074,17 +3074,18 @@ async function convertAbandonedToOrder(id) {
 
   try {
     /* Step 1: Create a real order from abandoned data */
-    const res = await apiFetch('/orders/from-abandoned', {
+    const res  = await apiFetch('/orders/from-abandoned', {
       method: 'POST',
       body: JSON.stringify({ abandonedId: id }),
     });
+    const data = await res.json();
     if (!res.ok) {
-      showToast('Failed to convert: ' + (res.error || 'Unknown error'), 'error');
+      showToast('Failed to resolve: ' + (data.error || 'Unknown error'), 'error');
       return;
     }
     /* Step 2: Mark abandoned record as resolved */
     await apiFetch(`/abandoned/${id}/converted`, { method: 'PATCH' });
-    showToast(`✅ Order created: ${res.orderRef || ''}`, 'success');
+    showToast(`✅ Order created: ${data.orderRef || ''}`, 'success');
     loadAbandoned();
     loadStats();
   } catch (err) {
