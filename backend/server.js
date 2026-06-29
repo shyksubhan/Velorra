@@ -21,6 +21,7 @@ const adminRoutes      = require('./routes/admin');
 const paymentsRoutes   = require('./routes/payments');
 const uploadRoutes     = require('./routes/upload');
 const reviewRoutes     = require('./routes/reviews');
+const resellerRoutes   = require('./routes/resellers');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -124,6 +125,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/payments',   paymentsRoutes);
 app.use('/api/upload',     uploadRoutes);
 app.use('/api/reviews',    reviewRoutes);
+app.use('/api/resellers',  resellerRoutes);
 
 /* ── Admin dashboard HTML ── serve the file directly to avoid router path issues */
 app.get(['/admin', '/admin/'], (req, res) => {

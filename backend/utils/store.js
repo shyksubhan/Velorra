@@ -14,6 +14,7 @@ const store = {
   orders:      [],
   messages:    [],
   subscribers: [],
+  resellers:   [],
   users:       [],
   activityLogs: [],
 
