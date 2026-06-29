@@ -2,13 +2,6 @@
    VELORRA — Checkout Logic
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  /* ── Redirect to shop if cart is empty ── */
-  const _cartCheck = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
-  if (_cartCheck.length === 0) {
-    window.location.href = 'shop.html';
-    return;
-  }
-
   let currentStep = 1;
   let orderData   = {};
   /* ── Populate summary sidebar ── */
@@ -176,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     if (!cart.length) {
-      showToast('Your cart is empty.');
+      toast('Your cart is empty. Please add items before checking out.', 'error');
       if (btn) { btn.disabled = false; btn.textContent = 'Place Order ✓'; }
       return;
     }
@@ -218,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('checkout-summary-sidebar').style.display = 'none';
       } else {
         /* API returned an error */
-        showToast(result.data.error || 'Failed to place order. Please try again.');
+        toast(result.data.error || 'Failed to place order. Please try again.');
         if (btn) { btn.disabled = false; btn.textContent = 'Place Order ✓'; }
       }
     } catch (err) {
@@ -255,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const val = el.dataset.copy;
       if (!val) return;
       navigator.clipboard?.writeText(val).then(() => {
-        showToast('Copied: ' + val);
+        toast('Copied: ' + val);
       }).catch(() => {});
     });
   });
