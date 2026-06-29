@@ -127,53 +127,101 @@ app.use('/api/upload',     uploadRoutes);
 app.use('/api/reviews',    reviewRoutes);
 app.use('/api/resellers',  resellerRoutes);
 
-/* ── Abandoned Checkout Tracking ── */
+/* ── Abandoned Checkout Tracking ──
+   Persisted to Firestore (collection: "abandoned") when Firebase is
+   configured, so records survive server restarts/cold-starts (Render
+   free tier resets in-memory data). Falls back to the in-memory store
+   only in demo mode (no Firebase credentials configured). ── */
+function isAbandonedFirebaseAvailable() {
+  try { return !!getDB(); } catch { return false; }
+}
 
 /* POST /api/abandoned — save/update abandoned checkout (public, called from checkout.js) */
-app.post('/api/abandoned', (req, res) => {
-  const { id, delivery, items, total } = req.body || {};
-  if (!delivery || !items) return res.status(400).json({ error: 'delivery and items required' });
+app.post('/api/abandoned', async (req, res) => {
+  try {
+    const { id, delivery, items, total } = req.body || {};
+    if (!delivery || !items) return res.status(400).json({ error: 'delivery and items required' });
 
-  /* If id sent, update existing record */
-  if (id) {
-    const existing = store.abandoned.find(a => a.id === id);
-    if (existing && existing.status !== 'converted') {
-      existing.delivery  = delivery;
-      existing.items     = items;
-      existing.total     = total || 0;
-      existing.updatedAt = new Date().toISOString();
-      return res.json({ id: existing.id });
+    if (isAbandonedFirebaseAvailable()) {
+      const db = getDB();
+
+      /* If id sent, update existing record (same checkout session re-saving) */
+      if (id) {
+        const ref = db.collection('abandoned').doc(id);
+        const doc = await ref.get();
+        if (doc.exists && doc.data().status !== 'converted') {
+          await ref.update({ delivery, items, total: total || 0, updatedAt: new Date().toISOString() });
+          return res.json({ id });
+        }
+      }
+
+      /* Create new */
+      const newId = 'ab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+      const record = {
+        id:        newId,
+        delivery,
+        items:     items || [],
+        total:     total || 0,
+        status:    'abandoned',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      await db.collection('abandoned').doc(newId).set(record);
+      try { store.emit('new_abandoned', record); } catch {}
+      return res.status(201).json({ id: newId });
     }
+
+    /* ── Demo mode fallback — in-memory ── */
+    if (id) {
+      const existing = store.abandoned.find(a => a.id === id);
+      if (existing && existing.status !== 'converted') {
+        existing.delivery  = delivery;
+        existing.items     = items;
+        existing.total     = total || 0;
+        existing.updatedAt = new Date().toISOString();
+        return res.json({ id: existing.id });
+      }
+    }
+    const record = {
+      id:        'ab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      delivery,
+      items:     items || [],
+      total:     total || 0,
+      status:    'abandoned',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    store.abandoned.unshift(record);
+    if (store.abandoned.length > 500) store.abandoned = store.abandoned.slice(0, 500);
+    try { store.emit('new_abandoned', record); } catch {}
+    return res.status(201).json({ id: record.id });
+
+  } catch (err) {
+    console.error('Abandoned save error:', err);
+    return res.status(500).json({ error: 'Failed to save abandoned checkout.' });
   }
-
-  /* Create new */
-  const record = {
-    id:        'ab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-    delivery,
-    items:     items || [],
-    total:     total || 0,
-    status:    'abandoned',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  store.abandoned.unshift(record);
-  if (store.abandoned.length > 500) store.abandoned = store.abandoned.slice(0, 500);
-
-  /* Notify admin SSE */
-  try { store.emit('new_abandoned', record); } catch {}
-
-  res.status(201).json({ id: record.id });
 });
 
 /* PATCH /api/abandoned/:id/converted — mark as converted when order placed */
-app.patch('/api/abandoned/:id/converted', (req, res) => {
-  const record = store.abandoned.find(a => a.id === req.params.id);
-  if (record) { record.status = 'converted'; record.convertedAt = new Date().toISOString(); }
-  res.json({ ok: true });
+app.patch('/api/abandoned/:id/converted', async (req, res) => {
+  try {
+    if (isAbandonedFirebaseAvailable()) {
+      const ref = getDB().collection('abandoned').doc(req.params.id);
+      const doc = await ref.get();
+      if (doc.exists) await ref.update({ status: 'converted', convertedAt: new Date().toISOString() });
+    } else {
+      const record = store.abandoned.find(a => a.id === req.params.id);
+      if (record) { record.status = 'converted'; record.convertedAt = new Date().toISOString(); }
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Abandoned converted-mark error:', err);
+    res.json({ ok: true }); /* non-critical — never block the order success flow */
+  }
 });
 
 /* GET /api/abandoned — admin only */
-app.get('/api/abandoned', (req, res) => {
+app.get('/api/abandoned', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -181,11 +229,22 @@ app.get('/api/abandoned', (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
   } catch { return res.status(401).json({ error: 'Invalid token' }); }
-  res.json({ abandoned: store.abandoned, total: store.abandoned.length });
+
+  try {
+    if (isAbandonedFirebaseAvailable()) {
+      const snap = await getDB().collection('abandoned').orderBy('createdAt', 'desc').limit(500).get();
+      const abandoned = snap.docs.map(d => d.data());
+      return res.json({ abandoned, total: abandoned.length });
+    }
+    return res.json({ abandoned: store.abandoned, total: store.abandoned.length });
+  } catch (err) {
+    console.error('Abandoned fetch error:', err);
+    return res.json({ abandoned: store.abandoned, total: store.abandoned.length });
+  }
 });
 
 /* DELETE /api/abandoned/:id — admin only */
-app.delete('/api/abandoned/:id', (req, res) => {
+app.delete('/api/abandoned/:id', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -193,9 +252,19 @@ app.delete('/api/abandoned/:id', (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
   } catch { return res.status(401).json({ error: 'Invalid token' }); }
-  const idx = store.abandoned.findIndex(a => a.id === req.params.id);
-  if (idx !== -1) store.abandoned.splice(idx, 1);
-  res.json({ ok: true });
+
+  try {
+    if (isAbandonedFirebaseAvailable()) {
+      await getDB().collection('abandoned').doc(req.params.id).delete();
+    } else {
+      const idx = store.abandoned.findIndex(a => a.id === req.params.id);
+      if (idx !== -1) store.abandoned.splice(idx, 1);
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Abandoned delete error:', err);
+    res.status(500).json({ error: 'Failed to delete.' });
+  }
 });
 /* POST /api/visitors/ping  — frontend calls every 25s */
 app.post('/api/visitors/ping', (req, res) => {
