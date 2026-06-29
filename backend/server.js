@@ -208,9 +208,18 @@ app.post('/api/abandoned', async (req, res) => {
 app.patch('/api/abandoned/:id/converted', async (req, res) => {
   try {
     if (isAbandonedFirebaseAvailable()) {
-      const ref = getDB().collection('abandoned').doc(req.params.id);
+      const db  = getDB();
+      const ref = db.collection('abandoned').doc(req.params.id);
       const doc = await ref.get();
-      if (doc.exists) await ref.update({ status: 'converted', convertedAt: new Date().toISOString() });
+      if (doc.exists) {
+        await ref.update({ status: 'converted', convertedAt: new Date().toISOString() });
+      } else {
+        /* Fallback: find by id field */
+        const snap = await db.collection('abandoned').where('id', '==', req.params.id).limit(1).get();
+        if (!snap.empty) {
+          await snap.docs[0].ref.update({ status: 'converted', convertedAt: new Date().toISOString() });
+        }
+      }
     } else {
       const record = store.abandoned.find(a => a.id === req.params.id);
       if (record) { record.status = 'converted'; record.convertedAt = new Date().toISOString(); }
@@ -218,7 +227,7 @@ app.patch('/api/abandoned/:id/converted', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('Abandoned converted-mark error:', err);
-    res.json({ ok: true }); /* non-critical — never block the order success flow */
+    res.json({ ok: true });
   }
 });
 

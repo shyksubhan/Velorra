@@ -107,9 +107,23 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
     /* Fetch the abandoned record */
     let abandoned = null;
     if (isFirebaseAvailable()) {
+      /* Try fetching by Firestore doc ID first */
       const doc = await getDB().collection('abandoned').doc(abandonedId).get();
-      if (!doc.exists) return res.status(404).json({ error: 'Abandoned record not found.' });
-      abandoned = { id: doc.id, ...doc.data() };
+      if (doc.exists) {
+        abandoned = { id: doc.id, ...doc.data() };
+      } else {
+        /* Fallback: query by 'id' field in case doc ID differs */
+        const snap = await getDB().collection('abandoned').where('id', '==', abandonedId).limit(1).get();
+        if (!snap.empty) {
+          const d = snap.docs[0];
+          abandoned = { id: d.id, ...d.data() };
+        }
+      }
+      /* Also check in-memory store as last resort */
+      if (!abandoned) {
+        abandoned = store.abandoned.find(a => a.id === abandonedId) || null;
+      }
+      if (!abandoned) return res.status(404).json({ error: 'Abandoned record not found.' });
     } else {
       abandoned = store.abandoned.find(a => a.id === abandonedId);
       if (!abandoned) return res.status(404).json({ error: 'Abandoned record not found.' });
