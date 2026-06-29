@@ -467,7 +467,7 @@ section { padding: 100px 0; }
   transition: background var(--transition);
 }
 .product-actions button:hover { background: var(--gold-dim); }
-.product-actions button.buy-now-btn { background: var(--bg-deep, #1a1a1a); color: #fff; }
+.product-actions button.buy-now-btn { background: #2c1f14; color: #fff; }
 .product-actions button.buy-now-btn:hover { background: var(--gold); color: #fff; }
 .product-actions button.wishlist-btn { flex: 0 0 50px; background: var(--bg-deep); color: var(--gold); }
 .product-info { padding: 20px 20px 24px; }
