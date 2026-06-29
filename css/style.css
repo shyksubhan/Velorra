@@ -71,6 +71,25 @@ body > nav.scrolled, header > nav.scrolled {
   backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--border), 0 4px 24px var(--shadow);
 }
+/* Scrolled nav: make logo + icons visible on light background */
+body > nav.scrolled .nav-logo,
+header > nav.scrolled .nav-logo {
+  color: var(--text) !important;
+}
+body > nav.scrolled .nav-logo em,
+header > nav.scrolled .nav-logo em {
+  color: var(--gold) !important;
+}
+body > nav.scrolled .nav-icons button,
+body > nav.scrolled .nav-icons a,
+header > nav.scrolled .nav-icons button,
+header > nav.scrolled .nav-icons a {
+  color: var(--text) !important;
+}
+body > nav.scrolled .nav-links a,
+header > nav.scrolled .nav-links a {
+  color: var(--text-mid) !important;
+}
 .nav-logo {
   font-family: var(--font-display);
   font-size: 1.6rem;
