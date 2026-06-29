@@ -38,7 +38,7 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
         <p style="margin:2px 0;">Bank: Bank Alfalah</p>
         <p style="margin:2px 0;">Account Title: MUHAMMAD SUBHAN</p>
         <p style="margin:2px 0;">Account Number: 09601009896691</p>
-        <p style="margin:2px 0;">IBAN: PK45ALFH096000100989669</p>
+        <p style="margin:2px 0;">IBAN: PK45ALFH0960001009896691</p>
         <p style="margin:10px 0 0;color:#aaa;">After placing your order, please send a screenshot of the payment to our WhatsApp.</p>
       </div>` : ''}
       <p style="color:#555;font-size:.8rem;">Questions? Email velorrajewelry@gmail.com</p>

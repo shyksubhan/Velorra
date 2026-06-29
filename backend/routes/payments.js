@@ -50,9 +50,9 @@ router.post('/initiate', async (req, res) => {
             bankName:      'Bank Alfalah',
             accountTitle:  'MUHAMMAD SUBHAN',
             accountNumber: '09601009896691',
-            iban:          'PK45ALFH096000100989669',
+            iban:          'PK45ALFH0960001009896691',
           },
-          instructions: `Deposit PKR ${amount.toLocaleString()} to:\nBank: Bank Alfalah\nAccount Title: MUHAMMAD SUBHAN\nAccount Number: 09601009896691\nIBAN: PK45ALFH096000100989669\n\nAfter placing your order, please send a screenshot of the payment to our WhatsApp along with your order reference (${orderRef}).`,
+          instructions: `Deposit PKR ${amount.toLocaleString()} to:\nBank: Bank Alfalah\nAccount Title: MUHAMMAD SUBHAN\nAccount Number: 09601009896691\nIBAN: PK45ALFH0960001009896691\n\nAfter placing your order, please send a screenshot of the payment to our WhatsApp along with your order reference (${orderRef}).`,
         });
     }
 

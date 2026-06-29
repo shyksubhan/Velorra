@@ -213,7 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('input[name="payment"]').forEach(r => {
     r.addEventListener('change', () => {
       const bf = document.getElementById('bank-deposit-fields');
+      const cf = document.getElementById('cod-advance-fields');
       if (bf) bf.style.display = r.value === 'bank_deposit' ? 'block' : 'none';
+      if (cf) cf.style.display = r.value === 'cod' ? 'block' : 'none';
       renderSummary();
     });
   });
