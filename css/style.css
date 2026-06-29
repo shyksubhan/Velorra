@@ -71,13 +71,20 @@ body > nav.scrolled, header > nav.scrolled {
   backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--border), 0 4px 24px var(--shadow);
 }
-/* Scrolled nav: make logo + icons visible on light background */
-body > nav.scrolled .nav-logo,
-header > nav.scrolled .nav-logo {
+/* Nav logo default: gold text (works on both light and dark backgrounds) */
+.nav-logo-link {
+  color: var(--gold) !important;
+}
+.nav-logo-link em {
+  color: var(--gold) !important;
+}
+/* Scrolled nav: switch to dark text on light cream background */
+body > nav.scrolled .nav-logo-link,
+header > nav.scrolled .nav-logo-link {
   color: var(--text) !important;
 }
-body > nav.scrolled .nav-logo em,
-header > nav.scrolled .nav-logo em {
+body > nav.scrolled .nav-logo-link em,
+header > nav.scrolled .nav-logo-link em {
   color: var(--gold) !important;
 }
 body > nav.scrolled .nav-icons button,
