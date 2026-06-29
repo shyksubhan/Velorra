@@ -38,6 +38,7 @@ router.post('/', requireAdmin, async (req, res) => {
 
     /* ── Enrich items and calculate totals ── */
     const enrichedItems = items.map(i => ({
+      productId:     String(i.productId || '').trim(),
       name:          String(i.name || '').trim(),
       qty:           Number(i.qty)   || 1,
       price:         Number(i.price) || 0,

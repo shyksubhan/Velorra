@@ -115,11 +115,22 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .dash-filter-btn:hover{border-color:var(--gold);color:var(--text);}
 .dash-filter-btn.active{background:var(--gold);color:#fff;border-color:var(--gold);}
 /* ── Social order items builder ── */
-.soc-item-row{display:grid;grid-template-columns:2fr 60px 80px 80px 36px;gap:8px;margin-bottom:8px;align-items:center;}
+.soc-item-row{display:grid;grid-template-columns:2.4fr 60px 90px 36px;gap:8px;margin-bottom:8px;align-items:start;}
 .soc-item-row input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:0.82rem;outline:none;width:100%;}
 .soc-item-row input:focus{border-color:var(--gold);}
+.soc-item-row input:disabled{color:var(--muted);cursor:not-allowed;}
 .soc-item-remove{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:var(--red);border-radius:6px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
 .soc-item-remove:hover{background:rgba(239,68,68,.25);}
+.soc-product-search-wrap{position:relative;}
+.soc-price-display{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:0.82rem;color:var(--gold);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.soc-product-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--gold);border-radius:8px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+.soc-product-option{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:0.82rem;border-bottom:1px solid var(--border);}
+.soc-product-option:last-child{border-bottom:none;}
+.soc-product-option:hover{background:rgba(184,136,58,.12);}
+.soc-product-option .opt-name{flex:1;color:var(--text);}
+.soc-product-option .opt-price{color:var(--gold);font-weight:600;font-size:0.78rem;}
+.soc-product-option .opt-stock-out{color:var(--red);font-size:0.68rem;text-transform:uppercase;font-weight:700;}
+.soc-product-empty{padding:10px 12px;font-size:0.8rem;color:var(--muted);}
 
 /* ── Buttons ── */
 .btn{padding:8px 16px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:600;border:none;transition:opacity .15s;}
@@ -532,7 +543,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
       <!-- Row 1: Customer + Phone -->
       <div class="form-row">
-        <div class="form-group"><label>Customer Name *</label><input id="soc-cname" placeholder="e.g. Ayesha Malik"/></div>
+        <div class="form-group"><label>Customer Name *</label><input id="soc-cname" placeholder="Customer name"/></div>
         <div class="form-group"><label>Phone Number</label><input id="soc-phone" placeholder="03001234567"/></div>
       </div>
 
@@ -582,11 +593,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <span>Order Items *</span>
           <button type="button" class="btn btn-outline btn-sm" onclick="addSocialItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
         </label>
-        <div style="display:grid;grid-template-columns:2fr 60px 80px 80px 36px;gap:6px;margin-bottom:6px;">
-          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Product Name</span>
+        <div style="display:grid;grid-template-columns:2.4fr 60px 90px 36px;gap:8px;margin-bottom:6px;">
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Product</span>
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Qty</span>
-          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Sale PKR</span>
-          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Cost PKR</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Price</span>
           <span></span>
         </div>
         <div id="soc-items-container"></div>
@@ -1960,8 +1970,9 @@ function viewSocialOrder(id) {
 /* ── Add Social Order Modal ── */
 let _socItemCount = 0;
 
-function openSocialOrderModal() {
+async function openSocialOrderModal() {
   _socItemCount = 0;
+  _socSearchMatches = {};
   document.getElementById('soc-cname').value   = '';
   document.getElementById('soc-phone').value   = '';
   document.getElementById('soc-city').value    = '';
@@ -1970,37 +1981,112 @@ function openSocialOrderModal() {
   document.getElementById('soc-status').value  = 'Pending';
   document.getElementById('soc-notes').value   = '';
   document.getElementById('soc-items-container').innerHTML = '';
+  /* Make sure the product catalog is loaded — the Products tab may
+     never have been opened this session, so allProducts could be empty. */
+  if (!allProducts.length) {
+    try {
+      const res  = await apiFetch('/products');
+      const data = await res.json();
+      allProducts = data.products || [];
+    } catch { /* search box will just show "no products found" until retried */ }
+  }
   recalcSocialTotal();
   addSocialItem(); /* start with one empty row */
   openModal('social-order-modal');
 }
 
+/* ── Each item row holds a hidden productId + price + purchasePrice,
+   populated only once the admin picks a product from the search
+   dropdown. Qty is the only manually-typed number. ── */
 function addSocialItem() {
   const idx = _socItemCount++;
   const row = document.createElement('div');
   row.className = 'soc-item-row';
   row.id = `soc-item-row-${idx}`;
   row.innerHTML = `
-    <input placeholder="Product name" id="si-name-${idx}" oninput="recalcSocialTotal()"/>
+    <div class="soc-product-search-wrap">
+      <input type="hidden" id="si-pid-${idx}" value=""/>
+      <input type="hidden" id="si-cost-${idx}" value="0"/>
+      <input placeholder="Search product…" id="si-search-${idx}"
+             oninput="handleSocItemSearch(${idx})"
+             onfocus="handleSocItemSearch(${idx})"
+             autocomplete="off"/>
+      <div class="soc-product-dropdown" id="si-dropdown-${idx}" style="display:none"></div>
+    </div>
     <input type="number" placeholder="1" min="1" id="si-qty-${idx}" value="1" oninput="recalcSocialTotal()"/>
-    <input type="number" placeholder="0" min="0" id="si-price-${idx}" oninput="recalcSocialTotal()"/>
-    <input type="number" placeholder="0" min="0" id="si-cost-${idx}"/>
+    <div class="soc-price-display" id="si-price-display-${idx}">PKR 0</div>
     <button class="soc-item-remove" onclick="removeSocialItem(${idx})" title="Remove">✕</button>
   `;
   document.getElementById('soc-items-container').appendChild(row);
 }
 
+/* ── Filter allProducts as the admin types and render a dropdown ── */
+let _socSearchMatches = {}; /* idx -> array of matched products, avoids inlining JSON with special chars into onclick */
+
+function handleSocItemSearch(idx) {
+  const input    = document.getElementById(`si-search-${idx}`);
+  const dropdown = document.getElementById(`si-dropdown-${idx}`);
+  if (!input || !dropdown) return;
+  const q = input.value.trim().toLowerCase();
+
+  /* If the box is cleared, also clear the selected product so a stale
+     price/id can't silently ride along with a different typed name. */
+  if (!q) {
+    document.getElementById(`si-pid-${idx}`).value = '';
+    document.getElementById(`si-cost-${idx}`).value = '0';
+    document.getElementById(`si-price-display-${idx}`).textContent = 'PKR 0';
+    recalcSocialTotal();
+  }
+
+  const matches = q
+    ? allProducts.filter(p => p.name?.toLowerCase().includes(q)).slice(0, 8)
+    : allProducts.slice(0, 8);
+  _socSearchMatches[idx] = matches;
+
+  if (!matches.length) {
+    dropdown.innerHTML = `<div class="soc-product-empty">No products found${q ? ' for "' + esc(q) + '"' : ''}.</div>`;
+  } else {
+    dropdown.innerHTML = matches.map((p, mIdx) => `
+      <div class="soc-product-option" onclick="selectSocProduct(${idx}, ${mIdx})">
+        <span style="font-size:1.1rem">${p.emoji || '🛍️'}</span>
+        <span class="opt-name">${esc(p.name)}</span>
+        ${!p.inStock ? '<span class="opt-stock-out">Out of stock</span>' : ''}
+        <span class="opt-price">PKR ${(p.price || 0).toLocaleString()}</span>
+      </div>`).join('');
+  }
+  dropdown.style.display = 'block';
+}
+
+function selectSocProduct(idx, matchIdx) {
+  const product = _socSearchMatches[idx]?.[matchIdx];
+  if (!product) return;
+  document.getElementById(`si-search-${idx}`).value = product.name;
+  document.getElementById(`si-pid-${idx}`).value     = product.id || '';
+  document.getElementById(`si-cost-${idx}`).value    = product.purchasePrice != null ? product.purchasePrice : 0;
+  document.getElementById(`si-price-display-${idx}`).textContent = 'PKR ' + (product.price || 0).toLocaleString();
+  document.getElementById(`si-dropdown-${idx}`).style.display = 'none';
+  recalcSocialTotal();
+}
+
+/* Close any open product dropdown when clicking elsewhere */
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.soc-product-search-wrap')) {
+    document.querySelectorAll('.soc-product-dropdown').forEach(d => d.style.display = 'none');
+  }
+});
+
 function removeSocialItem(idx) {
   const row = document.getElementById(`soc-item-row-${idx}`);
-  if (row) { row.remove(); recalcSocialTotal(); }
+  if (row) { row.remove(); delete _socSearchMatches[idx]; recalcSocialTotal(); }
 }
 
 function recalcSocialTotal() {
   let subtotal = 0;
   document.querySelectorAll('#soc-items-container .soc-item-row').forEach(row => {
-    const rowId = row.id.replace('soc-item-row-', '');
-    const qty   = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 0;
-    const price = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
+    const rowId   = row.id.replace('soc-item-row-', '');
+    const qty     = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 0;
+    const priceEl = document.getElementById(`si-price-display-${rowId}`);
+    const price   = priceEl ? Number(priceEl.textContent.replace(/[^\d.]/g, '')) || 0 : 0;
     subtotal += qty * price;
   });
   const pay    = document.getElementById('soc-payment')?.value || 'cod';
@@ -2032,15 +2118,21 @@ async function saveSocialOrder() {
 
   /* Collect items */
   const items = [];
+  let hasUnselectedRow = false;
   document.querySelectorAll('#soc-items-container .soc-item-row').forEach(row => {
-    const rowId = row.id.replace('soc-item-row-', '');
-    const name  = (document.getElementById(`si-name-${rowId}`)?.value || '').trim();
-    const qty   = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 1;
-    const price = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
+    const rowId   = row.id.replace('soc-item-row-', '');
+    const name    = (document.getElementById(`si-search-${rowId}`)?.value || '').trim();
+    const pid     = document.getElementById(`si-pid-${rowId}`)?.value || '';
+    const qty     = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 1;
+    const priceEl = document.getElementById(`si-price-display-${rowId}`);
+    const price   = priceEl ? Number(priceEl.textContent.replace(/[^\d.]/g, '')) || 0 : 0;
     const purchasePrice = Number(document.getElementById(`si-cost-${rowId}`)?.value) || 0;
-    if (name) items.push({ name, qty, price, purchasePrice });
+    if (!name) return; /* empty row, ignore */
+    if (!pid) { hasUnselectedRow = true; return; } /* typed but never picked from the list */
+    items.push({ productId: pid, name, qty, price, purchasePrice });
   });
-  if (!items.length) { toast('Add at least one item with a name.', 'error'); return; }
+  if (hasUnselectedRow) { toast('Please pick a product from the search list for every item.', 'error'); return; }
+  if (!items.length) { toast('Add at least one item.', 'error'); return; }
 
   const btn = document.getElementById('save-social-btn');
   const orig = btn.innerHTML;
