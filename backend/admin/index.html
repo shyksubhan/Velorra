@@ -102,6 +102,24 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .badge-role-super_admin{background:rgba(184,136,58,.2);color:var(--gold);}
 .badge-role-admin{background:rgba(59,130,246,.15);color:var(--blue);}
 .badge-role-supervisor{background:rgba(34,197,94,.15);color:var(--green);}
+/* ── Social platform badges ── */
+.badge-facebook  {background:rgba(24,119,242,.15);color:#1877f2;}
+.badge-instagram {background:rgba(225,48,108,.15);color:#e1306c;}
+.badge-whatsapp  {background:rgba(37,211,102,.15);color:#25d366;}
+.badge-tiktok    {background:rgba(254,44,85,.15);color:#fe2c55;}
+.badge-other     {background:rgba(154,128,112,.15);color:var(--muted);}
+.badge-website   {background:rgba(184,136,58,.15);color:var(--gold);}
+/* ── Dashboard source filter ── */
+.dash-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.dash-filter-btn{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.dash-filter-btn:hover{border-color:var(--gold);color:var(--text);}
+.dash-filter-btn.active{background:var(--gold);color:#fff;border-color:var(--gold);}
+/* ── Social order items builder ── */
+.soc-item-row{display:grid;grid-template-columns:2fr 60px 80px 80px 36px;gap:8px;margin-bottom:8px;align-items:center;}
+.soc-item-row input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:0.82rem;outline:none;width:100%;}
+.soc-item-row input:focus{border-color:var(--gold);}
+.soc-item-remove{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:var(--red);border-radius:6px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+.soc-item-remove:hover{background:rgba(239,68,68,.25);}
 
 /* ── Buttons ── */
 .btn{padding:8px 16px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:600;border:none;transition:opacity .15s;}
@@ -251,6 +269,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <i class="fa-solid fa-box"></i><span>Orders</span>
       <span class="nav-badge" id="pending-badge" style="display:none">0</span>
     </div>
+    <div class="nav-item" onclick="showPage('social-orders')" id="nav-social-orders">
+      <i class="fa-solid fa-share-nodes"></i><span>Social Orders</span>
+      <span class="nav-badge" id="social-badge" style="display:none;background:#e1306c">0</span>
+    </div>
     <div class="nav-item" onclick="showPage('products')" id="nav-products">
       <i class="fa-solid fa-tags"></i><span>Products</span>
     </div>
@@ -313,6 +335,13 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   <div id="demo-banner" class="demo-banner" style="display:none">
     <i class="fa-solid fa-circle-info"></i>
     <span>Demo Mode — data stored in server memory. Add Firebase credentials to .env for permanent storage.</span>
+  </div>
+  <!-- ── Dashboard Source Filter ── -->
+  <div class="dash-filter-bar" id="dash-filter-bar">
+    <span style="font-size:0.78rem;color:var(--muted);margin-right:4px;"><i class="fa-solid fa-filter"></i> View:</span>
+    <button class="dash-filter-btn active" id="dfbtn-combined" onclick="setDashFilter('combined')">Combined (All)</button>
+    <button class="dash-filter-btn" id="dfbtn-website"  onclick="setDashFilter('website')"><i class="fa-solid fa-globe" style="margin-right:4px"></i>Website Only</button>
+    <button class="dash-filter-btn" id="dfbtn-social"   onclick="setDashFilter('social')"><i class="fa-solid fa-share-nodes" style="margin-right:4px"></i>Social Media Only</button>
   </div>
   <div class="stats-grid" id="stats-grid">
     <div class="stat-card" style="cursor:pointer" onclick="showPage('visitors')">
@@ -394,6 +423,202 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   <div class="table-wrap">
     <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
     <tbody id="orders-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ── SOCIAL MEDIA ORDERS ── -->
+<div id="page-social-orders" class="page" style="display:none">
+  <div class="page-header">
+    <h1><i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>Social Media Orders</h1>
+    <div class="ml-auto">
+      <select class="filter-sel" id="soc-source-filter" onchange="loadSocialOrders()">
+        <option value="">All Sources</option>
+        <option value="facebook">🔵 Facebook</option>
+        <option value="instagram">🩷 Instagram</option>
+        <option value="whatsapp">🟢 WhatsApp</option>
+        <option value="tiktok">⚫ TikTok</option>
+        <option value="other">⚪ Other</option>
+      </select>
+      <select class="filter-sel" id="soc-status-filter" onchange="loadSocialOrders()">
+        <option value="">All Statuses</option>
+        <option>Pending</option><option>Processing</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+      </select>
+      <input class="search-input" id="soc-search" placeholder="Search name / ref…" oninput="filterSocialOrdersTable()"/>
+      <button class="btn btn-gold" id="add-social-order-btn" onclick="openSocialOrderModal()"><i class="fa-solid fa-plus"></i> Add Order</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="margin-bottom:24px" id="social-stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📱</div>
+      <div class="stat-val" id="soc-total" style="color:#e1306c">—</div>
+      <div class="stat-label">Total Social Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-val" id="soc-pending" style="color:var(--orange)">—</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-val" id="soc-delivered" style="color:var(--green)">—</div>
+      <div class="stat-label">Delivered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-val" id="soc-revenue">—</div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-sub" style="color:var(--muted);font-size:0.65rem">social orders</div>
+    </div>
+  </div>
+
+  <!-- Platform breakdown -->
+  <div class="stats-grid" style="margin-bottom:24px;grid-template-columns:repeat(5,1fr)" id="social-platform-grid">
+    <div class="stat-card" style="text-align:center">
+      <div style="font-size:1.3rem">🔵</div>
+      <div class="stat-val" id="soc-fb" style="font-size:1.3rem">—</div>
+      <div class="stat-label" style="font-size:0.68rem">Facebook</div>
+    </div>
+    <div class="stat-card" style="text-align:center">
+      <div style="font-size:1.3rem">🩷</div>
+      <div class="stat-val" id="soc-ig" style="font-size:1.3rem">—</div>
+      <div class="stat-label" style="font-size:0.68rem">Instagram</div>
+    </div>
+    <div class="stat-card" style="text-align:center">
+      <div style="font-size:1.3rem">🟢</div>
+      <div class="stat-val" id="soc-wa" style="font-size:1.3rem">—</div>
+      <div class="stat-label" style="font-size:0.68rem">WhatsApp</div>
+    </div>
+    <div class="stat-card" style="text-align:center">
+      <div style="font-size:1.3rem">⚫</div>
+      <div class="stat-val" id="soc-tt" style="font-size:1.3rem">—</div>
+      <div class="stat-label" style="font-size:0.68rem">TikTok</div>
+    </div>
+    <div class="stat-card" style="text-align:center">
+      <div style="font-size:1.3rem">⚪</div>
+      <div class="stat-val" id="soc-ot" style="font-size:1.3rem">—</div>
+      <div class="stat-label" style="font-size:0.68rem">Other</div>
+    </div>
+  </div>
+
+  <!-- Orders table -->
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Order Ref</th>
+        <th>Source</th>
+        <th>Customer</th>
+        <th>Items</th>
+        <th>Total</th>
+        <th>Payment</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody id="social-orders-body"><tr><td colspan="9" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── ADD SOCIAL ORDER MODAL ── -->
+<div class="modal-overlay" id="social-order-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>Add Social Media Order</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('social-order-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Row 1: Customer + Phone -->
+      <div class="form-row">
+        <div class="form-group"><label>Customer Name *</label><input id="soc-cname" placeholder="e.g. Ayesha Malik"/></div>
+        <div class="form-group"><label>Phone Number</label><input id="soc-phone" placeholder="03001234567"/></div>
+      </div>
+
+      <!-- Row 2: City + Source -->
+      <div class="form-row">
+        <div class="form-group"><label>City</label><input id="soc-city" placeholder="Lahore"/></div>
+        <div class="form-group">
+          <label>Source Platform *</label>
+          <select id="soc-source">
+            <option value="facebook">🔵 Facebook</option>
+            <option value="instagram">🩷 Instagram</option>
+            <option value="whatsapp">🟢 WhatsApp</option>
+            <option value="tiktok">⚫ TikTok</option>
+            <option value="other">⚪ Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 3: Payment + Status -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Payment Method *</label>
+          <select id="soc-payment" onchange="recalcSocialTotal()">
+            <option value="cod">COD (Cash on Delivery)</option>
+            <option value="bank_deposit">Bank Deposit (Free Delivery)</option>
+            <option value="paid">Already Paid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Order Status</label>
+          <select id="soc-status">
+            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group"><label>Notes / Remarks <span style="color:var(--muted)">(optional)</span></label><textarea id="soc-notes" rows="2" placeholder="e.g. Customer wants blue color, urgent delivery…"></textarea></div>
+
+      <!-- Items Section -->
+      <div class="form-group">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          <span>Order Items *</span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="addSocialItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
+        </label>
+        <div style="display:grid;grid-template-columns:2fr 60px 80px 80px 36px;gap:6px;margin-bottom:6px;">
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Product Name</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Qty</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Sale PKR</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Cost PKR</span>
+          <span></span>
+        </div>
+        <div id="soc-items-container"></div>
+      </div>
+
+      <!-- Auto-calculated totals -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Subtotal</span><span id="soc-subtotal">PKR 0</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Delivery Fee</span><span id="soc-delivery-display" style="color:var(--orange)">PKR 200</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;border-top:1px solid var(--border);padding-top:8px;margin-top:2px"><span>Total</span><span id="soc-total-display" style="color:var(--gold)">PKR 200</span></div>
+        <p id="soc-delivery-note" style="font-size:0.72rem;color:var(--muted);margin-top:6px">COD: Free delivery for orders PKR 5,000+, otherwise PKR 200.</p>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('social-order-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveSocialOrder()" id="save-social-btn"><i class="fa-solid fa-check"></i> Create Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SOCIAL ORDER DETAIL MODAL ── -->
+<div class="modal-overlay" id="social-detail-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3 id="social-detail-title">Social Order Detail</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('social-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="social-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('social-detail-modal')">Close</button>
+    </div>
   </div>
 </div>
 
@@ -1066,6 +1291,9 @@ function applyRolePermissions(role) {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
+    /* Hide Add Social Order button */
+    const socBtn = document.getElementById('add-social-order-btn');
+    if (socBtn) socBtn.style.display = 'none';
     /* Hide revenue stat card */
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
     if (revenueCard) revenueCard.style.display = 'none';
@@ -1119,6 +1347,15 @@ function connectSSE() {
       updateNotifDot();
 
       /* Show browser notification for new orders/messages */
+      if (payload.event === 'new_social_order') {
+        const d = payload.data;
+        const srcLabel = {facebook:'Facebook',instagram:'Instagram',whatsapp:'WhatsApp',tiktok:'TikTok',other:'Other'}[d?.source] || d?.source || 'Social';
+        toast(`📱 New ${srcLabel} order from ${d?.customer} — PKR ${(d?.total||0).toLocaleString()}`, 'success');
+        loadStats();
+        const badge = document.getElementById('social-badge');
+        if (badge) { badge.style.display = 'flex'; badge.textContent = parseInt(badge.textContent || '0') + 1; }
+        if (document.getElementById('page-social-orders').style.display !== 'none') loadSocialOrders();
+      }
       if (payload.event === 'new_order') {
         toast(`🛍️ New order: ${payload.data?.id} from ${payload.data?.customer}`, 'success');
         loadStats();
@@ -1182,11 +1419,12 @@ function renderNotifPanel() {
 }
 
 function eventLabel(e) {
-  return { new_order:'New Order 📦', new_message:'New Message ✉️', new_subscriber:'New Subscriber 📧', order_status_changed:'Order Updated 🔄', product_added:'Product Added 🛍️' }[e] || e;
+  return { new_order:'New Order 📦', new_message:'New Message ✉️', new_subscriber:'New Subscriber 📧', order_status_changed:'Order Updated 🔄', product_added:'Product Added 🛍️', new_social_order:'Social Order 📱' }[e] || e;
 }
 
 function notifDesc(n) {
   if (n.event === 'new_order') return `${n.data?.id} — ${n.data?.customer} — PKR ${(n.data?.total || 0).toLocaleString()}`;
+  if (n.event === 'new_social_order') return `${n.data?.customer} — PKR ${(n.data?.total || 0).toLocaleString()} via ${n.data?.source}`;
   if (n.event === 'new_message') return `From ${n.data?.from} (${n.data?.email}) — ${n.data?.subject}`;
   if (n.event === 'new_subscriber') return `${n.data?.email} subscribed`;
   if (n.event === 'order_status_changed') return `${n.data?.id} → ${n.data?.status}`;
@@ -1203,6 +1441,20 @@ function toggleNotifPanel() {
   updateNotifDot();
   renderNotifPanel();
   document.getElementById('notif-panel').classList.toggle('open');
+}
+
+/* ═════════════════════ DASHBOARD ═════════════════════ */
+let _dashFilter = 'combined'; /* combined | website | social */
+
+function setDashFilter(f) {
+  _dashFilter = f;
+  /* Update button states */
+  ['combined','website','social'].forEach(k => {
+    const btn = document.getElementById('dfbtn-' + k);
+    if (btn) btn.classList.toggle('active', k === f);
+  });
+  /* Re-render with cached data */
+  if (_lastStatsData) renderDashStats(_lastStatsData);
 }
 
 /* Close panel when clicking outside */
@@ -1242,42 +1494,74 @@ async function loadDashboard() {
   }
 }
 
+let _lastStatsData = null;
+
 async function loadStats() {
   try {
     const res  = await apiFetch('/admin/stats');
     const data = await res.json();
     if (!res.ok) return;
-
-    document.getElementById('s-orders').textContent      = data.orders?.total ?? 0;
-    document.getElementById('s-revenue').textContent     = 'PKR ' + (data.totalRevenue || 0).toLocaleString();
-    if (data.todayProfit !== undefined) {
-      document.getElementById('s-profit').textContent     = 'PKR ' + (data.todayProfit || 0).toLocaleString();
-      document.getElementById('s-profit-sub').textContent = data.todayProfit > 0 ? 'profit booked today' : 'no profit yet today';
-    }
-    /* Total lifetime profit if available */
-    if (data.totalProfit !== undefined) {
-      const tpEl = document.getElementById('s-total-profit');
-      if (tpEl) tpEl.textContent = 'PKR ' + (data.totalProfit || 0).toLocaleString();
-    }
-    document.getElementById('s-products').textContent    = data.products?.total ?? 0;
-    document.getElementById('s-subscribers').textContent = data.subscribers?.total ?? 0;
-    document.getElementById('s-msgs').textContent        = data.unreadMessages ?? 0;
-    document.getElementById('s-users').textContent       = data.users?.total ?? 0;
-
-    const pending = data.orders?.statuses?.Pending || 0;
-    document.getElementById('s-pending-text').textContent = pending ? `${pending} pending` : '';
-
-    const badge = document.getElementById('pending-badge');
-    badge.textContent = pending;
-    badge.style.display = pending ? 'inline-block' : 'none';
-
-    const unread = data.unreadMessages || 0;
-    const unreadBadge = document.getElementById('unread-badge');
-    unreadBadge.textContent = unread;
-    unreadBadge.style.display = unread ? 'inline-block' : 'none';
-
+    _lastStatsData = data;
+    renderDashStats(data);
     if (data.demoMode) document.getElementById('demo-banner').style.display = 'flex';
   } catch {}
+}
+
+function renderDashStats(data) {
+  const f = _dashFilter;
+  /* Orders count */
+  let ordersTotal;
+  if (f === 'website')  ordersTotal = data.orders?.total ?? 0;
+  else if (f === 'social') ordersTotal = data.socialOrders?.total ?? 0;
+  else ordersTotal = (data.orders?.total ?? 0) + (data.socialOrders?.total ?? 0);
+  document.getElementById('s-orders').textContent = ordersTotal;
+
+  /* Revenue */
+  let rev;
+  if (f === 'website')  rev = data.totalRevenue  || 0;
+  else if (f === 'social') rev = data.socialRevenue || 0;
+  else rev = data.combinedRevenue || (data.totalRevenue||0) + (data.socialRevenue||0);
+  document.getElementById('s-revenue').textContent = 'PKR ' + rev.toLocaleString();
+
+  /* Today's profit */
+  let todayProfit;
+  if (f === 'website')  todayProfit = data.todayProfit  || 0;
+  else if (f === 'social') todayProfit = data.todaySocialProfit || 0;
+  else todayProfit = data.todayCombinedProfit ?? ((data.todayProfit||0) + (data.todaySocialProfit||0));
+  if (todayProfit !== undefined) {
+    document.getElementById('s-profit').textContent     = 'PKR ' + todayProfit.toLocaleString();
+    document.getElementById('s-profit-sub').textContent = todayProfit > 0 ? 'profit booked today' : 'no profit yet today';
+  }
+
+  /* Total profit */
+  let totalProfit;
+  if (f === 'website')  totalProfit = data.totalProfit  || 0;
+  else if (f === 'social') totalProfit = data.totalSocialProfit || 0;
+  else totalProfit = data.totalCombinedProfit ?? ((data.totalProfit||0) + (data.totalSocialProfit||0));
+  const tpEl = document.getElementById('s-total-profit');
+  if (tpEl) tpEl.textContent = 'PKR ' + (totalProfit||0).toLocaleString();
+
+  document.getElementById('s-products').textContent    = data.products?.total ?? 0;
+  document.getElementById('s-subscribers').textContent = data.subscribers?.total ?? 0;
+  document.getElementById('s-msgs').textContent        = data.unreadMessages ?? 0;
+  document.getElementById('s-users').textContent       = data.users?.total ?? 0;
+
+  /* Pending badge — always from website orders */
+  const pending = data.orders?.statuses?.Pending || 0;
+  document.getElementById('s-pending-text').textContent = pending ? `${pending} pending` : '';
+  const badge = document.getElementById('pending-badge');
+  badge.textContent = pending;
+  badge.style.display = pending ? 'inline-block' : 'none';
+
+  /* Social badge */
+  const socPending = (data.socialOrders?.statuses?.Pending || 0);
+  const socBadge = document.getElementById('social-badge');
+  if (socBadge) { socBadge.textContent = socPending; socBadge.style.display = socPending ? 'flex' : 'none'; }
+
+  const unread = data.unreadMessages || 0;
+  const unreadBadge = document.getElementById('unread-badge');
+  unreadBadge.textContent = unread;
+  unreadBadge.style.display = unread ? 'inline-block' : 'none';
 }
 
 async function loadRecentOrders() {
@@ -1289,9 +1573,9 @@ async function loadRecentOrders() {
     tbody.innerHTML = data.orders.map(o => `
       <tr>
         <td><code style="color:var(--gold)">${o.id}</code></td>
-        <td>${o.delivery?.fname} ${o.delivery?.lname}</td>
+        <td>${o.delivery?.fname || o.customerName || '—'} ${o.delivery?.lname || ''}</td>
         <td>PKR ${(o.total || 0).toLocaleString()}</td>
-        <td>${o.paymentMethod?.toUpperCase() || 'COD'}</td>
+        <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
         <td><span class="badge badge-${o.status?.toLowerCase()}">${o.status}</span></td>
         <td>${fmtDate(o.createdAt)}</td>
       </tr>`).join('');
@@ -1538,6 +1822,244 @@ function exportMonthlyStatementsExcel() {
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
   }
+}
+
+/* ═══════════════════ SOCIAL MEDIA ORDERS ═══════════════════ */
+let allSocialOrders = [];
+
+const SOC_SOURCE_LABELS = {
+  facebook:  { label: 'Facebook',  icon: 'fa-brands fa-facebook', color: '#1877f2' },
+  instagram: { label: 'Instagram', icon: 'fa-brands fa-instagram', color: '#e1306c' },
+  whatsapp:  { label: 'WhatsApp',  icon: 'fa-brands fa-whatsapp',  color: '#25d366' },
+  tiktok:    { label: 'TikTok',    icon: 'fa-brands fa-tiktok',    color: '#fe2c55' },
+  other:     { label: 'Other',     icon: 'fa-solid fa-share-nodes', color: '#9a8070' },
+};
+
+function socSourceBadge(source) {
+  const s = SOC_SOURCE_LABELS[source] || SOC_SOURCE_LABELS.other;
+  return `<span class="badge badge-${source || 'other'}"><i class="${s.icon}" style="margin-right:3px"></i>${s.label}</span>`;
+}
+
+async function loadSocialOrders() {
+  const source = document.getElementById('soc-source-filter')?.value || '';
+  const status = document.getElementById('soc-status-filter')?.value || '';
+  const tbody  = document.getElementById('social-orders-body');
+  tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  try {
+    let qs = [];
+    if (source) qs.push('source=' + source);
+    if (status) qs.push('status=' + status);
+    const res  = await apiFetch('/social-orders' + (qs.length ? '?' + qs.join('&') : ''));
+    const data = await res.json();
+    allSocialOrders = data.orders || [];
+    renderSocialOrders(allSocialOrders);
+    updateSocialPageStats(allSocialOrders);
+  } catch {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><p>Failed to load social orders.</p></div></td></tr>`;
+  }
+}
+
+function updateSocialPageStats(orders) {
+  const active = orders.filter(o => o.status !== 'Cancelled');
+  document.getElementById('soc-total')?.textContent !== undefined &&
+    (document.getElementById('soc-total').textContent = orders.length);
+  document.getElementById('soc-pending').textContent   = orders.filter(o => o.status === 'Pending').length;
+  document.getElementById('soc-delivered').textContent = orders.filter(o => o.status === 'Delivered').length;
+  const rev = active.reduce((s, o) => s + (o.total || 0), 0);
+  document.getElementById('soc-revenue').textContent  = 'PKR ' + rev.toLocaleString();
+  document.getElementById('soc-fb').textContent = orders.filter(o => o.source === 'facebook').length;
+  document.getElementById('soc-ig').textContent = orders.filter(o => o.source === 'instagram').length;
+  document.getElementById('soc-wa').textContent = orders.filter(o => o.source === 'whatsapp').length;
+  document.getElementById('soc-tt').textContent = orders.filter(o => o.source === 'tiktok').length;
+  document.getElementById('soc-ot').textContent = orders.filter(o => o.source === 'other').length;
+}
+
+function filterSocialOrdersTable() {
+  const q = (document.getElementById('soc-search')?.value || '').toLowerCase();
+  renderSocialOrders(allSocialOrders.filter(o =>
+    (o.id || '').toLowerCase().includes(q) ||
+    (o.customerName || '').toLowerCase().includes(q) ||
+    (o.phone || '').includes(q)
+  ));
+}
+
+function renderSocialOrders(orders) {
+  const tbody = document.getElementById('social-orders-body');
+  if (!orders.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-share-nodes"></i><p>No social media orders yet</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = orders.map(o => `
+    <tr>
+      <td><code style="color:#e1306c;cursor:pointer" onclick="viewSocialOrder('${o.id}')">${o.id}</code></td>
+      <td>${socSourceBadge(o.source)}</td>
+      <td><strong>${esc(o.customerName || '—')}</strong><br><small style="color:var(--muted)">${esc(o.phone || '')}</small></td>
+      <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
+      <td style="color:var(--gold);font-weight:600">PKR ${(o.total || 0).toLocaleString()}</td>
+      <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
+      <td>
+        <select class="status-select" onchange="updateSocialOrderStatus('${o.id}', this.value)">
+          ${['Pending','Processing','Shipped','Delivered','Cancelled'].map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td>${fmtDate(o.createdAt)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="viewSocialOrder('${o.id}')">Details</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSocialOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+async function updateSocialOrderStatus(id, status) {
+  try {
+    const res = await apiFetch(`/social-orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+    const d   = await res.json();
+    if (res.ok) { toast(`Order ${id} → ${status}`, 'success'); loadStats(); }
+    else toast(d.error || 'Update failed', 'error');
+  } catch { toast('Update failed', 'error'); }
+}
+
+async function deleteSocialOrder(id) {
+  const ok = await bktConfirm({ title: 'Delete Social Order?', message: 'This social media order will be permanently deleted.', confirmText: 'Delete Order', icon: '🗑️' });
+  if (!ok) return;
+  try {
+    const res = await apiFetch(`/social-orders/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Order deleted.', 'success');
+      allSocialOrders = allSocialOrders.filter(o => o.id !== id);
+      renderSocialOrders(allSocialOrders);
+      updateSocialPageStats(allSocialOrders);
+      loadStats();
+    } else { const d = await res.json(); toast(d.error || 'Delete failed.', 'error'); }
+  } catch { toast('Network error.', 'error'); }
+}
+
+function viewSocialOrder(id) {
+  const o = allSocialOrders.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('social-detail-title').textContent = `Social Order — ${o.id}`;
+  document.getElementById('social-detail-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div><small style="color:var(--muted)">Customer</small><p><strong>${esc(o.customerName||'—')}</strong></p></div>
+      <div><small style="color:var(--muted)">Phone</small><p>${esc(o.phone||'—')}</p></div>
+      <div><small style="color:var(--muted)">City</small><p>${esc(o.city||'—')}</p></div>
+      <div><small style="color:var(--muted)">Source</small><p>${socSourceBadge(o.source)}</p></div>
+      <div><small style="color:var(--muted)">Payment</small><p>${(o.paymentMethod||'').toUpperCase()}</p></div>
+      <div><small style="color:var(--muted)">Status</small><p><span class="badge badge-${o.status?.toLowerCase()}">${o.status}</span></p></div>
+      ${o.notes ? `<div style="grid-column:1/-1"><small style="color:var(--muted)">Notes</small><p style="font-size:0.85rem;color:var(--muted)">${esc(o.notes)}</p></div>` : ''}
+    </div>
+    <h4 style="margin-bottom:10px;font-size:0.88rem;color:var(--muted)">Items</h4>
+    ${(o.items||[]).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>🛍️ ${esc(i.name)} (×${i.qty})</span><span>PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Total</span><span style="color:var(--gold)">PKR ${(o.total||0).toLocaleString()}</span></div>
+  `;
+  openModal('social-detail-modal');
+}
+
+/* ── Add Social Order Modal ── */
+let _socItemCount = 0;
+
+function openSocialOrderModal() {
+  _socItemCount = 0;
+  document.getElementById('soc-cname').value   = '';
+  document.getElementById('soc-phone').value   = '';
+  document.getElementById('soc-city').value    = '';
+  document.getElementById('soc-source').value  = 'facebook';
+  document.getElementById('soc-payment').value = 'cod';
+  document.getElementById('soc-status').value  = 'Pending';
+  document.getElementById('soc-notes').value   = '';
+  document.getElementById('soc-items-container').innerHTML = '';
+  recalcSocialTotal();
+  addSocialItem(); /* start with one empty row */
+  openModal('social-order-modal');
+}
+
+function addSocialItem() {
+  const idx = _socItemCount++;
+  const row = document.createElement('div');
+  row.className = 'soc-item-row';
+  row.id = `soc-item-row-${idx}`;
+  row.innerHTML = `
+    <input placeholder="Product name" id="si-name-${idx}" oninput="recalcSocialTotal()"/>
+    <input type="number" placeholder="1" min="1" id="si-qty-${idx}" value="1" oninput="recalcSocialTotal()"/>
+    <input type="number" placeholder="0" min="0" id="si-price-${idx}" oninput="recalcSocialTotal()"/>
+    <input type="number" placeholder="0" min="0" id="si-cost-${idx}"/>
+    <button class="soc-item-remove" onclick="removeSocialItem(${idx})" title="Remove">✕</button>
+  `;
+  document.getElementById('soc-items-container').appendChild(row);
+}
+
+function removeSocialItem(idx) {
+  const row = document.getElementById(`soc-item-row-${idx}`);
+  if (row) { row.remove(); recalcSocialTotal(); }
+}
+
+function recalcSocialTotal() {
+  let subtotal = 0;
+  document.querySelectorAll('#soc-items-container .soc-item-row').forEach(row => {
+    const rowId = row.id.replace('soc-item-row-', '');
+    const qty   = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 0;
+    const price = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
+    subtotal += qty * price;
+  });
+  const pay    = document.getElementById('soc-payment')?.value || 'cod';
+  const delFee = pay === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+  const total  = subtotal + delFee;
+
+  document.getElementById('soc-subtotal').textContent       = 'PKR ' + subtotal.toLocaleString();
+  document.getElementById('soc-delivery-display').textContent = 'PKR ' + delFee.toLocaleString();
+  document.getElementById('soc-total-display').textContent  = 'PKR ' + total.toLocaleString();
+
+  const noteEl = document.getElementById('soc-delivery-note');
+  if (noteEl) {
+    if (pay === 'bank_deposit') noteEl.textContent = 'Bank Deposit: Free delivery always.';
+    else if (subtotal >= 5000)  noteEl.textContent = 'COD: Free delivery for orders PKR 5,000+.';
+    else noteEl.textContent = `COD: PKR 200 delivery (waived at PKR 5,000). Subtotal PKR ${subtotal.toLocaleString()}.`;
+  }
+}
+
+async function saveSocialOrder() {
+  const customerName = document.getElementById('soc-cname').value.trim();
+  const phone        = document.getElementById('soc-phone').value.trim();
+  const city         = document.getElementById('soc-city').value.trim();
+  const source       = document.getElementById('soc-source').value;
+  const paymentMethod= document.getElementById('soc-payment').value;
+  const status       = document.getElementById('soc-status').value;
+  const notes        = document.getElementById('soc-notes').value.trim();
+
+  if (!customerName) { toast('Customer name is required.', 'error'); return; }
+
+  /* Collect items */
+  const items = [];
+  document.querySelectorAll('#soc-items-container .soc-item-row').forEach(row => {
+    const rowId = row.id.replace('soc-item-row-', '');
+    const name  = (document.getElementById(`si-name-${rowId}`)?.value || '').trim();
+    const qty   = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 1;
+    const price = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
+    const purchasePrice = Number(document.getElementById(`si-cost-${rowId}`)?.value) || 0;
+    if (name) items.push({ name, qty, price, purchasePrice });
+  });
+  if (!items.length) { toast('Add at least one item with a name.', 'error'); return; }
+
+  const btn = document.getElementById('save-social-btn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+
+  try {
+    const res  = await apiFetch('/social-orders', {
+      method: 'POST',
+      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast(`✓ Social order created — ${data.orderRef}`, 'success');
+      closeModal('social-order-modal');
+      loadSocialOrders();
+      loadStats();
+    } else toast(data.error || 'Failed to create order.', 'error');
+  } catch { toast('Network error.', 'error'); }
+
+  btn.innerHTML = orig; btn.disabled = false;
 }
 
 /* ═══════════════════ ORDERS ═══════════════════ */

@@ -32,71 +32,109 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       const db = getDB();
-      const [ordersSnap, productsSnap, subscribersSnap, messagesSnap, usersSnap] = await Promise.all([
+      const [ordersSnap, socialSnap, productsSnap, subscribersSnap, messagesSnap, usersSnap] = await Promise.all([
         db.collection('orders').get(),
+        db.collection('social_orders').get(),
         db.collection('products').get(),
         db.collection('subscribers').get(),
         db.collection('messages').where('read', '==', false).get(),
         db.collection('users').where('isAdmin', '==', false).get(),
       ]);
-      const orders   = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const orders       = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const products     = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
+      /* ── Website orders stats ── */
       const statusCounts = {};
       orders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
       const activeOrders = orders.filter(o => o.status !== 'Cancelled');
-      const revenue = activeOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const revenue      = activeOrders.reduce((s, o) => s + (o.total || 0), 0);
+
+      /* ── Social orders stats ── */
+      const socialStatusCounts = {};
+      socialOrders.forEach(o => { socialStatusCounts[o.status] = (socialStatusCounts[o.status] || 0) + 1; });
+      const activeSocialOrders = socialOrders.filter(o => o.status !== 'Cancelled');
+      const socialRevenue      = activeSocialOrders.reduce((s, o) => s + (o.total || 0), 0);
 
       /* ── Date-filtered revenue ── */
-      const today = new Date(); today.setHours(0,0,0,0);
+      const today      = new Date(); today.setHours(0,0,0,0);
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const todayOrders = activeOrders.filter(o => new Date(o.createdAt) >= today);
-      const todayRevenue = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
-      const monthRevenue = activeOrders
+
+      /* Website date-filtered */
+      const todayOrders    = activeOrders.filter(o => new Date(o.createdAt) >= today);
+      const todayRevenue   = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const monthRevenue   = activeOrders
         .filter(o => new Date(o.createdAt) >= monthStart)
         .reduce((s, o) => s + (o.total || 0), 0);
 
-      /* ── Profit calculation from Firebase orders ──
-         Each order item should have purchasePrice snapshotted at checkout.
-         If missing, fall back to live product catalogue. ── */
+      /* Social date-filtered */
+      const todaySocialOrders  = activeSocialOrders.filter(o => new Date(o.createdAt) >= today);
+      const todaySocialRevenue = todaySocialOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const monthSocialRevenue = activeSocialOrders
+        .filter(o => new Date(o.createdAt) >= monthStart)
+        .reduce((s, o) => s + (o.total || 0), 0);
+
+      /* ── Profit calculation ── */
       const productMap = {};
       products.forEach(p => {
         productMap[p.id]   = p.purchasePrice ?? 0;
-        productMap[p.name] = p.purchasePrice ?? 0;  /* name-based fallback */
+        productMap[p.name] = p.purchasePrice ?? 0;
       });
 
       function calcOrderProfit(order) {
         return (order.items || []).reduce((sum, item) => {
-          const pp  = item.purchasePrice ?? productMap[item.productId] ?? productMap[item.name] ?? 0;
-          const rev = (item.price || 0) * (item.qty || 1);
+          const pp   = item.purchasePrice ?? productMap[item.productId] ?? productMap[item.name] ?? 0;
+          const rev  = (item.price || 0) * (item.qty || 1);
           const cost = (Number(pp) || 0) * (item.qty || 1);
           return sum + (rev - cost);
         }, 0);
       }
 
+      /* Website profit */
       const todayProfit = Math.round(todayOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
       const totalProfit = Math.round(activeOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
 
+      /* Social profit */
+      const todaySocialProfit = Math.round(todaySocialOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
+      const totalSocialProfit = Math.round(activeSocialOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
+
       return res.json(maskRevenue({
-        orders:         { total: ordersSnap.size, statuses: statusCounts },
-        products:       { total: productsSnap.size },
-        subscribers:    { total: subscribersSnap.size },
-        unreadMessages: messagesSnap.size,
-        users:          { total: usersSnap.size },
-        totalRevenue:   Math.round(revenue),
-        todayRevenue:   Math.round(todayRevenue),
-        monthRevenue:   Math.round(monthRevenue),
+        orders:              { total: ordersSnap.size,  statuses: statusCounts },
+        socialOrders:        { total: socialSnap.size,  statuses: socialStatusCounts },
+        products:            { total: productsSnap.size },
+        subscribers:         { total: subscribersSnap.size },
+        unreadMessages:      messagesSnap.size,
+        users:               { total: usersSnap.size },
+        /* website-only */
+        totalRevenue:        Math.round(revenue),
+        todayRevenue:        Math.round(todayRevenue),
+        monthRevenue:        Math.round(monthRevenue),
         todayProfit,
         totalProfit,
-        demoMode:       false,
+        /* social-only */
+        socialRevenue:       Math.round(socialRevenue),
+        todaySocialRevenue:  Math.round(todaySocialRevenue),
+        monthSocialRevenue:  Math.round(monthSocialRevenue),
+        todaySocialProfit,
+        totalSocialProfit,
+        /* combined */
+        combinedRevenue:     Math.round(revenue + socialRevenue),
+        todayCombinedRevenue:Math.round(todayRevenue + todaySocialRevenue),
+        monthCombinedRevenue:Math.round(monthRevenue + monthSocialRevenue),
+        todayCombinedProfit: todayProfit + todaySocialProfit,
+        totalCombinedProfit: totalProfit + totalSocialProfit,
+        demoMode:            false,
       }, req.user.role));
     }
 
     /* Demo mode — read from shared store */
-    const base = store.stats();
-    const orders = store.orders;
-    const today = new Date(); today.setHours(0,0,0,0);
+    const base    = store.stats();
+    const orders  = store.orders;
+    const sOrders = store.socialOrders;
+    const today      = new Date(); today.setHours(0,0,0,0);
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    /* Website */
     base.todayRevenue = Math.round(orders
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today)
       .reduce((s, o) => s + (o.total || 0), 0));
@@ -104,6 +142,25 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
       .reduce((s, o) => s + (o.total || 0), 0));
     base.todayProfit = store.dailyStatement().totals.profit;
+
+    /* Social */
+    const todaySocialOrders = sOrders.filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today);
+    base.todaySocialRevenue  = Math.round(todaySocialOrders.reduce((s, o) => s + (o.total || 0), 0));
+    base.monthSocialRevenue  = Math.round(sOrders
+      .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
+      .reduce((s, o) => s + (o.total || 0), 0));
+    base.todaySocialProfit   = Math.round(todaySocialOrders.reduce((s, o) =>
+      s + (o.items || []).reduce((sum, i) => sum + ((i.price - (i.purchasePrice || 0)) * (i.qty || 1)), 0), 0));
+    base.totalSocialProfit   = Math.round(sOrders.filter(o => o.status !== 'Cancelled').reduce((s, o) =>
+      s + (o.items || []).reduce((sum, i) => sum + ((i.price - (i.purchasePrice || 0)) * (i.qty || 1)), 0), 0));
+
+    /* Combined */
+    base.todayCombinedRevenue = base.todayRevenue + base.todaySocialRevenue;
+    base.monthCombinedRevenue = base.monthRevenue + base.monthSocialRevenue;
+    base.combinedRevenue      = base.totalRevenue + base.socialRevenue;
+    base.todayCombinedProfit  = base.todayProfit  + base.todaySocialProfit;
+    base.totalCombinedProfit  = (store.lifetimeEarnings().totals.profit || 0) + base.totalSocialProfit;
+
     return res.json(maskRevenue({ ...base, demoMode: true }, req.user.role));
 
   } catch (err) {

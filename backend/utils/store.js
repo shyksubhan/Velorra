@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    VELORRA — Shared Singleton Data Store
    THE single source of truth for all in-memory data.
    All routes import this module — they all share the SAME arrays.
@@ -10,14 +10,15 @@ const DEFAULT_PRODUCTS = [];
 /* ── The singleton store ── */
 const store = {
   /* Data arrays — shared across ALL routes */
-  products:    JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
-  orders:      [],
-  messages:    [],
-  subscribers: [],
-  resellers:   [],
-  users:       [],
+  products:     JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
+  orders:       [],
+  socialOrders: [],   /* manually created social media orders */
+  messages:     [],
+  subscribers:  [],
+  resellers:    [],
+  users:        [],
   activityLogs: [],
-  abandoned:   [],
+  abandoned:    [],
 
   /* Admin users with role support */
   adminUsers: [
@@ -264,21 +265,32 @@ const store = {
 
   /* Stats snapshot — used by /admin/stats */
   stats() {
-    const orders = this.orders;
+    const orders  = this.orders;
+    const sOrders = this.socialOrders;
     const revenue = orders
+      .filter(o => o.status !== 'Cancelled')
+      .reduce((s, o) => s + (o.total || 0), 0);
+    const socialRevenue = sOrders
       .filter(o => o.status !== 'Cancelled')
       .reduce((s, o) => s + (o.total || 0), 0);
     const statusCounts = {};
     orders.forEach(o => {
       statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
     });
+    const socialStatusCounts = {};
+    sOrders.forEach(o => {
+      socialStatusCounts[o.status] = (socialStatusCounts[o.status] || 0) + 1;
+    });
     return {
-      orders:         { total: orders.length, statuses: statusCounts },
-      products:       { total: this.products.length },
-      subscribers:    { total: this.subscribers.length },
-      unreadMessages: this.messages.filter(m => !m.read).length,
-      totalRevenue:   Math.round(revenue),
-      users:          { total: this.users.length },
+      orders:              { total: orders.length,  statuses: statusCounts },
+      socialOrders:        { total: sOrders.length, statuses: socialStatusCounts },
+      products:            { total: this.products.length },
+      subscribers:         { total: this.subscribers.length },
+      unreadMessages:      this.messages.filter(m => !m.read).length,
+      totalRevenue:        Math.round(revenue),
+      socialRevenue:       Math.round(socialRevenue),
+      combinedRevenue:     Math.round(revenue + socialRevenue),
+      users:               { total: this.users.length },
     };
   },
 };

@@ -12,16 +12,17 @@ const { initCloudinary } = require('./utils/cloudinary');
 const store            = require('./utils/store');
 
 /* ── Route modules ── */
-const authRoutes       = require('./routes/auth');
-const productRoutes    = require('./routes/products');
-const orderRoutes      = require('./routes/orders');
-const contactRoutes    = require('./routes/contact');
-const newsletterRoutes = require('./routes/newsletter');
-const adminRoutes      = require('./routes/admin');
-const paymentsRoutes   = require('./routes/payments');
-const uploadRoutes     = require('./routes/upload');
-const reviewRoutes     = require('./routes/reviews');
-const resellerRoutes   = require('./routes/resellers');
+const authRoutes         = require('./routes/auth');
+const productRoutes      = require('./routes/products');
+const orderRoutes        = require('./routes/orders');
+const contactRoutes      = require('./routes/contact');
+const newsletterRoutes   = require('./routes/newsletter');
+const adminRoutes        = require('./routes/admin');
+const paymentsRoutes     = require('./routes/payments');
+const uploadRoutes       = require('./routes/upload');
+const reviewRoutes       = require('./routes/reviews');
+const resellerRoutes     = require('./routes/resellers');
+const socialOrderRoutes  = require('./routes/socialOrders');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -117,15 +118,16 @@ app.get('/api/notifications/stream', (req, res) => {
 });
 
 /* ── API Routes ── */
-app.use('/api/auth',       authRoutes);
-app.use('/api/products',   productRoutes);
-app.use('/api/orders',     orderRoutes);
-app.use('/api/contact',    contactRoutes);
-app.use('/api/newsletter', newsletterRoutes);
-app.use('/api/payments',   paymentsRoutes);
-app.use('/api/upload',     uploadRoutes);
-app.use('/api/reviews',    reviewRoutes);
-app.use('/api/resellers',  resellerRoutes);
+app.use('/api/auth',          authRoutes);
+app.use('/api/products',      productRoutes);
+app.use('/api/orders',        orderRoutes);
+app.use('/api/social-orders', socialOrderRoutes);
+app.use('/api/contact',       contactRoutes);
+app.use('/api/newsletter',    newsletterRoutes);
+app.use('/api/payments',      paymentsRoutes);
+app.use('/api/upload',        uploadRoutes);
+app.use('/api/reviews',       reviewRoutes);
+app.use('/api/resellers',     resellerRoutes);
 
 /* ── Abandoned Checkout Tracking ──
    Persisted to Firestore (collection: "abandoned") when Firebase is
@@ -317,6 +319,7 @@ app.get('/api/health', (req, res) => {
     endpoints: {
       products:      '/api/products',
       orders:        '/api/orders',
+      socialOrders:  '/api/social-orders',
       auth:          '/api/auth',
       contact:       '/api/contact',
       newsletter:    '/api/newsletter',
