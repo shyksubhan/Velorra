@@ -2642,12 +2642,12 @@ async function updateResellerStatus(id, status) {
   try {
     const res = await apiFetch(`/resellers/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
     if (!res.ok) throw new Error();
-    showToast('Status updated', 'success');
+    toast('Status updated', 'success');
     /* Update local data */
     const r = allResellers.find(x => (x._id||x.id) === id);
     if (r) r.status = status;
     updateResellerStats(allResellers);
-  } catch(e) { showToast('Failed to update status', 'error'); }
+  } catch(e) { toast('Failed to update status', 'error'); }
 }
 
 async function deleteReseller(id) {
@@ -2655,15 +2655,15 @@ async function deleteReseller(id) {
   try {
     const res = await apiFetch(`/resellers/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error();
-    showToast('Deleted', 'success');
+    toast('Deleted', 'success');
     allResellers = allResellers.filter(r => (r._id||r.id) !== id);
     renderResellers(allResellers);
     updateResellerStats(allResellers);
-  } catch(e) { showToast('Failed to delete', 'error'); }
+  } catch(e) { toast('Failed to delete', 'error'); }
 }
 
 function exportResellersExcel() {
-  if (!window.XLSX) { showToast('XLSX library not available', 'error'); return; }
+  if (!window.XLSX) { toast('XLSX library not available', 'error'); return; }
   const rows = allResellers.map(r => ({
     Name: r.name, Phone: r.phone, City: r.city,
     'Business Type': r.businessType || r.business_type,
