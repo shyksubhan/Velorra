@@ -235,7 +235,7 @@ app.get('/api/abandoned', async (req, res) => {
   try {
     if (isAbandonedFirebaseAvailable()) {
       const snap = await getDB().collection('abandoned').orderBy('createdAt', 'desc').limit(500).get();
-      const abandoned = snap.docs.map(d => d.data());
+      const abandoned = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       return res.json({ abandoned, total: abandoned.length });
     }
     return res.json({ abandoned: store.abandoned, total: store.abandoned.length });

@@ -109,7 +109,7 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
     if (isFirebaseAvailable()) {
       const doc = await getDB().collection('abandoned').doc(abandonedId).get();
       if (!doc.exists) return res.status(404).json({ error: 'Abandoned record not found.' });
-      abandoned = doc.data();
+      abandoned = { id: doc.id, ...doc.data() };
     } else {
       abandoned = store.abandoned.find(a => a.id === abandonedId);
       if (!abandoned) return res.status(404).json({ error: 'Abandoned record not found.' });
