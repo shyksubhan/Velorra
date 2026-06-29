@@ -69,6 +69,25 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const fd = new FormData(e.target);
     orderData.delivery = Object.fromEntries(fd.entries());
+
+    /* ── Save abandoned checkout (fires silently in background) ── */
+    const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const abandonedId = sessionStorage.getItem('velorra_abandoned_id') || null;
+    fetch(`${VELORRA_API}/abandoned`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id:       abandonedId,
+        delivery: orderData.delivery,
+        items:    cart,
+        total:    subtotal,
+      }),
+    })
+    .then(r => r.json())
+    .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
+    .catch(() => {});
+
     goToStep(2);
   });
   /* ── Step 2 submit ── */
@@ -133,6 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (result.ok) {
+        /* Mark abandoned checkout as converted */
+        const abId = sessionStorage.getItem('velorra_abandoned_id');
+        if (abId) {
+          fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {});
+          sessionStorage.removeItem('velorra_abandoned_id');
+        }
         /* Success */
         const ref = result.data.orderRef;
         document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
@@ -149,6 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       /* Backend not available — graceful fallback */
       console.warn('Backend unavailable, using offline fallback:', err);
+      const abId = sessionStorage.getItem('velorra_abandoned_id');
+      if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
       document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
       localStorage.removeItem('velorra_cart');

@@ -273,6 +273,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <i class="fa-solid fa-signal"></i><span>Live Visitors</span>
       <span class="nav-badge" id="visitors-badge" style="display:none;background:#22c55e">0</span>
     </div>
+    <div class="nav-item" onclick="showPage('abandoned')" id="nav-abandoned">
+      <i class="fa-solid fa-cart-arrow-down"></i><span>Abandoned Orders</span>
+      <span class="nav-badge" id="abandoned-badge" style="display:none;background:#f97316">0</span>
+    </div>
     <div class="nav-item" onclick="showPage('roles')" id="nav-roles">
       <i class="fa-solid fa-shield-halved"></i><span>Users & Roles</span>
     </div>
@@ -327,7 +331,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="stat-card"><div class="stat-icon">📧</div><div class="stat-val" id="s-subscribers">—</div><div class="stat-label">Subscribers</div></div>
     <div class="stat-card"><div class="stat-icon">✉️</div><div class="stat-val" id="s-msgs">—</div><div class="stat-label">Unread Messages</div></div>
     <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-val" id="s-users">—</div><div class="stat-label">Customers</div></div>
-  </div>
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('abandoned')">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-val" id="s-abandoned" style="color:#f97316">—</div>
+      <div class="stat-label">Abandoned Orders</div>
+      <div class="stat-sub" id="s-abandoned-sub" style="color:#f97316;font-size:0.65rem">incomplete checkouts</div>
+    </div>
   <div class="table-wrap">
     <div class="table-header"><h3>Recent Orders</h3></div>
     <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
@@ -585,6 +594,65 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <thead><tr><th>Page</th><th>Visitors</th><th>Bar</th></tr></thead>
       <tbody id="v-pages-body">
         <tr><td colspan="3" class="empty-state">No data yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── ABANDONED ORDERS ── -->
+<div id="page-abandoned" class="page" style="display:none">
+  <div class="page-header">
+    <h1><i class="fa-solid fa-cart-arrow-down" style="color:#f97316;margin-right:8px"></i>Abandoned Orders</h1>
+    <div class="ml-auto" style="display:flex;gap:10px;flex-wrap:wrap">
+      <select id="abandoned-filter" onchange="filterAbandoned()" class="filter-sel">
+        <option value="">All</option>
+        <option value="abandoned">Abandoned Only</option>
+        <option value="converted">Recovered</option>
+      </select>
+      <button class="btn btn-outline" onclick="loadAbandoned()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <button class="btn btn-gold" onclick="exportAbandonedExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="stats-grid" style="margin-bottom:24px" id="abandoned-stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-val" id="ab-total" style="color:#f97316">0</div>
+      <div class="stat-label">Total Abandoned</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-val" id="ab-converted" style="color:#22c55e">0</div>
+      <div class="stat-label">Recovered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-val" id="ab-lost-value">PKR 0</div>
+      <div class="stat-label">Lost Revenue</div>
+      <div class="stat-sub" style="color:var(--muted);font-size:0.65rem">abandoned only</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header"><h3>All Abandoned Checkouts</h3></div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>City</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="abandoned-body">
+        <tr><td colspan="9" class="empty-state"><div class="spinner"></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -1069,6 +1137,17 @@ function connectSSE() {
         if (badge) { badge.style.display = 'flex'; badge.textContent = parseInt(badge.textContent || '0') + 1; }
         if (document.getElementById('page-resellers').style.display !== 'none') loadResellers();
       }
+      if (payload.event === 'new_abandoned') {
+        const d = payload.data;
+        toast(`🛒 Abandoned checkout — ${d?.delivery?.fname || 'Someone'} left without ordering`, 'warning');
+        /* Update badge */
+        const badge = document.getElementById('abandoned-badge');
+        if (badge) { badge.style.display = 'flex'; badge.textContent = parseInt(badge.textContent || '0') + 1; }
+        /* Update dashboard stat */
+        const stat = document.getElementById('s-abandoned');
+        if (stat) stat.textContent = parseInt(stat.textContent || '0') + 1;
+        if (document.getElementById('page-abandoned').style.display !== 'none') loadAbandoned();
+      }
       if (payload.event === 'visitor_update') {
         /* Real-time visitor count update */
         const count = payload.data?.count ?? 0;
@@ -1148,11 +1227,12 @@ function showPage(name) {
   if (name === 'roles')     loadRoles();
   if (name === 'settings')  loadSystemInfo();
   if (name === 'visitors')  loadVisitors();
+  if (name === 'abandoned') loadAbandoned();
 }
 
 /* ═══════════════════ DASHBOARD ═══════════════════ */
 async function loadDashboard() {
-  await Promise.all([loadStats(), loadRecentOrders(), loadVisitors()]);
+  await Promise.all([loadStats(), loadRecentOrders(), loadVisitors(), loadAbandoned()]);
   if (currentUser?.role === 'super_admin') {
     loadLifetimeEarnings();
     loadDailyStatements();
@@ -2372,7 +2452,100 @@ function today() {
   return new Date().toISOString().split('T')[0];
 }
 
-/* ═══════════════════ LIVE VISITORS ═══════════════════ */
+/* ═══════════════════ ABANDONED ORDERS ═══════════════════ */
+let allAbandoned = [];
+
+async function loadAbandoned() {
+  try {
+    const res  = await apiFetch('/abandoned');
+    const data = await res.json();
+    allAbandoned = data.abandoned || [];
+    renderAbandoned(allAbandoned);
+    /* Update dashboard stat */
+    const onlyAbandoned = allAbandoned.filter(a => a.status === 'abandoned');
+    const converted     = allAbandoned.filter(a => a.status === 'converted');
+    const lostVal       = onlyAbandoned.reduce((s, a) => s + (a.total || 0), 0);
+    const stat = document.getElementById('s-abandoned');
+    if (stat) { stat.textContent = onlyAbandoned.length; }
+    document.getElementById('ab-total') && (document.getElementById('ab-total').textContent = onlyAbandoned.length);
+    document.getElementById('ab-converted') && (document.getElementById('ab-converted').textContent = converted.length);
+    document.getElementById('ab-lost-value') && (document.getElementById('ab-lost-value').textContent = 'PKR ' + lostVal.toLocaleString());
+    /* Badge */
+    const badge = document.getElementById('abandoned-badge');
+    if (badge) { if (onlyAbandoned.length > 0) { badge.style.display = 'flex'; badge.textContent = onlyAbandoned.length; } else badge.style.display = 'none'; }
+  } catch (err) { console.error('Abandoned load error:', err); }
+}
+
+function filterAbandoned() {
+  const f = document.getElementById('abandoned-filter')?.value || '';
+  const filtered = f ? allAbandoned.filter(a => a.status === f) : allAbandoned;
+  renderAbandoned(filtered);
+}
+
+function renderAbandoned(list) {
+  const tbody = document.getElementById('abandoned-body');
+  if (!tbody) return;
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><i class="fa-solid fa-cart-arrow-down"></i><p>No abandoned checkouts yet.</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map((a, i) => {
+    const d    = a.delivery || {};
+    const name = `${d.fname || ''} ${d.lname || ''}`.trim() || '—';
+    const items = (a.items || []).map(it => `${it.name} ×${it.qty}`).join(', ') || '—';
+    const statusBadge = a.status === 'converted'
+      ? '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">✅ Recovered</span>'
+      : '<span style="background:rgba(249,115,22,0.15);color:#f97316;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">🛒 Abandoned</span>';
+    const waLink = d.phone
+      ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}?text=Hi+${encodeURIComponent(d.fname||'')}%2C+you+left+something+in+your+cart+at+Velorra+Jewelry%21+Complete+your+order+here%3A+https%3A%2F%2Fvelorra-vvp3.onrender.com%2Fcheckout.html" target="_blank" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:#25d366;border-color:rgba(37,211,102,0.4)"><i class="fa-brands fa-whatsapp"></i> Recover</a>`
+      : '';
+    return `<tr>
+      <td>${i + 1}</td>
+      <td><strong>${name}</strong>${d.email ? `<br><small style="color:var(--muted)">${d.email}</small>` : ''}</td>
+      <td>${d.phone || '—'}</td>
+      <td>${d.city || '—'}</td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.78rem">${items}</td>
+      <td style="color:var(--gold);font-weight:600">PKR ${(a.total||0).toLocaleString()}</td>
+      <td style="font-size:0.75rem">${a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+      <td>${statusBadge}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        ${waLink}
+        <button onclick="deleteAbandoned('${a.id}')" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteAbandoned(id) {
+  if (!confirm('Delete this record?')) return;
+  await apiFetch(`/abandoned/${id}`, { method: 'DELETE' });
+  loadAbandoned();
+}
+
+function exportAbandonedExcel() {
+  const rows = allAbandoned.map(a => {
+    const d = a.delivery || {};
+    return {
+      Name:    `${d.fname||''} ${d.lname||''}`.trim(),
+      Email:   d.email || '',
+      Phone:   d.phone || '',
+      Address: d.address || '',
+      City:    d.city || '',
+      Province:d.province || '',
+      Items:   (a.items||[]).map(i => `${i.name} x${i.qty}`).join(' | '),
+      Total:   a.total || 0,
+      Status:  a.status || '',
+      Date:    a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Abandoned');
+  XLSX.writeFile(wb, 'velorra-abandoned-orders.xlsx');
+}
+</script>
+
+
 function updateVisitorCount(count) {
   /* Dashboard widget */
   const el = document.getElementById('s-visitors');

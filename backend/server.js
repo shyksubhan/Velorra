@@ -127,7 +127,76 @@ app.use('/api/upload',     uploadRoutes);
 app.use('/api/reviews',    reviewRoutes);
 app.use('/api/resellers',  resellerRoutes);
 
-/* ── Live Visitor Tracking ── */
+/* ── Abandoned Checkout Tracking ── */
+
+/* POST /api/abandoned — save/update abandoned checkout (public, called from checkout.js) */
+app.post('/api/abandoned', (req, res) => {
+  const { id, delivery, items, total } = req.body || {};
+  if (!delivery || !items) return res.status(400).json({ error: 'delivery and items required' });
+
+  /* If id sent, update existing record */
+  if (id) {
+    const existing = store.abandoned.find(a => a.id === id);
+    if (existing && existing.status !== 'converted') {
+      existing.delivery  = delivery;
+      existing.items     = items;
+      existing.total     = total || 0;
+      existing.updatedAt = new Date().toISOString();
+      return res.json({ id: existing.id });
+    }
+  }
+
+  /* Create new */
+  const record = {
+    id:        'ab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+    delivery,
+    items:     items || [],
+    total:     total || 0,
+    status:    'abandoned',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  store.abandoned.unshift(record);
+  if (store.abandoned.length > 500) store.abandoned = store.abandoned.slice(0, 500);
+
+  /* Notify admin SSE */
+  try { store.emit('new_abandoned', record); } catch {}
+
+  res.status(201).json({ id: record.id });
+});
+
+/* PATCH /api/abandoned/:id/converted — mark as converted when order placed */
+app.patch('/api/abandoned/:id/converted', (req, res) => {
+  const record = store.abandoned.find(a => a.id === req.params.id);
+  if (record) { record.status = 'converted'; record.convertedAt = new Date().toISOString(); }
+  res.json({ ok: true });
+});
+
+/* GET /api/abandoned — admin only */
+app.get('/api/abandoned', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+  } catch { return res.status(401).json({ error: 'Invalid token' }); }
+  res.json({ abandoned: store.abandoned, total: store.abandoned.length });
+});
+
+/* DELETE /api/abandoned/:id — admin only */
+app.delete('/api/abandoned/:id', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+  } catch { return res.status(401).json({ error: 'Invalid token' }); }
+  const idx = store.abandoned.findIndex(a => a.id === req.params.id);
+  if (idx !== -1) store.abandoned.splice(idx, 1);
+  res.json({ ok: true });
+});
 /* POST /api/visitors/ping  — frontend calls every 25s */
 app.post('/api/visitors/ping', (req, res) => {
   const { sessionId, page } = req.body || {};

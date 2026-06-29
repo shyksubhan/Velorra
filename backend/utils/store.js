@@ -17,6 +17,7 @@ const store = {
   resellers:   [],
   users:       [],
   activityLogs: [],
+  abandoned:   [],
 
   /* Admin users with role support */
   adminUsers: [
