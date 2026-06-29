@@ -271,3 +271,12 @@ window.toggleVelorraPassword = (inputId, btn) => {
   if (icon) icon.className = showing ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash';
   btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
 };
+/* ── Proceed to Checkout — cart check ── */
+window.proceedToCheckout = () => {
+  const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
+  if (!cart.length) {
+    window.showToast('Your bag is empty. Add items before checking out.');
+    return;
+  }
+  window.location.href = 'checkout.html';
+};

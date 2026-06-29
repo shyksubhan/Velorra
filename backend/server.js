@@ -147,12 +147,15 @@ app.post('/api/abandoned', async (req, res) => {
     if (isAbandonedFirebaseAvailable()) {
       const db = getDB();
 
-      /* If id sent, update existing record (same checkout session re-saving) */
+      /* If id sent, update existing record */
       if (id) {
         const ref = db.collection('abandoned').doc(id);
         const doc = await ref.get();
         if (doc.exists && doc.data().status !== 'converted') {
           await ref.update({ delivery, items, total: total || 0, updatedAt: new Date().toISOString() });
+          /* Keep in-memory in sync */
+          const mem = store.abandoned.find(a => a.id === id);
+          if (mem) { mem.delivery = delivery; mem.items = items; mem.total = total || 0; }
           return res.json({ id });
         }
       }
@@ -169,21 +172,39 @@ app.post('/api/abandoned', async (req, res) => {
         updatedAt: new Date().toISOString(),
       };
       await db.collection('abandoned').doc(newId).set(record);
+      /* Also keep in memory for this session */
+      store.abandoned.unshift(record);
       try { store.emit('new_abandoned', record); } catch {}
+      console.log('✅ Abandoned saved to Firebase:', newId);
       return res.status(201).json({ id: newId });
     }
 
-    /* ── Demo mode fallback — in-memory ── */
+    /* ── No Firebase — persist to JSON file so restarts don't wipe data ── */
+    const fs   = require('fs');
+    const path = require('path');
+    const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
+
+    /* Load existing from file */
+    let fileData = [];
+    try {
+      if (fs.existsSync(AB_FILE)) fileData = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
+    } catch { fileData = []; }
+
     if (id) {
-      const existing = store.abandoned.find(a => a.id === id);
+      const existing = fileData.find(a => a.id === id) || store.abandoned.find(a => a.id === id);
       if (existing && existing.status !== 'converted') {
-        existing.delivery  = delivery;
-        existing.items     = items;
-        existing.total     = total || 0;
+        existing.delivery = delivery;
+        existing.items    = items;
+        existing.total    = total || 0;
         existing.updatedAt = new Date().toISOString();
+        /* Sync to file */
+        const idx = fileData.findIndex(a => a.id === id);
+        if (idx !== -1) fileData[idx] = existing; else fileData.unshift(existing);
+        try { fs.mkdirSync(path.dirname(AB_FILE), { recursive: true }); fs.writeFileSync(AB_FILE, JSON.stringify(fileData)); } catch {}
         return res.json({ id: existing.id });
       }
     }
+
     const record = {
       id:        'ab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       delivery,
@@ -194,8 +215,12 @@ app.post('/api/abandoned', async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
     store.abandoned.unshift(record);
+    fileData.unshift(record);
     if (store.abandoned.length > 500) store.abandoned = store.abandoned.slice(0, 500);
+    if (fileData.length > 500) fileData = fileData.slice(0, 500);
+    try { fs.mkdirSync(path.dirname(AB_FILE), { recursive: true }); fs.writeFileSync(AB_FILE, JSON.stringify(fileData)); } catch {}
     try { store.emit('new_abandoned', record); } catch {}
+    console.log('✅ Abandoned saved to file (demo mode):', record.id);
     return res.status(201).json({ id: record.id });
 
   } catch (err) {
@@ -243,11 +268,22 @@ app.get('/api/abandoned', async (req, res) => {
 
   try {
     if (isAbandonedFirebaseAvailable()) {
-      const snap = await getDB().collection('abandoned').orderBy('createdAt', 'desc').limit(500).get();
+      const snap = await getDB().collection('abandoned').limit(500).get();
       const abandoned = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      abandoned.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       return res.json({ abandoned, total: abandoned.length });
     }
-    return res.json({ abandoned: store.abandoned, total: store.abandoned.length });
+    /* No Firebase — load from file + memory merged */
+    const fs   = require('fs');
+    const path = require('path');
+    const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
+    let fileData = [];
+    try { if (fs.existsSync(AB_FILE)) fileData = JSON.parse(fs.readFileSync(AB_FILE, 'utf8')); } catch {}
+    /* Merge: file records + any in-memory not yet in file */
+    const allIds = new Set(fileData.map(a => a.id));
+    const merged = [...fileData, ...store.abandoned.filter(a => !allIds.has(a.id))];
+    merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return res.json({ abandoned: merged, total: merged.length });
   } catch (err) {
     console.error('Abandoned fetch error:', err);
     return res.json({ abandoned: store.abandoned, total: store.abandoned.length });
@@ -353,6 +389,18 @@ app.use((err, req, res, next) => {
 });
 
 /* ── Start ── */
+/* ── On startup: load persisted abandoned records from file into memory ── */
+try {
+  const fs   = require('fs');
+  const path = require('path');
+  const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
+  if (fs.existsSync(AB_FILE)) {
+    const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
+    store.abandoned = saved;
+    console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
+  }
+} catch (e) { console.warn('Could not load abandoned.json:', e.message); }
+
 app.listen(PORT, () => {
   console.log('\n╔════════════════════════════════════════════════╗');
   console.log('║       VELORRA BACKEND SERVER v2.0              ║');
