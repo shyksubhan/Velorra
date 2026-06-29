@@ -193,10 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window._abandonedSnapshot = null; /* prevent page-leave listener from re-firing */
         sessionStorage.setItem('velorra_order_placed', '1');
 
-        /* Order placed — delete the abandoned record so it disappears from admin */
+        /* Order placed — mark abandoned record as converted (no auth needed) */
         const abId = sessionStorage.getItem('velorra_abandoned_id');
         if (abId) {
-          fetch(`${VELORRA_API}/abandoned/${abId}`, { method: 'DELETE' }).catch(() => {});
+          fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {});
           sessionStorage.removeItem('velorra_abandoned_id');
         }
         /* Success */
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
       sessionStorage.setItem('velorra_order_placed', '1');
       const abId = sessionStorage.getItem('velorra_abandoned_id');
-      if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}`, { method: 'DELETE' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
+      if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
       document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
       showBankDepositSuccessNote(payMethod, ref);
