@@ -7,7 +7,7 @@ const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
 
-const { initFirebase } = require('./utils/firebase');
+const { initFirebase, getDB } = require('./utils/firebase');
 const { initCloudinary } = require('./utils/cloudinary');
 const store            = require('./utils/store');
 
@@ -351,7 +351,6 @@ app.use('/admin',     adminRoutes);  /* also serve sub-routes like /admin/stats 
 
 /* ── Health check ── */
 app.get('/api/health', (req, res) => {
-  const { getDB } = require('./utils/firebase');
   let firebaseStatus = 'demo';
   try { firebaseStatus = getDB() ? 'connected' : 'demo'; } catch { firebaseStatus = 'demo'; }
   res.json({
