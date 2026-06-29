@@ -129,14 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const result = await apiSubscribeNewsletter(email);
       if (result.ok) {
-        showToast(result.data.message || "Welcome to BKT Jewelry! 💛 You'll be the first to hear about new arrivals and offers.");
+        showToast(result.data.message || "Welcome to Velorra Jewelry! 💛 You'll be the first to hear about new arrivals and offers.");
         input.value = '';
       } else {
         showToast(result.data.error || 'Please try again.');
       }
     } catch {
       /* Backend not available — graceful fallback */
-      showToast("Welcome to BKT Jewelry! 💛 You'll be the first to hear about new arrivals and offers.");
+      showToast("Welcome to Velorra Jewelry! 💛 You'll be the first to hear about new arrivals and offers.");
       input.value = '';
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Subscribe'; }
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ).join('');
   }
   /* ── Update account icon if logged in ── */
-  const user = JSON.parse(localStorage.getItem('bkt_user') || 'null');
+  const user = JSON.parse(localStorage.getItem('velorra_user') || 'null');
   if (user) {
     document.querySelectorAll('a[href="account.html"]').forEach(el => {
       el.setAttribute('title', `Hi, ${user.fname}`);

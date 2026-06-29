@@ -65,7 +65,7 @@ router.post('/initiate', async (req, res) => {
         const paymentIntent = await stripe.paymentIntents.create({
           amount:      Math.round(amount * 100), /* Stripe uses smallest currency unit */
           currency:    'pkr',
-          description: `BKT Jewelry Order ${orderRef}`,
+          description: `Velorra Jewelry Order ${orderRef}`,
           metadata:    { orderRef },
         });
 
@@ -87,7 +87,7 @@ router.post('/initiate', async (req, res) => {
           status:       'pending',
           amount,
           orderRef,
-          instructions: `Transfer PKR ${amount.toLocaleString()} to:\nBank: HBL\nAccount Title: BKT Jewelry\nAccount No: 1234-5678-9012\nIBAN: PK00HABB0000000000000000\nReference: ${orderRef}\n\nEmail your transfer receipt to bktjewelryoperations@gmail.com with your order number.`,
+          instructions: `Transfer PKR ${amount.toLocaleString()} to:\nBank: HBL\nAccount Title: Velorra Jewelry\nAccount No: 1234-5678-9012\nIBAN: PK00HABB0000000000000000\nReference: ${orderRef}\n\nEmail your transfer receipt to velorrajewelry@gmail.com with your order number.`,
         });
     }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Policies — BKT Jewelry</title>
+  <title>Policies — Velorra Jewelry</title>
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/pages.css"/>
@@ -11,7 +11,7 @@
 </head>
 <body>
 <nav>
-    <a href="index.html" class="nav-logo">BKT <span>Jewelry</span></a>
+    <a href="index.html" class="nav-logo"><img src="images/logo.svg" alt="Velorra Jewelry" style="height:38px;width:auto;vertical-align:middle;" /></a>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="shop.html">Shop</a></li>
@@ -220,7 +220,7 @@
           <p>If you can't find your order, contact us directly:</p>
           <ul class="policy-list">
             <li>WhatsApp: <a href="#" id="wa-track-link" style="color:var(--gold)"><span data-velorra="phone">+92 300 000 0000</span></a></li>
-            <li>Email: <a href="#" style="color:var(--gold)" data-velorra="email">bktjewelryoperations@gmail.com</a></li>
+            <li>Email: <a href="#" style="color:var(--gold)" data-velorra="email">velorrajewelry@gmail.com</a></li>
           </ul>
         </div>`
     },
@@ -252,7 +252,7 @@
         </div>
         <div class="policy-section">
           <h3>Contact for Concerns</h3>
-          <p>For any privacy or terms concerns, email us at <a href="#" style="color:var(--gold)" data-velorra="email">bktjewelryoperations@gmail.com</a>.</p>
+          <p>For any privacy or terms concerns, email us at <a href="#" style="color:var(--gold)" data-velorra="email">velorrajewelry@gmail.com</a>.</p>
         </div>`
     }
   };
@@ -264,7 +264,7 @@
     const content = document.getElementById('policy-content');
     if (content) content.innerHTML = data.html;
     if (content && window.applyVelorraContactInfo) window.applyVelorraContactInfo(content);
-    document.title = data.title + ' — BKT Jewelry';
+    document.title = data.title + ' — Velorra Jewelry';
     /* Update sidebar heading to reflect active page */
     const sidebarHeading = document.querySelector('.policy-sidebar h3');
     if (sidebarHeading) sidebarHeading.textContent = 'Help & Policies';

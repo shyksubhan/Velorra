@@ -7,7 +7,7 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM = 'BKT Jewelry <onboarding@resend.dev>';
+const FROM = 'Velorra Jewelry <onboarding@resend.dev>';
 const TO   = process.env.EMAIL_TO;
 
 /* ── Order Confirmation Email (to customer) ── */
@@ -23,16 +23,16 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
   await resend.emails.send({
     from: FROM,
     to,
-    subject: `Order Confirmed — ${orderRef} | BKT Jewelry`,
+    subject: `Order Confirmed — ${orderRef} | Velorra Jewelry`,
     html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;color:#ccc;">
-      <h1 style="color:#c9a84c;">BKT <span style="color:#fff;">Jewelry</span></h1>
+      <h1 style="color:#c9a84c;">VELORRA <span style="color:#fff;">Jewelry</span></h1>
       <h2 style="color:#fff;">Order Confirmed ✓</h2>
       <p>Thank you ${delivery.fname}! Your order <strong style="color:#c9a84c;">${orderRef}</strong> has been placed.</p>
       <table width="100%" style="margin:24px 0;">${itemRows}</table>
       <p><strong style="color:#c9a84c;">Total: PKR ${total.toLocaleString()}</strong></p>
       <p style="color:#888;">Delivering to: ${delivery.address}, ${delivery.city}</p>
       <p style="color:#888;">Payment: ${paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod}</p>
-      <p style="color:#555;font-size:.8rem;">Questions? Email bktjewelryoperations@gmail.com</p>
+      <p style="color:#555;font-size:.8rem;">Questions? Email velorrajewelry@gmail.com</p>
     </body></html>`,
   });
 }
@@ -87,12 +87,12 @@ async function sendNewsletterWelcome(email) {
   await resend.emails.send({
     from: FROM,
     to: email,
-    subject: '💛 Welcome to BKT Jewelry',
+    subject: '💛 Welcome to Velorra Jewelry',
     html: `<body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;text-align:center;color:#ccc;">
-      <h1 style="color:#c9a84c;">BKT <span style="color:#fff;">Jewelry</span></h1>
+      <h1 style="color:#c9a84c;">VELORRA <span style="color:#fff;">Jewelry</span></h1>
       <h2 style="color:#fff;">Welcome to the Circle 💛</h2>
-      <p style="color:#888;">You're now part of BKT Jewelry's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
-      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? bktjewelryoperations@gmail.com</p>
+      <p style="color:#888;">You're now part of Velorra Jewelry's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
+      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? velorrajewelry@gmail.com</p>
     </body>`,
   });
 }
@@ -105,9 +105,9 @@ async function sendReplyEmail({ to, customerName, originalMessage, replyText }) 
   await resend.emails.send({
     from: FROM,
     to,
-    subject: `Re: Your message to BKT Jewelry`,
+    subject: `Re: Your message to Velorra Jewelry`,
     html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#faf7f2;font-family:Georgia,serif;color:#2c1f14;">
-      <h2 style="color:#b8883a;">BKT <span style="color:#2c1f14;">Jewelry</span></h2>
+      <h2 style="color:#b8883a;">Velorra <span style="color:#2c1f14;">Jewelry</span></h2>
       <p>Dear ${customerName || 'Valued Customer'},</p>
       <p style="line-height:1.8;">${replyText.replace(/\n/g, '<br>')}</p>
       <hr style="border:none;border-top:1px solid #e8d5b0;margin:24px 0;"/>
@@ -116,7 +116,7 @@ async function sendReplyEmail({ to, customerName, originalMessage, replyText }) 
         ${originalMessage}
       </blockquote>
       <p style="color:#9a8070;font-size:.78rem;margin-top:24px;">
-        BKT Jewelry — hello@bktjewelry.com
+        Velorra Jewelry — hello@velorrajewelry.com
       </p>
     </body></html>`,
   });
@@ -134,7 +134,7 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
         to: email,
         subject,
         html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#faf7f2;font-family:Georgia,serif;color:#2c1f14;text-align:center;">
-          <h2 style="color:#b8883a;letter-spacing:.15em;">BKT <span style="color:#2c1f14;">JEWELRY</span></h2>
+          <h2 style="color:#b8883a;letter-spacing:.15em;">VELORRA <span style="color:#2c1f14;">JEWELRY</span></h2>
           <hr style="border:none;border-top:1px solid #e8d5b0;margin:20px auto;width:80px;"/>
           <div style="max-width:520px;margin:0 auto;text-align:left;line-height:1.9;color:#5a4030;">
             ${body.replace(/\n/g, '<br>')}
@@ -145,7 +145,7 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
             <p style="font-family:monospace;font-size:1.6rem;color:#b8883a;font-weight:700;letter-spacing:.2em;margin:0;">${promoCode}</p>
           </div>` : ''}
           <p style="color:#9a8070;font-size:.72rem;margin-top:32px;">
-            You're receiving this because you subscribed to BKT Jewelry.<br/>
+            You're receiving this because you subscribed to Velorra Jewelry.<br/>
             <a href="https://velorra-vvp3.onrender.com/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}" 
                style="color:#b8883a;">Unsubscribe</a>
           </p>
