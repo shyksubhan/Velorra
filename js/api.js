@@ -132,3 +132,41 @@ async function apiSubmitReview({ orderId, rating, text, city, customerName, cust
 async function apiGetReviews() {
   return apiGet('/reviews');
 }
+
+/* ══════════════════════════════════════════════
+   LIVE VISITOR TRACKING
+   Har page load par automatically start hota hai.
+   ══════════════════════════════════════════════ */
+(function initVisitorTracking() {
+  /* Generate a unique session ID for this browser tab */
+  let sessionId = sessionStorage.getItem('velorra_sid');
+  if (!sessionId) {
+    sessionId = 'v-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    sessionStorage.setItem('velorra_sid', sessionId);
+  }
+
+  const page = window.location.pathname.replace(/.*\//, '/') || '/';
+
+  function ping() {
+    fetch(`${VELORRA_API}/visitors/ping`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, page }),
+    }).catch(() => {}); /* silent fail — don't break site */
+  }
+
+  /* Ping immediately on page load */
+  ping();
+
+  /* Ping every 25 seconds to keep session alive */
+  const interval = setInterval(ping, 25000);
+
+  /* Tell server when tab closes */
+  window.addEventListener('beforeunload', () => {
+    clearInterval(interval);
+    navigator.sendBeacon(
+      `${VELORRA_API}/visitors/leave`,
+      JSON.stringify({ sessionId })
+    );
+  });
+})();

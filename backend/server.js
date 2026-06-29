@@ -127,6 +127,34 @@ app.use('/api/upload',     uploadRoutes);
 app.use('/api/reviews',    reviewRoutes);
 app.use('/api/resellers',  resellerRoutes);
 
+/* ── Live Visitor Tracking ── */
+/* POST /api/visitors/ping  — frontend calls every 25s */
+app.post('/api/visitors/ping', (req, res) => {
+  const { sessionId, page } = req.body || {};
+  if (!sessionId) return res.status(400).json({ error: 'sessionId required' });
+  const count = store.visitorPing(sessionId, page);
+  res.json({ count });
+});
+
+/* POST /api/visitors/leave  — frontend calls on beforeunload */
+app.post('/api/visitors/leave', (req, res) => {
+  const { sessionId } = req.body || {};
+  if (sessionId) store.visitorLeave(sessionId);
+  res.json({ ok: true });
+});
+
+/* GET /api/visitors  — admin: get current count + list */
+app.get('/api/visitors', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+  } catch { return res.status(401).json({ error: 'Invalid token' }); }
+  res.json({ count: store.visitorCount(), visitors: store.visitorList() });
+});
+
 /* ── Admin dashboard HTML ── serve the file directly to avoid router path issues */
 app.get(['/admin', '/admin/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'admin', 'index.html'));

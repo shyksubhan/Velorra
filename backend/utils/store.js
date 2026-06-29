@@ -51,6 +51,42 @@ const store = {
     return this.siteLaunchDate;
   },
 
+  /* ── Live Visitor Tracking ── */
+  _visitors: new Map(), /* sessionId → { page, lastSeen } */
+  VISITOR_TIMEOUT_MS: 35000, /* 35s — frontend pings every 25s */
+
+  visitorPing(sessionId, page) {
+    this._visitors.set(sessionId, { page: page || '/', lastSeen: Date.now() });
+    this._pruneVisitors();
+    const count = this._visitors.size;
+    this.emit('visitor_update', { count, visitors: this.visitorList() });
+    return count;
+  },
+
+  visitorLeave(sessionId) {
+    this._visitors.delete(sessionId);
+    this._pruneVisitors();
+    const count = this._visitors.size;
+    this.emit('visitor_update', { count, visitors: this.visitorList() });
+    return count;
+  },
+
+  _pruneVisitors() {
+    const cutoff = Date.now() - this.VISITOR_TIMEOUT_MS;
+    for (const [id, v] of this._visitors) {
+      if (v.lastSeen < cutoff) this._visitors.delete(id);
+    }
+  },
+
+  visitorCount() { this._pruneVisitors(); return this._visitors.size; },
+
+  visitorList() {
+    this._pruneVisitors();
+    return Array.from(this._visitors.entries()).map(([id, v]) => ({
+      id, page: v.page, secondsAgo: Math.round((Date.now() - v.lastSeen) / 1000),
+    }));
+  },
+
   /* ── SSE notification listeners ── */
   _notifListeners: new Set(),
 

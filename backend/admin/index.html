@@ -157,6 +157,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 /* ── Loading spinner ── */
 .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.4);}}
 
 /* ── Responsive — Tablet (768px) ── */
 @media(max-width:768px){
@@ -268,6 +269,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <i class="fa-solid fa-handshake"></i><span>Resellers</span>
       <span class="nav-badge" id="resellers-badge" style="display:none">0</span>
     </div>
+    <div class="nav-item" onclick="showPage('visitors')" id="nav-visitors">
+      <i class="fa-solid fa-signal"></i><span>Live Visitors</span>
+      <span class="nav-badge" id="visitors-badge" style="display:none;background:#22c55e">0</span>
+    </div>
     <div class="nav-item" onclick="showPage('roles')" id="nav-roles">
       <i class="fa-solid fa-shield-halved"></i><span>Users & Roles</span>
     </div>
@@ -306,6 +311,15 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <span>Demo Mode — data stored in server memory. Add Firebase credentials to .env for permanent storage.</span>
   </div>
   <div class="stats-grid" id="stats-grid">
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('visitors')">
+      <div class="stat-icon" style="position:relative">
+        🟢
+        <span id="visitor-pulse" style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:#22c55e;border-radius:50%;animation:pulse-dot 1.5s infinite"></span>
+      </div>
+      <div class="stat-val" id="s-visitors" style="color:#22c55e">0</div>
+      <div class="stat-label">Live Visitors</div>
+      <div class="stat-sub" id="s-visitors-sub" style="color:#22c55e;font-size:0.65rem">on site right now</div>
+    </div>
     <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-orders">—</div><div class="stat-label">Total Orders</div><div class="stat-sub" id="s-pending-text"></div></div>
     <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">—</div><div class="stat-label">Total Revenue</div></div>
     <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="s-profit">—</div><div class="stat-label">Today's Profit</div><div class="stat-sub" id="s-profit-sub"></div></div>
@@ -521,6 +535,61 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 </div>
 
 <!-- ── USERS & ROLES ── -->
+<div id="page-visitors" class="page" style="display:none">
+  <div class="page-header">
+    <h1><i class="fa-solid fa-signal" style="color:#22c55e;margin-right:8px"></i>Live Visitors</h1>
+    <div class="ml-auto" style="display:flex;align-items:center;gap:12px">
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted)">
+        <span id="visitor-live-dot" style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse-dot 1.5s infinite"></span>
+        Auto-updates via SSE
+      </span>
+      <button class="btn btn-outline" onclick="loadVisitors()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="stats-grid" style="margin-bottom:24px">
+    <div class="stat-card">
+      <div class="stat-icon">🟢</div>
+      <div class="stat-val" id="v-count" style="color:#22c55e;font-size:2.4rem">0</div>
+      <div class="stat-label">Active Right Now</div>
+      <div class="stat-sub" style="color:var(--muted)">last 35 seconds</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📄</div>
+      <div class="stat-val" id="v-pages-count" style="font-size:2rem">—</div>
+      <div class="stat-label">Pages Being Viewed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🕐</div>
+      <div class="stat-val" id="v-last-update" style="font-size:1rem;color:var(--muted)">—</div>
+      <div class="stat-label">Last Updated</div>
+    </div>
+  </div>
+
+  <!-- Visitor list table -->
+  <div class="table-wrap">
+    <div class="table-header"><h3>Active Sessions</h3></div>
+    <table>
+      <thead><tr><th>#</th><th>Page</th><th>Last Seen</th></tr></thead>
+      <tbody id="visitors-body">
+        <tr><td colspan="3" class="empty-state"><div class="spinner"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Page breakdown -->
+  <div class="table-wrap" style="margin-top:24px">
+    <div class="table-header"><h3>Page Breakdown</h3></div>
+    <table>
+      <thead><tr><th>Page</th><th>Visitors</th><th>Bar</th></tr></thead>
+      <tbody id="v-pages-body">
+        <tr><td colspan="3" class="empty-state">No data yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <div id="page-roles" class="page" style="display:none">
   <div class="page-header">
     <h1>Users &amp; Roles</h1>
@@ -993,6 +1062,21 @@ function connectSSE() {
       if (payload.event === 'new_subscriber') {
         loadStats();
       }
+      if (payload.event === 'new_reseller') {
+        toast(`🤝 New reseller request from ${payload.data?.name}`, 'success');
+        loadStats();
+        const badge = document.getElementById('resellers-badge');
+        if (badge) { badge.style.display = 'flex'; badge.textContent = parseInt(badge.textContent || '0') + 1; }
+        if (document.getElementById('page-resellers').style.display !== 'none') loadResellers();
+      }
+      if (payload.event === 'visitor_update') {
+        /* Real-time visitor count update */
+        const count = payload.data?.count ?? 0;
+        updateVisitorCount(count);
+        if (document.getElementById('page-visitors').style.display !== 'none') {
+          renderVisitors(payload.data?.visitors || []);
+        }
+      }
     } catch {}
   };
 
@@ -1063,11 +1147,12 @@ function showPage(name) {
   if (name === 'reviews')     loadReviews();
   if (name === 'roles')     loadRoles();
   if (name === 'settings')  loadSystemInfo();
+  if (name === 'visitors')  loadVisitors();
 }
 
 /* ═══════════════════ DASHBOARD ═══════════════════ */
 async function loadDashboard() {
-  await Promise.all([loadStats(), loadRecentOrders()]);
+  await Promise.all([loadStats(), loadRecentOrders(), loadVisitors()]);
   if (currentUser?.role === 'super_admin') {
     loadLifetimeEarnings();
     loadDailyStatements();
@@ -2285,6 +2370,90 @@ function formatRole(role) {
 
 function today() {
   return new Date().toISOString().split('T')[0];
+}
+
+/* ═══════════════════ LIVE VISITORS ═══════════════════ */
+function updateVisitorCount(count) {
+  /* Dashboard widget */
+  const el = document.getElementById('s-visitors');
+  if (el) { el.textContent = count; el.style.color = count > 0 ? '#22c55e' : 'var(--muted)'; }
+  /* Nav badge */
+  const badge = document.getElementById('visitors-badge');
+  if (badge) {
+    if (count > 0) { badge.style.display = 'flex'; badge.textContent = count; }
+    else badge.style.display = 'none';
+  }
+  /* Visitors page big number */
+  const vcount = document.getElementById('v-count');
+  if (vcount) { vcount.textContent = count; vcount.style.color = count > 0 ? '#22c55e' : 'var(--muted)'; }
+}
+
+async function loadVisitors() {
+  try {
+    const res  = await apiFetch('/visitors');
+    const data = await res.json();
+    const count = data.count ?? 0;
+    const visitors = data.visitors || [];
+    updateVisitorCount(count);
+    renderVisitors(visitors);
+    const lu = document.getElementById('v-last-update');
+    if (lu) lu.textContent = new Date().toLocaleTimeString('en-PK');
+  } catch (err) {
+    console.error('Visitors load error:', err);
+  }
+}
+
+function renderVisitors(visitors) {
+  const tbody = document.getElementById('visitors-body');
+  const pbody = document.getElementById('v-pages-body');
+  const pcount = document.getElementById('v-pages-count');
+
+  if (!tbody) return;
+
+  if (!visitors.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty-state"><i class="fa-solid fa-eye-slash"></i><p>No active visitors right now.</p></td></tr>';
+    if (pbody) pbody.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
+    if (pcount) pcount.textContent = '0';
+    return;
+  }
+
+  /* Sort by most recently seen */
+  visitors.sort((a, b) => a.secondsAgo - b.secondsAgo);
+
+  tbody.innerHTML = visitors.map((v, i) => {
+    const pageName = v.page.replace(/\.html$/, '') || '/';
+    const freshness = v.secondsAgo < 5 ? '🟢 just now' :
+                      v.secondsAgo < 15 ? `🟢 ${v.secondsAgo}s ago` :
+                      `🟡 ${v.secondsAgo}s ago`;
+    return `<tr>
+      <td>${i + 1}</td>
+      <td><code style="color:var(--gold);background:var(--bg-deep);padding:2px 8px;border-radius:3px;font-size:0.8rem">${pageName}</code></td>
+      <td>${freshness}</td>
+    </tr>`;
+  }).join('');
+
+  /* Page breakdown */
+  const pageCounts = {};
+  visitors.forEach(v => {
+    const p = v.page.replace(/\.html$/, '') || '/';
+    pageCounts[p] = (pageCounts[p] || 0) + 1;
+  });
+  const pages = Object.entries(pageCounts).sort((a, b) => b[1] - a[1]);
+  const max = pages[0]?.[1] || 1;
+
+  if (pcount) pcount.textContent = pages.length;
+  if (pbody) {
+    pbody.innerHTML = pages.map(([page, cnt]) => `
+      <tr>
+        <td><code style="color:var(--gold);background:var(--bg-deep);padding:2px 8px;border-radius:3px;font-size:0.8rem">${page}</code></td>
+        <td style="font-weight:600;color:#22c55e">${cnt}</td>
+        <td style="width:40%">
+          <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
+            <div style="background:#22c55e;height:100%;width:${Math.round((cnt/max)*100)}%;border-radius:4px;transition:width 0.4s"></div>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
 }
 </script>
 
