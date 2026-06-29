@@ -327,6 +327,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-orders">—</div><div class="stat-label">Total Orders</div><div class="stat-sub" id="s-pending-text"></div></div>
     <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">—</div><div class="stat-label">Total Revenue</div></div>
     <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="s-profit">—</div><div class="stat-label">Today's Profit</div><div class="stat-sub" id="s-profit-sub"></div></div>
+    <div class="stat-card"><div class="stat-icon">💹</div><div class="stat-val" id="s-total-profit">—</div><div class="stat-label">Total Profit</div><div class="stat-sub" style="color:var(--muted);font-size:0.65rem">all time</div></div>
     <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-val" id="s-products">—</div><div class="stat-label">Products</div></div>
     <div class="stat-card"><div class="stat-icon">📧</div><div class="stat-val" id="s-subscribers">—</div><div class="stat-label">Subscribers</div></div>
     <div class="stat-card"><div class="stat-icon">✉️</div><div class="stat-val" id="s-msgs">—</div><div class="stat-label">Unread Messages</div></div>
@@ -1250,8 +1251,13 @@ async function loadStats() {
     document.getElementById('s-orders').textContent      = data.orders?.total ?? 0;
     document.getElementById('s-revenue').textContent     = 'PKR ' + (data.totalRevenue || 0).toLocaleString();
     if (data.todayProfit !== undefined) {
-      document.getElementById('s-profit').textContent = 'PKR ' + (data.todayProfit || 0).toLocaleString();
+      document.getElementById('s-profit').textContent     = 'PKR ' + (data.todayProfit || 0).toLocaleString();
       document.getElementById('s-profit-sub').textContent = data.todayProfit > 0 ? 'profit booked today' : 'no profit yet today';
+    }
+    /* Total lifetime profit if available */
+    if (data.totalProfit !== undefined) {
+      const tpEl = document.getElementById('s-total-profit');
+      if (tpEl) tpEl.textContent = 'PKR ' + (data.totalProfit || 0).toLocaleString();
     }
     document.getElementById('s-products').textContent    = data.products?.total ?? 0;
     document.getElementById('s-subscribers').textContent = data.subscribers?.total ?? 0;

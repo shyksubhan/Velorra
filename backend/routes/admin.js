@@ -32,35 +32,62 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       const db = getDB();
-      const [ordersSnap, productsSnap, subscribersSnap, messagesSnap] = await Promise.all([
+      const [ordersSnap, productsSnap, subscribersSnap, messagesSnap, usersSnap] = await Promise.all([
         db.collection('orders').get(),
         db.collection('products').get(),
         db.collection('subscribers').get(),
         db.collection('messages').where('read', '==', false).get(),
+        db.collection('users').where('isAdmin', '==', false).get(),
       ]);
-      const orders = ordersSnap.docs.map(d => d.data());
+      const orders   = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
       const statusCounts = {};
       orders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
-      const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + (o.total || 0), 0);
+      const activeOrders = orders.filter(o => o.status !== 'Cancelled');
+      const revenue = activeOrders.reduce((s, o) => s + (o.total || 0), 0);
 
-      /* ── Date-filtered revenue for admin role hiding ── */
+      /* ── Date-filtered revenue ── */
       const today = new Date(); today.setHours(0,0,0,0);
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const todayRevenue = orders
-        .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today)
+      const todayOrders = activeOrders.filter(o => new Date(o.createdAt) >= today);
+      const todayRevenue = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const monthRevenue = activeOrders
+        .filter(o => new Date(o.createdAt) >= monthStart)
         .reduce((s, o) => s + (o.total || 0), 0);
-      const monthRevenue = orders
-        .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
-        .reduce((s, o) => s + (o.total || 0), 0);
+
+      /* ── Profit calculation from Firebase orders ──
+         Each order item should have purchasePrice snapshotted at checkout.
+         If missing, fall back to live product catalogue. ── */
+      const productMap = {};
+      products.forEach(p => {
+        productMap[p.id]   = p.purchasePrice ?? 0;
+        productMap[p.name] = p.purchasePrice ?? 0;  /* name-based fallback */
+      });
+
+      function calcOrderProfit(order) {
+        return (order.items || []).reduce((sum, item) => {
+          const pp  = item.purchasePrice ?? productMap[item.productId] ?? productMap[item.name] ?? 0;
+          const rev = (item.price || 0) * (item.qty || 1);
+          const cost = (Number(pp) || 0) * (item.qty || 1);
+          return sum + (rev - cost);
+        }, 0);
+      }
+
+      const todayProfit = Math.round(todayOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
+      const totalProfit = Math.round(activeOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
 
       return res.json(maskRevenue({
         orders:         { total: ordersSnap.size, statuses: statusCounts },
         products:       { total: productsSnap.size },
         subscribers:    { total: subscribersSnap.size },
         unreadMessages: messagesSnap.size,
+        users:          { total: usersSnap.size },
         totalRevenue:   Math.round(revenue),
         todayRevenue:   Math.round(todayRevenue),
         monthRevenue:   Math.round(monthRevenue),
+        todayProfit,
+        totalProfit,
         demoMode:       false,
       }, req.user.role));
     }

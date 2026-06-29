@@ -90,7 +90,7 @@ router.post('/register', async (req, res) => {
       const existing = await db.collection('users').where('email', '==', normalEmail).limit(1).get();
       if (!existing.empty) return res.status(409).json({ error: 'An account with this email already exists.' });
       const ref = db.collection('users').doc();
-      const userData = { id: ref.id, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, isAdmin: false, createdAt: new Date().toISOString() };
+      const userData = { id: ref.id, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, role: 'customer', isAdmin: false, createdAt: new Date().toISOString() };
       await ref.set(userData);
       const token = signToken({ uid: ref.id, email: normalEmail, isAdmin: false });
       return res.status(201).json({ message: 'Account created! Welcome to Velorra Jewelry 💧', token, user: { id: ref.id, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });

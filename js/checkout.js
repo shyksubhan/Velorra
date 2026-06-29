@@ -73,23 +73,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const fd = new FormData(e.target);
     orderData.delivery = Object.fromEntries(fd.entries());
 
-    /* ── Save abandoned checkout (fires silently in background) ── */
+    /* ── Save abandoned checkout (delayed 10 min — only fires if order is NOT placed) ── */
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const abandonedId = sessionStorage.getItem('velorra_abandoned_id') || null;
-    fetch(`${VELORRA_API}/abandoned`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id:       abandonedId,
-        delivery: orderData.delivery,
-        items:    cart,
-        total:    subtotal,
-      }),
-    })
-    .then(r => r.json())
-    .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
-    .catch(() => {});
+
+    /* Cancel any previous pending abandoned timer */
+    if (window._abandonedTimer) clearTimeout(window._abandonedTimer);
+
+    /* Snapshot delivery + cart now; send after 10 minutes if order still not placed */
+    const abandonedSnapshot = {
+      delivery: { ...orderData.delivery },
+      items:    cart.map(i => ({ ...i })),
+      total:    subtotal,
+    };
+    window._abandonedTimer = setTimeout(() => {
+      /* Double-check: if order was placed during the wait, skip */
+      if (sessionStorage.getItem('velorra_order_placed')) return;
+
+      const abandonedId = sessionStorage.getItem('velorra_abandoned_id') || null;
+      fetch(`${VELORRA_API}/abandoned`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id:       abandonedId,
+          delivery: abandonedSnapshot.delivery,
+          items:    abandonedSnapshot.items,
+          total:    abandonedSnapshot.total,
+        }),
+      })
+      .then(r => r.json())
+      .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
+      .catch(() => {});
+    }, 10 * 60 * 1000); /* 10 minutes */
 
     goToStep(2);
   });
@@ -172,7 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (result.ok) {
-        /* Mark abandoned checkout as converted */
+        /* Cancel pending abandoned timer — order was placed successfully */
+        if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
+        sessionStorage.setItem('velorra_order_placed', '1');
+
+        /* Mark abandoned checkout as converted (only if it actually existed) */
         const abId = sessionStorage.getItem('velorra_abandoned_id');
         if (abId) {
           fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {});
@@ -196,6 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       /* Backend not available — graceful fallback */
       console.warn('Backend unavailable, using offline fallback:', err);
+      if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
+      sessionStorage.setItem('velorra_order_placed', '1');
       const abId = sessionStorage.getItem('velorra_abandoned_id');
       if (abId) { fetch(`${VELORRA_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('velorra_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
