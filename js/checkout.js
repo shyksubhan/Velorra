@@ -73,38 +73,69 @@ document.addEventListener('DOMContentLoaded', () => {
     const fd = new FormData(e.target);
     orderData.delivery = Object.fromEntries(fd.entries());
 
-    /* ── Save abandoned checkout (delayed 10 min — only fires if order is NOT placed) ── */
+    /* ── Save abandoned checkout ── */
+    /* Strategy:
+       1. Immediately save to backend (so close-tab captures it).
+       2. Keep a 10-min timer as secondary (re-confirms if still open).
+       3. visibilitychange / pagehide listeners ensure save fires on tab close too.
+    */
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
     /* Cancel any previous pending abandoned timer */
     if (window._abandonedTimer) clearTimeout(window._abandonedTimer);
 
-    /* Snapshot delivery + cart now; send after 10 minutes if order still not placed */
-    const abandonedSnapshot = {
+    /* Snapshot delivery + cart now */
+    window._abandonedSnapshot = {
       delivery: { ...orderData.delivery },
       items:    cart.map(i => ({ ...i })),
       total:    subtotal,
     };
-    window._abandonedTimer = setTimeout(() => {
-      /* Double-check: if order was placed during the wait, skip */
-      if (sessionStorage.getItem('velorra_order_placed')) return;
 
+    /* Helper: send abandoned record (returns Promise) */
+    window._sendAbandoned = () => {
+      if (sessionStorage.getItem('velorra_order_placed')) return;
+      const snap = window._abandonedSnapshot;
+      if (!snap) return;
       const abandonedId = sessionStorage.getItem('velorra_abandoned_id') || null;
-      fetch(`${VELORRA_API}/abandoned`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id:       abandonedId,
-          delivery: abandonedSnapshot.delivery,
-          items:    abandonedSnapshot.items,
-          total:    abandonedSnapshot.total,
-        }),
-      })
-      .then(r => r.json())
-      .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
-      .catch(() => {});
-    }, 10 * 60 * 1000); /* 10 minutes */
+      const payload = JSON.stringify({ id: abandonedId, delivery: snap.delivery, items: snap.items, total: snap.total });
+
+      /* Try sendBeacon first (works during pagehide/unload) */
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon(`${VELORRA_API}/abandoned`, blob);
+      } else {
+        fetch(`${VELORRA_API}/abandoned`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload,
+          keepalive: true,
+        })
+        .then(r => r.json())
+        .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
+        .catch(() => {});
+      }
+    };
+
+    /* 1. Save immediately */
+    fetch(`${VELORRA_API}/abandoned`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: null, delivery: window._abandonedSnapshot.delivery, items: window._abandonedSnapshot.items, total: window._abandonedSnapshot.total }),
+    })
+    .then(r => r.json())
+    .then(d => { if (d.id) sessionStorage.setItem('velorra_abandoned_id', d.id); })
+    .catch(() => {});
+
+    /* 2. Register page-leave listeners (once only) */
+    if (!window._abandonedListenersAdded) {
+      window._abandonedListenersAdded = true;
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') window._sendAbandoned?.();
+      });
+      window.addEventListener('pagehide', () => { window._sendAbandoned?.(); });
+    }
+
+    /* 3. Keep 10-min timer as belt-and-suspenders */
+    window._abandonedTimer = setTimeout(() => { window._sendAbandoned?.(); }, 10 * 60 * 1000);
 
     goToStep(2);
   });
@@ -189,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (result.ok) {
         /* Cancel pending abandoned timer — order was placed successfully */
         if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
+        window._abandonedSnapshot = null; /* prevent page-leave listener from re-firing */
         sessionStorage.setItem('velorra_order_placed', '1');
 
         /* Mark abandoned checkout as converted (only if it actually existed) */
