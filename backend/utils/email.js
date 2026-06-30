@@ -172,8 +172,10 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
 }
 
 /* ── Send Invoice Email ── */
-async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath }) {
+async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath, liveOrder }) {
   const resend = getResend();
+  if (!resend) return console.log('Resend missing. Simulated email to:', to);
+
   const fs = require('fs');
   const path = require('path');
   
@@ -197,10 +199,28 @@ async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath }) {
     logoUrl: ''
   };
 
+  let webUrl = company.website || 'https://velorrajewelry.com';
+  if (!webUrl.startsWith('http')) webUrl = 'https://' + webUrl;
+
   const isCod = true; // For display purposes in this context, or we can pass it if we want. We'll just genericize or assume from the invoiceRef.
   const logoHtml = company.logoUrl 
     ? `<img src="${company.logoUrl}" alt="${company.name}" style="max-height: 45px; display: block; margin: 0 auto;">`
     : `<h1 style="color:#b8883a; font-family: Georgia, serif; font-size: 28px; margin: 0; font-weight: normal; letter-spacing: 2px;">${company.name.toUpperCase()}</h1>`;
+
+  const oStatus = liveOrder?.status || 'Pending';
+  const deliveryStatus = oStatus === 'Pending' ? 'Not Shipped' :
+                         oStatus === 'Processing' ? 'Preparing Shipment' :
+                         oStatus === 'Shipped' ? 'In Transit' :
+                         oStatus === 'Delivered' ? 'Delivered' :
+                         oStatus === 'Cancelled' ? 'Cancelled' : 'Not Shipped';
+                         
+  const advancePaid = Number(liveOrder?.advanceAmount) || 0;
+  let pStatus = 'Unpaid';
+  if (advancePaid > 0) {
+    pStatus = advancePaid >= (liveOrder?.total || 0) ? 'Paid' : 'Partial (Advance)';
+  } else if (liveOrder?.paymentMethod !== 'cod') {
+    pStatus = 'Paid';
+  }
 
   const htmlContent = `<!DOCTYPE html>
 <html>
@@ -252,30 +272,31 @@ async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath }) {
             <span class="value">${invoiceRef}</span>
           </div>
           <div class="order-col">
-            <span class="label">Invoice Date</span>
-            <span class="value">${new Date().toLocaleDateString()}</span>
+            <span class="label">Order Status</span>
+            <span class="value value-gold">${oStatus}</span>
           </div>
         </div>
         <div class="order-row" style="margin-top: 20px;">
           <div class="order-col">
-            <span class="label">Invoice Status</span>
-            <span class="value value-gold">Generated</span>
+            <span class="label">Payment Status</span>
+            <span class="value">${pStatus}</span>
           </div>
           <div class="order-col">
-            <span class="label">Need Help?</span>
-            <span class="value"><a href="mailto:${company.email}" style="color:#ffffff;text-decoration:none;">Contact Support</a></span>
+            <span class="label">Delivery Status</span>
+            <span class="value">${deliveryStatus}</span>
           </div>
         </div>
       </div>
       
       <div class="btn-container">
-        <a href="${company.website}" class="btn-primary">View Store</a>
+        <a href="https://velorra-vvp3.onrender.com/api/invoices/${invoiceRef}/download" class="btn-primary" style="background-color:#b8883a;color:#0a0a0a;margin-bottom:10px;display:block;">Download Invoice</a>
+        <a href="${webUrl}" class="btn-primary" style="display:block;">View Store</a>
       </div>
     </div>
     
     <div class="footer">
       <div class="footer-links">
-        <a href="${company.website}">Website</a> | 
+        <a href="${webUrl}">Website</a> | 
         <a href="mailto:${company.email}">Email</a> | 
         <a href="tel:${company.phone}">Phone</a>
       </div>

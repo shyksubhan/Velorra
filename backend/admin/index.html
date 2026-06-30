@@ -2682,8 +2682,14 @@ function renderInvoices(list) {
   tbody.innerHTML = list.map(i => {
     const isCod = i.snapshot?.paymentMethod === 'cod';
     const total = i.total || 0;
-    const advance = Number(i.snapshot?.advanceAmount) || 0;
+    const advance = Number(i.liveAdvanceAmount !== undefined ? i.liveAdvanceAmount : i.snapshot?.advanceAmount) || 0;
     const remaining = Math.max(0, total - advance);
+    const liveStatus = i.liveStatus || i.snapshot?.status || 'Pending';
+    let badgeStyle = 'background: #f39c12; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
+    if(liveStatus === 'Processing') badgeStyle = 'background: #3498db; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
+    if(liveStatus === 'Shipped') badgeStyle = 'background: #9b59b6; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
+    if(liveStatus === 'Delivered') badgeStyle = 'background: #2ecc71; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
+    if(liveStatus === 'Cancelled') badgeStyle = 'background: #e74c3c; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
     return `
     <tr>
       <td><strong style="color:var(--gold)">${i.id}</strong></td>
@@ -2694,7 +2700,7 @@ function renderInvoices(list) {
       <td>
         <span class="badge ${isCod ? 'badge-pending' : 'badge-delivered'}">${isCod ? 'COD' : 'Online'}</span>
       </td>
-      <td><span class="badge badge-delivered">${i.status}</span></td>
+      <td><span style="${badgeStyle}">${liveStatus}</span></td>
       <td>PKR ${total.toLocaleString()}</td>
       <td>PKR ${advance.toLocaleString()}</td>
       <td><strong style="color:${remaining > 0 ? '#c0392b' : 'var(--success)'}">PKR ${remaining.toLocaleString()}</strong></td>
