@@ -195,24 +195,26 @@
     ? `<p style="color:#d96a6a;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Out of Stock</p>`
     : '';
 
-  const images = (product.images && product.images.length) ? product.images : null;
+  const images = (product.images && product.images.length) ? product.images : [];
   const hasVideo = !!product.video;
+  const hasImages = images.length > 0;
 
-  const galleryThumbsHTML = (images && images.length > 1)
+  /* Build thumbnails: each image gets a thumb, plus one video thumb if video exists.
+     Only show the thumb strip at all if there's more than one media item total. */
+  const totalMediaCount = images.length + (hasVideo ? 1 : 0);
+  const galleryThumbsHTML = (totalMediaCount > 1)
     ? `<div class="product-gallery-thumbs" id="pd-thumbs">
-        ${images.map((url, i) => `<div class="gallery-thumb${i===0?' active':''}" data-idx="${i}" onclick="velorraSwitchGalleryImage(${i})"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"/></div>`).join('')}
-        ${hasVideo ? `<div class="gallery-thumb" data-idx="video" onclick="velorraSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>` : ''}
+        ${images.map((url, i) => `<div class="gallery-thumb${(i===0 && hasImages) ? ' active' : ''}" data-idx="${i}" onclick="velorraSwitchGalleryImage(${i})"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"/></div>`).join('')}
+        ${hasVideo ? `<div class="gallery-thumb${!hasImages ? ' active' : ''}" data-idx="video" onclick="velorraSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>` : ''}
       </div>`
-    : (hasVideo && images)
-      ? `<div class="product-gallery-thumbs" id="pd-thumbs">
-          <div class="gallery-thumb active" data-idx="0" onclick="velorraSwitchGalleryImage(0)"><img src="${images[0]}" style="width:100%;height:100%;object-fit:cover;"/></div>
-          <div class="gallery-thumb" data-idx="video" onclick="velorraSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>
-        </div>`
-      : '';
+    : '';
 
-  const mainMediaHTML = images
+  /* Main media: prefer first image; if there are no images at all but a video exists, show the video itself as the main media */
+  const mainMediaHTML = hasImages
     ? `<img src="${images[0]}" id="pd-main-image" style="width:100%;height:100%;object-fit:cover;"/>`
-    : `<span class="emoji-placeholder">${emoji}</span>`;
+    : hasVideo
+      ? `<video src="${product.video}" id="pd-main-image" controls muted style="width:100%;height:100%;object-fit:cover;"></video>`
+      : `<span class="emoji-placeholder">${emoji}</span>`;
 
   root.innerHTML = `
     <div class="product-detail-grid">

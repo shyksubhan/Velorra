@@ -795,7 +795,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 .pd-desc { font-size: 0.85rem; color: var(--text-mid); line-height: 1.9; margin-bottom: 32px; }
 .pd-option-label { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; font-family: var(--font-ui); font-weight: 700; }
 .size-options, .color-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
-.size-opt { width: 44px; height: 44px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; letter-spacing: 0.1em; cursor: pointer; transition: all var(--transition); color: var(--text); }
+.size-opt { min-width: 44px; height: 44px; padding: 0 8px; box-sizing: border-box; flex-shrink: 0; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; letter-spacing: 0.05em; cursor: pointer; transition: all var(--transition); color: var(--text); white-space: nowrap; }
 .size-opt:hover, .size-opt.active { border-color: var(--gold); color: var(--gold); }
 .color-opt { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color var(--transition); }
 .color-opt.active { border-color: var(--gold); }
