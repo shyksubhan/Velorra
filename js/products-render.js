@@ -26,7 +26,7 @@ function velorraProductCardHTML(p) {
 
   return `
     <div class="product-card reveal" data-category="${p.category}" data-id="${p.id}">
-      <a href="product.html?id=${encodeURIComponent(p.id)}">
+      <a href="product?id=${encodeURIComponent(p.id)}">
         <div class="product-img-wrap">
           ${badge}
           ${mediaHTML}

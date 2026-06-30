@@ -83,14 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const buyNowCart = [{ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', qty: 1 }];
     localStorage.setItem('velorra_cart', JSON.stringify(buyNowCart));
-    window.location.href = 'checkout.html';
+    window.location.href = 'checkout';
   };
 
   /* ── Buy It Now: restore stashed bag if the customer left checkout
      without completing the order (i.e. they're on any page other
      than checkout.html and a stash exists) ── */
   const stashedCart = localStorage.getItem('velorra_cart_stashed');
-  if (stashedCart && !window.location.pathname.endsWith('checkout.html')) {
+  if (stashedCart && !window.location.pathname.endsWith('checkout')) {
     localStorage.setItem('velorra_cart', stashedCart);
     localStorage.removeItem('velorra_cart_stashed');
     cart = JSON.parse(stashedCart);
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Update account icon if logged in ── */
   const user = JSON.parse(localStorage.getItem('velorra_user') || 'null');
   if (user) {
-    document.querySelectorAll('a[href="account.html"]').forEach(el => {
+    document.querySelectorAll('a[href="account"]').forEach(el => {
       el.setAttribute('title', `Hi, ${user.fname}`);
       el.style.color = 'var(--gold)';
     });
@@ -278,5 +278,5 @@ window.proceedToCheckout = () => {
     window.showToast('Your bag is empty. Add items before checking out.');
     return;
   }
-  window.location.href = 'checkout.html';
+  window.location.href = 'checkout';
 };

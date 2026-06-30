@@ -79,8 +79,13 @@ initFirebase();
 /* ── Cloudinary init (image/video uploads) ── */
 initCloudinary();
 
-/* ── Serve static frontend ── */
-app.use(express.static(path.join(__dirname, '..')));
+/* ── Serve static frontend (clean URLs — .html extension hidden) ──
+   extensions: ['html'] lets express.static resolve /shop -> shop.html
+   on the server side, but the file is still also reachable as /shop.html
+   directly. To make the BROWSER bar show /shop (not /shop.html), the
+   internal <a href> links in the HTML files must point to the extension-
+   less path too — see the .html link rewrite below. ── */
+app.use(express.static(path.join(__dirname, '..'), { extensions: ['html'] }));
 
 /* ── SSE Notifications endpoint (/api/notifications/stream) ── */
 app.get('/api/notifications/stream', (req, res) => {

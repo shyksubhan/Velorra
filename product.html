@@ -13,12 +13,12 @@
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra <em style="color:#b8883a;font-style:normal;">Jewelry</em></a>
+  <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra <em style="color:#b8883a;font-style:normal;">Jewelry</em></a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="shop.html">Shop</a></li>
-    <li><a href="about.html">Our Story</a></li>
-    <li><a href="contact.html">Contact</a></li>
+    <li><a href="/">Home</a></li>
+    <li><a href="shop">Shop</a></li>
+    <li><a href="about">Our Story</a></li>
+    <li><a href="contact">Contact</a></li>
   </ul>
   <div class="nav-icons">
     <button id="search-toggle" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -90,18 +90,18 @@
       <div class="footer-col">
         <h4>Shop</h4>
         <ul>
-          <li><a href="shop.html?cat=women">Women</a></li>
-          <li><a href="shop.html?cat=men">Men</a></li>
-          <li><a href="shop.html?cat=jewellery">Jewellery</a></li>
-          <li><a href="shop.html?cat=watches">Watches</a></li>
+          <li><a href="shop?cat=women">Women</a></li>
+          <li><a href="shop?cat=men">Men</a></li>
+          <li><a href="shop?cat=jewellery">Jewellery</a></li>
+          <li><a href="shop?cat=watches">Watches</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Help</h4>
         <ul>
-          <li><a href="contact.html">Contact Us</a></li>
-          <li><a href="policy.html?page=returns">Returns</a></li>
-          <li><a href="policy.html?page=shipping">Shipping</a></li>
+          <li><a href="contact">Contact Us</a></li>
+          <li><a href="policy?page=returns">Returns</a></li>
+          <li><a href="policy?page=shipping">Shipping</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -153,7 +153,7 @@
   const root = document.getElementById('pd-root');
 
   if (!id) {
-    root.innerHTML = `<p style="padding:160px 0;text-align:center;">No product specified. <a href="shop.html" style="color:var(--gold);">Browse the shop →</a></p>`;
+    root.innerHTML = `<p style="padding:160px 0;text-align:center;">No product specified. <a href="shop" style="color:var(--gold);">Browse the shop →</a></p>`;
     return;
   }
 
@@ -166,7 +166,7 @@
   }
 
   if (!product) {
-    root.innerHTML = `<p style="padding:160px 0;text-align:center;">Sorry, we couldn't find that product. <a href="shop.html" style="color:var(--gold);">Browse the shop →</a></p>`;
+    root.innerHTML = `<p style="padding:160px 0;text-align:center;">Sorry, we couldn't find that product. <a href="shop" style="color:var(--gold);">Browse the shop →</a></p>`;
     return;
   }
 
@@ -221,7 +221,7 @@
         ${galleryThumbsHTML}
       </div>
       <div>
-        <p class="pd-breadcrumb"><a href="shop.html">Shop</a> / <a href="shop.html?cat=${product.category}">${product.subcategory || product.category}</a> / ${product.name}</p>
+        <p class="pd-breadcrumb"><a href="shop">Shop</a> / <a href="shop?cat=${product.category}">${product.subcategory || product.category}</a> / ${product.name}</p>
         <h1 class="pd-title">${product.name}</h1>
         <div class="pd-price">PKR ${Number(product.price).toLocaleString()}${oldPriceHTML}</div>
         ${stockHTML}
