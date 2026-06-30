@@ -23,6 +23,7 @@ const uploadRoutes       = require('./routes/upload');
 const reviewRoutes       = require('./routes/reviews');
 const resellerRoutes     = require('./routes/resellers');
 const socialOrderRoutes  = require('./routes/socialOrders');
+const couponRoutes       = require('./routes/coupons');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -122,6 +123,7 @@ app.use('/api/auth',          authRoutes);
 app.use('/api/products',      productRoutes);
 app.use('/api/orders',        orderRoutes);
 app.use('/api/social-orders', socialOrderRoutes);
+app.use('/api/coupons',       couponRoutes);
 app.use('/api/contact',       contactRoutes);
 app.use('/api/newsletter',    newsletterRoutes);
 app.use('/api/payments',      paymentsRoutes);

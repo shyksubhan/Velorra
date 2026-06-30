@@ -248,6 +248,15 @@
 .ck-item-name { font-size: 0.85rem; }
 .ck-item-qty  { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
 .ck-item-price { font-family: var(--font-display); color: var(--gold-light); }
+.ck-coupon-row { display: flex; gap: 8px; margin: 16px 0 8px; }
+.ck-coupon-row input {
+  flex: 1; background: var(--bg-deep, transparent); border: 1px solid var(--border);
+  padding: 11px 14px; font-size: 0.82rem; color: var(--text); outline: none;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ck-coupon-row input:focus { border-color: var(--gold); }
+.ck-coupon-row .btn-outline { padding: 11px 18px; font-size: 0.78rem; white-space: nowrap; clip-path: none; }
+#ck-coupon-msg { font-size: 0.74rem; margin: -2px 0 14px; line-height: 1.5; }
 .ck-summary-divider { height: 1px; background: var(--border); margin: 14px 0; }
 .ck-summary-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; }
 .ck-total-row { font-family: var(--font-display); font-size: 1.15rem; color: var(--text); font-weight: 300; }

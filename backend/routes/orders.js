@@ -18,7 +18,7 @@ function isFirebaseAvailable() {
 /* ── POST /api/orders — Place order ── */
 router.post('/', async (req, res) => {
   try {
-    const { items, delivery, paymentMethod, deliveryMethod } = req.body;
+    const { items, delivery, paymentMethod, deliveryMethod, couponCode } = req.body;
 
     if (!items?.length || !delivery?.fname || !delivery?.email) {
       return res.status(400).json({ error: 'Order data is incomplete.' });
@@ -54,7 +54,30 @@ router.post('/', async (req, res) => {
     const deliveryFee = payMethod === 'bank_deposit'
       ? 0
       : (subtotal >= 5000 ? 0 : 200);
-    const total       = subtotal + deliveryFee;
+
+    /* ── Coupon (optional) ──
+       Re-validate server-side even though the checkout page already
+       called /api/coupons/validate — never trust a discount number sent
+       from the browser. Discount is applied to the subtotal only, the
+       delivery fee is unaffected. */
+    let discount   = 0;
+    let couponMeta = null;
+    if (couponCode) {
+      let couponDoc;
+      if (isFirebaseAvailable()) {
+        const cleanCode = String(couponCode).trim().toUpperCase();
+        const snap = await getDB().collection('coupons').where('code', '==', cleanCode).limit(1).get();
+        couponDoc = snap.empty ? null : { ...snap.docs[0].data(), id: snap.docs[0].id };
+      } else {
+        couponDoc = store.findCoupon(couponCode);
+      }
+      const check = store.checkCoupon(couponDoc, subtotal);
+      if (!check.ok) return res.status(400).json({ error: check.error });
+      discount   = check.discount;
+      couponMeta = { code: check.coupon.code, type: check.coupon.type, value: check.coupon.value, discount };
+    }
+
+    const total       = Math.max(0, subtotal - discount) + deliveryFee;
     const orderRef    = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
     const order = {
@@ -64,6 +87,8 @@ router.post('/', async (req, res) => {
       paymentMethod:  payMethod,
       deliveryMethod: deliveryMethod || 'standard',
       subtotal,
+      discount,
+      coupon: couponMeta,
       deliveryFee,
       total,
       status:    'Pending',
@@ -75,6 +100,11 @@ router.post('/', async (req, res) => {
       await getDB().collection('orders').doc(orderRef).set(order);
     } else {
       store.orders.unshift(order);
+    }
+
+    /* Record coupon usage only after the order is safely saved */
+    if (couponMeta) {
+      await store.recordCouponUse(couponMeta.code, isFirebaseAvailable, getDB).catch(e => console.error('recordCouponUse failed:', e.message));
     }
 
     /* Emit SSE notification to admin */

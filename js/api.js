@@ -94,8 +94,13 @@ function getCurrentUser() {
 }
 
 /* ── Place order ── */
-async function apiPlaceOrder({ items, delivery, paymentMethod, deliveryMethod }) {
-  return apiPost('/orders', { items, delivery, paymentMethod, deliveryMethod });
+async function apiPlaceOrder({ items, delivery, paymentMethod, deliveryMethod, couponCode }) {
+  return apiPost('/orders', { items, delivery, paymentMethod, deliveryMethod, couponCode });
+}
+
+/* ── Validate a coupon code against a subtotal — public, no auth needed ── */
+async function apiValidateCoupon(code, subtotal) {
+  return apiPost('/coupons/validate', { code, subtotal });
 }
 
 /* ── Get orders by user email ── */

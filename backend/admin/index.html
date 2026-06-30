@@ -310,6 +310,9 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <i class="fa-solid fa-cart-arrow-down"></i><span>Abandoned Orders</span>
       <span class="nav-badge" id="abandoned-badge" style="display:none;background:#f97316">0</span>
     </div>
+    <div class="nav-item" onclick="showPage('coupons')" id="nav-coupons">
+      <i class="fa-solid fa-tag"></i><span>Coupons</span>
+    </div>
     <div class="nav-item" onclick="showPage('roles')" id="nav-roles">
       <i class="fa-solid fa-shield-halved"></i><span>Users & Roles</span>
     </div>
@@ -532,6 +535,96 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
+<!-- ── COUPONS PAGE (super_admin only) ── -->
+<div id="page-coupons" class="page" style="display:none">
+  <div class="page-header">
+    <h1><i class="fa-solid fa-tag" style="color:var(--gold);margin-right:8px"></i>Discount Coupons</h1>
+    <div class="ml-auto">
+      <button class="btn btn-gold" onclick="openCouponModal()"><i class="fa-solid fa-plus"></i> New Coupon</button>
+    </div>
+  </div>
+
+  <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px">
+    Coupons created here can be used by customers at checkout and by staff when creating Social Media Orders.
+    Only Super Admin can create or edit coupons.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Code</th>
+        <th>Discount</th>
+        <th>Min Order</th>
+        <th>Uses</th>
+        <th>Expires</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody id="coupons-body"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── ADD/EDIT COUPON MODAL (super_admin only) ── -->
+<div class="modal-overlay" id="coupon-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="coupon-modal-title"><i class="fa-solid fa-tag" style="color:var(--gold);margin-right:8px"></i>New Coupon</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('coupon-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cpn-id" value=""/>
+
+      <div class="form-group">
+        <label>Coupon Code *</label>
+        <input id="cpn-code" placeholder="e.g. EID20" style="text-transform:uppercase" maxlength="24"/>
+        <small style="color:var(--muted);font-size:0.72rem">Letters, numbers, "-" or "_" only. Customers will type this exactly.</small>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Discount Type *</label>
+          <select id="cpn-type" onchange="updateCouponValueHint()">
+            <option value="percent">Percentage (%)</option>
+            <option value="fixed">Fixed Amount (PKR)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label id="cpn-value-label">Discount Value (%) *</label>
+          <input type="number" id="cpn-value" min="1" placeholder="10"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Min Order Amount <span style="color:var(--muted)">(optional)</span></label>
+          <input type="number" id="cpn-min-order" min="0" placeholder="e.g. 2000"/>
+        </div>
+        <div class="form-group">
+          <label>Max Uses <span style="color:var(--muted)">(optional)</span></label>
+          <input type="number" id="cpn-max-uses" min="1" placeholder="e.g. 100"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Expiry Date <span style="color:var(--muted)">(optional — leave blank for no expiry)</span></label>
+        <input type="date" id="cpn-expires"/>
+      </div>
+
+      <div class="form-group" id="cpn-active-wrap" style="display:none">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="cpn-active" style="width:auto" checked/>
+          <span>Coupon is active</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('coupon-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveCoupon()" id="save-coupon-btn"><i class="fa-solid fa-check"></i> Save Coupon</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── ADD SOCIAL ORDER MODAL ── -->
 <div class="modal-overlay" id="social-order-modal">
   <div class="modal" style="max-width:600px">
@@ -602,9 +695,20 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <div id="soc-items-container"></div>
       </div>
 
+      <!-- Coupon -->
+      <div class="form-group">
+        <label>Coupon Code <span style="color:var(--muted)">(optional)</span></label>
+        <div style="display:flex;gap:8px">
+          <input id="soc-coupon-code" placeholder="e.g. EID20" style="text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase(); onSocCouponInputChanged()"/>
+          <button type="button" class="btn btn-outline" id="soc-coupon-apply-btn" onclick="applySocCoupon()">Apply</button>
+        </div>
+        <p id="soc-coupon-msg" style="font-size:0.78rem;margin-top:6px;display:none"></p>
+      </div>
+
       <!-- Auto-calculated totals -->
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Subtotal</span><span id="soc-subtotal">PKR 0</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px" id="soc-discount-row"><span style="color:var(--muted)">Discount</span><span id="soc-discount-display" style="color:var(--green)">− PKR 0</span></div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Delivery Fee</span><span id="soc-delivery-display" style="color:var(--orange)">PKR 200</span></div>
         <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;border-top:1px solid var(--border);padding-top:8px;margin-top:2px"><span>Total</span><span id="soc-total-display" style="color:var(--gold)">PKR 200</span></div>
         <p id="soc-delivery-note" style="font-size:0.72rem;color:var(--muted);margin-top:6px">COD: Free delivery for orders PKR 5,000+, otherwise PKR 200.</p>
@@ -1160,6 +1264,7 @@ let allOrders    = [];
 let allProducts  = [];
 let allMessages  = [];
 let allSubscribers = [];
+let allCoupons   = [];
 
 /* ═══════════════════ BOOT ═══════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
@@ -1277,6 +1382,8 @@ function applyRolePermissions(role) {
   if (role === 'admin') {
     /* Hide Settings nav entirely — Change Password access is super_admin only now */
     document.getElementById('nav-settings')?.style.setProperty('display', 'none');
+    /* Coupons are super_admin-only — discount decisions stay with the owner */
+    document.getElementById('nav-coupons')?.style.setProperty('display', 'none');
     document.getElementById('launch-date-section')?.style.setProperty('display', 'none');
     /* Hide revenue stat card */
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
@@ -1297,7 +1404,7 @@ function applyRolePermissions(role) {
   /* Supervisor — restrict to only Orders + Messages in sidebar */
   if (role === 'supervisor') {
     /* Hide sidebar items not allowed */
-    ['nav-dashboard','nav-products','nav-subscribers','nav-roles','nav-settings'].forEach(id => {
+    ['nav-dashboard','nav-products','nav-subscribers','nav-roles','nav-settings','nav-coupons'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
@@ -1493,6 +1600,7 @@ function showPage(name) {
   if (name === 'visitors')  loadVisitors();
   if (name === 'abandoned')     loadAbandoned();
   if (name === 'social-orders') loadSocialOrders();
+  if (name === 'coupons')       loadCoupons();
 }
 
 /* ═══════════════════ DASHBOARD ═══════════════════ */
@@ -1961,6 +2069,8 @@ function viewSocialOrder(id) {
     </div>
     <h4 style="margin-bottom:10px;font-size:0.88rem;color:var(--muted)">Items</h4>
     ${(o.items||[]).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>🛍️ ${esc(i.name)} (×${i.qty})</span><span>PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--muted)">Subtotal</span><span>PKR ${(o.subtotal||0).toLocaleString()}</span></div>
+    ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Total</span><span style="color:var(--gold)">PKR ${(o.total||0).toLocaleString()}</span></div>
   `;
@@ -1973,6 +2083,7 @@ let _socItemCount = 0;
 async function openSocialOrderModal() {
   _socItemCount = 0;
   _socSearchMatches = {};
+  _socAppliedCoupon = null;
   document.getElementById('soc-cname').value   = '';
   document.getElementById('soc-phone').value   = '';
   document.getElementById('soc-city').value    = '';
@@ -1980,6 +2091,8 @@ async function openSocialOrderModal() {
   document.getElementById('soc-payment').value = 'cod';
   document.getElementById('soc-status').value  = 'Pending';
   document.getElementById('soc-notes').value   = '';
+  document.getElementById('soc-coupon-code').value = '';
+  document.getElementById('soc-coupon-msg').style.display = 'none';
   document.getElementById('soc-items-container').innerHTML = '';
   /* Make sure the product catalog is loaded — the Products tab may
      never have been opened this session, so allProducts could be empty. */
@@ -2080,7 +2193,65 @@ function removeSocialItem(idx) {
   if (row) { row.remove(); delete _socSearchMatches[idx]; recalcSocialTotal(); }
 }
 
-function recalcSocialTotal() {
+/* ── Coupon state for the currently-open social order modal.
+   null = no coupon applied. Re-validated against the live subtotal
+   every time recalcSocialTotal runs, so changing items/qty after
+   applying a coupon can't silently keep a stale discount. ── */
+let _socAppliedCoupon = null; /* { code, type, value } once successfully applied */
+
+/* If the admin edits the code after a successful apply, the old
+   discount is no longer valid for whatever they're about to type next —
+   clear it until they click Apply again. */
+function onSocCouponInputChanged() {
+  if (_socAppliedCoupon) {
+    _socAppliedCoupon = null;
+    document.getElementById('soc-coupon-msg').style.display = 'none';
+    recalcSocialTotal();
+  }
+}
+
+async function applySocCoupon() {
+  const codeInput = document.getElementById('soc-coupon-code');
+  const msgEl      = document.getElementById('soc-coupon-msg');
+  const code       = codeInput.value.trim();
+  if (!code) { msgEl.style.display = 'none'; _socAppliedCoupon = null; recalcSocialTotal(); return; }
+
+  const subtotal = _socCurrentSubtotal();
+  const btn = document.getElementById('soc-coupon-apply-btn');
+  const orig = btn.textContent;
+  btn.textContent = '…'; btn.disabled = true;
+
+  try {
+    const res  = await apiFetch('/coupons/validate', {
+      method: 'POST',
+      body: JSON.stringify({ code, subtotal }),
+    });
+    const data = await res.json();
+    if (res.ok && data.valid) {
+      _socAppliedCoupon = { code: data.code, type: data.type, value: data.value };
+      msgEl.style.color = 'var(--green)';
+      msgEl.textContent = `✓ "${data.code}" applied — ${data.type === 'percent' ? data.value + '% off' : 'PKR ' + data.value.toLocaleString() + ' off'}`;
+      msgEl.style.display = 'block';
+    } else {
+      _socAppliedCoupon = null;
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = data.error || 'Invalid coupon.';
+      msgEl.style.display = 'block';
+    }
+  } catch {
+    _socAppliedCoupon = null;
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Network error — could not validate coupon.';
+    msgEl.style.display = 'block';
+  }
+
+  btn.textContent = orig; btn.disabled = false;
+  recalcSocialTotal();
+}
+
+/* Subtotal helper shared by applySocCoupon + recalcSocialTotal so both
+   always agree on the same number. */
+function _socCurrentSubtotal() {
   let subtotal = 0;
   document.querySelectorAll('#soc-items-container .soc-item-row').forEach(row => {
     const rowId   = row.id.replace('soc-item-row-', '');
@@ -2089,11 +2260,27 @@ function recalcSocialTotal() {
     const price   = priceEl ? Number(priceEl.textContent.replace(/[^\d.]/g, '')) || 0 : 0;
     subtotal += qty * price;
   });
+  return subtotal;
+}
+
+function recalcSocialTotal() {
+  const subtotal = _socCurrentSubtotal();
   const pay    = document.getElementById('soc-payment')?.value || 'cod';
   const delFee = pay === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
-  const total  = subtotal + delFee;
+
+  let discount = 0;
+  if (_socAppliedCoupon) {
+    discount = _socAppliedCoupon.type === 'percent'
+      ? Math.round(subtotal * (_socAppliedCoupon.value / 100))
+      : _socAppliedCoupon.value;
+    discount = Math.min(discount, subtotal);
+  }
+  const total = Math.max(0, subtotal - discount) + delFee;
 
   document.getElementById('soc-subtotal').textContent       = 'PKR ' + subtotal.toLocaleString();
+  const discountRow = document.getElementById('soc-discount-row');
+  if (discountRow) discountRow.style.display = discount > 0 ? 'flex' : 'none';
+  document.getElementById('soc-discount-display').textContent = '− PKR ' + discount.toLocaleString();
   document.getElementById('soc-delivery-display').textContent = 'PKR ' + delFee.toLocaleString();
   document.getElementById('soc-total-display').textContent  = 'PKR ' + total.toLocaleString();
 
@@ -2113,6 +2300,7 @@ async function saveSocialOrder() {
   const paymentMethod= document.getElementById('soc-payment').value;
   const status       = document.getElementById('soc-status').value;
   const notes        = document.getElementById('soc-notes').value.trim();
+  const couponCode   = _socAppliedCoupon?.code || null;
 
   if (!customerName) { toast('Customer name is required.', 'error'); return; }
 
@@ -2141,7 +2329,7 @@ async function saveSocialOrder() {
   try {
     const res  = await apiFetch('/social-orders', {
       method: 'POST',
-      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes }),
+      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes, couponCode }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -2155,7 +2343,144 @@ async function saveSocialOrder() {
   btn.innerHTML = orig; btn.disabled = false;
 }
 
-/* ═══════════════════ ORDERS ═══════════════════ */
+/* ═══════════════════ COUPONS (super_admin only) ═══════════════════ */
+async function loadCoupons() {
+  const tbody = document.getElementById('coupons-body');
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  try {
+    const res  = await apiFetch('/coupons');
+    const data = await res.json();
+    allCoupons = data.coupons || [];
+    renderCoupons(allCoupons);
+  } catch { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><p>Failed to load coupons.</p></div></td></tr>`; }
+}
+
+function renderCoupons(coupons) {
+  const tbody = document.getElementById('coupons-body');
+  if (!coupons.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-tag"></i><p>No coupons yet — create one to get started.</p></div></td></tr>`;
+    return;
+  }
+  const now = new Date();
+  tbody.innerHTML = coupons.map(c => {
+    const expired   = c.expiresAt && new Date(c.expiresAt) < now;
+    const usedUp    = c.maxUses != null && (c.usedCount || 0) >= c.maxUses;
+    const isLive    = c.active !== false && !expired && !usedUp;
+    const statusBadge = !isLive
+      ? `<span class="badge badge-cancelled">${expired ? 'Expired' : usedUp ? 'Used Up' : 'Inactive'}</span>`
+      : `<span class="badge badge-delivered">Active</span>`;
+    return `
+    <tr>
+      <td><code style="color:var(--gold);font-weight:700">${esc(c.code)}</code></td>
+      <td>${c.type === 'percent' ? c.value + '% off' : 'PKR ' + c.value.toLocaleString() + ' off'}</td>
+      <td>${c.minOrderAmount ? 'PKR ' + c.minOrderAmount.toLocaleString() : '—'}</td>
+      <td>${c.usedCount || 0}${c.maxUses != null ? ' / ' + c.maxUses : ''}</td>
+      <td>${c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="openCouponModalById('${c.id}')">Edit</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleCouponActive('${c.id}', ${c.active === false})">${c.active === false ? 'Enable' : 'Disable'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCoupon('${c.id}', '${esc(c.code)}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function updateCouponValueHint() {
+  const type  = document.getElementById('cpn-type').value;
+  const label = document.getElementById('cpn-value-label');
+  const input = document.getElementById('cpn-value');
+  if (type === 'percent') { label.textContent = 'Discount Value (%) *'; input.placeholder = '10'; input.max = 100; }
+  else { label.textContent = 'Discount Value (PKR) *'; input.placeholder = '500'; input.removeAttribute('max'); }
+}
+
+/* Looks up a coupon from the already-loaded allCoupons list by id —
+   avoids inlining a JSON.stringify'd object into an onclick attribute,
+   which breaks if the code or any field contains a quote character. */
+function openCouponModalById(id) {
+  const coupon = allCoupons.find(c => c.id === id);
+  if (coupon) openCouponModal(coupon);
+}
+
+/* Pass a coupon object to edit it, or call with no args for a fresh "New Coupon" form */
+function openCouponModal(coupon) {
+  document.getElementById('coupon-modal-title').innerHTML = coupon
+    ? '<i class="fa-solid fa-tag" style="color:var(--gold);margin-right:8px"></i>Edit Coupon'
+    : '<i class="fa-solid fa-tag" style="color:var(--gold);margin-right:8px"></i>New Coupon';
+  document.getElementById('cpn-id').value         = coupon?.id || '';
+  document.getElementById('cpn-code').value       = coupon?.code || '';
+  document.getElementById('cpn-code').disabled    = !!coupon; /* code can't be changed once created, to avoid breaking customers who already have it */
+  document.getElementById('cpn-type').value       = coupon?.type || 'percent';
+  document.getElementById('cpn-value').value      = coupon?.value ?? '';
+  document.getElementById('cpn-min-order').value  = coupon?.minOrderAmount ?? '';
+  document.getElementById('cpn-max-uses').value   = coupon?.maxUses ?? '';
+  document.getElementById('cpn-expires').value    = coupon?.expiresAt ? coupon.expiresAt.slice(0, 10) : '';
+  document.getElementById('cpn-active').checked   = coupon?.active !== false;
+  document.getElementById('cpn-active-wrap').style.display = coupon ? 'block' : 'none'; /* only relevant once it exists */
+  updateCouponValueHint();
+  openModal('coupon-modal');
+}
+
+async function saveCoupon() {
+  const id             = document.getElementById('cpn-id').value;
+  const code           = document.getElementById('cpn-code').value.trim().toUpperCase();
+  const type           = document.getElementById('cpn-type').value;
+  const value          = Number(document.getElementById('cpn-value').value);
+  const minOrderAmount = document.getElementById('cpn-min-order').value;
+  const maxUses        = document.getElementById('cpn-max-uses').value;
+  const expiresAtRaw   = document.getElementById('cpn-expires').value;
+  const expiresAt      = expiresAtRaw ? new Date(expiresAtRaw + 'T23:59:59').toISOString() : null;
+  const active         = document.getElementById('cpn-active').checked;
+
+  if (!id && !code) { toast('Coupon code is required.', 'error'); return; }
+  if (!value || value <= 0) { toast('Discount value must be greater than 0.', 'error'); return; }
+  if (type === 'percent' && value > 100) { toast('Percentage discount cannot exceed 100.', 'error'); return; }
+
+  const btn = document.getElementById('save-coupon-btn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+
+  try {
+    let res;
+    if (id) {
+      res = await apiFetch(`/coupons/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ type, value, minOrderAmount, maxUses, expiresAt, active }),
+      });
+    } else {
+      res = await apiFetch('/coupons', {
+        method: 'POST',
+        body: JSON.stringify({ code, type, value, minOrderAmount, maxUses, expiresAt, active: true }),
+      });
+    }
+    const data = await res.json();
+    if (res.ok) {
+      toast(id ? 'Coupon updated.' : `Coupon "${code}" created.`, 'success');
+      closeModal('coupon-modal');
+      loadCoupons();
+    } else toast(data.error || 'Failed to save coupon.', 'error');
+  } catch { toast('Network error.', 'error'); }
+
+  btn.innerHTML = orig; btn.disabled = false;
+}
+
+async function toggleCouponActive(id, makeActive) {
+  try {
+    const res = await apiFetch(`/coupons/${id}`, { method: 'PATCH', body: JSON.stringify({ active: makeActive }) });
+    if (res.ok) { toast(makeActive ? 'Coupon enabled.' : 'Coupon disabled.', 'success'); loadCoupons(); }
+    else { const d = await res.json(); toast(d.error || 'Failed to update coupon.', 'error'); }
+  } catch { toast('Network error.', 'error'); }
+}
+
+async function deleteCoupon(id, code) {
+  const ok = await bktConfirm({ title: 'Delete Coupon?', message: `"${code}" will be permanently removed. Customers can no longer use it. This cannot be undone.`, confirmText: 'Delete Coupon', icon: '🗑️' });
+  if (!ok) return;
+  try {
+    const res = await apiFetch(`/coupons/${id}`, { method: 'DELETE' });
+    if (res.ok) { toast('Coupon deleted.', 'success'); loadCoupons(); }
+    else { const d = await res.json(); toast(d.error || 'Delete failed.', 'error'); }
+  } catch { toast('Network error.', 'error'); }
+}
 async function loadOrders() {
   const status = document.getElementById('order-status-filter').value;
   const tbody  = document.getElementById('orders-body');
@@ -2217,6 +2542,8 @@ function viewOrder(id) {
     </div>
     <h4 style="margin-bottom:10px;font-size:0.88rem;color:var(--muted)">Items</h4>
     ${(o.items || []).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>${i.emoji||'🛍️'} ${i.name} (×${i.qty})</span><span>PKR ${(i.price * i.qty).toLocaleString()}</span></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--muted)">Subtotal</span><span>PKR ${(o.subtotal||0).toLocaleString()}</span></div>
+    ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Total</span><span style="color:var(--gold)">PKR ${(o.total||0).toLocaleString()}</span></div>
   `;

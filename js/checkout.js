@@ -1,9 +1,26 @@
 /* ============================================================
    VELORRA — Checkout Logic
    ============================================================ */
+/* main.js defines window.showToast, but this file calls toast(...)
+   in several places — alias it here so those calls actually work. */
+function toast(msg) { window.showToast?.(msg); }
+
 document.addEventListener('DOMContentLoaded', () => {
   let currentStep = 1;
   let orderData   = {};
+  /* Coupon currently applied at checkout — null until the customer
+     successfully applies one. Re-checked against the live subtotal
+     every time renderSummary runs. */
+  let appliedCoupon = null; /* { code, type, value } */
+
+  const computeDiscount = (subtotal) => {
+    if (!appliedCoupon) return 0;
+    let d = appliedCoupon.type === 'percent'
+      ? Math.round(subtotal * (appliedCoupon.value / 100))
+      : appliedCoupon.value;
+    return Math.min(d, subtotal);
+  };
+
   /* ── Populate summary sidebar ── */
   const renderSummary = () => {
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
@@ -27,9 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`).join('');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const delivery = getDeliveryFee(subtotal, getSelectedPayment());
+    const discount = computeDiscount(subtotal);
+    const discountRow = document.getElementById('ck-discount-row');
+    if (discountRow) discountRow.style.display = discount > 0 ? 'flex' : 'none';
+    const discountEl = document.getElementById('ck-discount');
+    if (discountEl) discountEl.textContent = '− PKR ' + discount.toLocaleString();
     if (subtotalEl) subtotalEl.textContent  = 'PKR ' + subtotal.toLocaleString();
     if (delivEl)    delivEl.textContent     = delivery === 0 ? 'FREE' : 'PKR ' + delivery.toLocaleString();
-    if (totalEl)    totalEl.textContent     = 'PKR ' + (subtotal + delivery).toLocaleString();
+    if (totalEl)    totalEl.textContent     = 'PKR ' + Math.max(0, subtotal - discount + delivery).toLocaleString();
   };
   const getDeliveryFee = (subtotal, paymentMethod) => {
     if (paymentMethod === 'bank_deposit') return 0;
@@ -38,6 +60,63 @@ document.addEventListener('DOMContentLoaded', () => {
   const getSelectedPayment = () =>
     document.querySelector('input[name="payment"]:checked')?.value || 'cod';
   renderSummary();
+
+  /* ── Coupon apply/clear ── */
+  const couponInput  = document.getElementById('ck-coupon-input');
+  const couponApplyBtn = document.getElementById('ck-coupon-apply-btn');
+  const couponMsgEl    = document.getElementById('ck-coupon-msg');
+
+  couponInput?.addEventListener('input', () => {
+    couponInput.value = couponInput.value.toUpperCase();
+    /* Editing after a successful apply invalidates the old discount
+       until they click Apply again with the new code. */
+    if (appliedCoupon) {
+      appliedCoupon = null;
+      if (couponMsgEl) couponMsgEl.style.display = 'none';
+      renderSummary();
+    }
+  });
+
+  couponApplyBtn?.addEventListener('click', async () => {
+    const code = couponInput?.value.trim();
+    if (!code) return;
+    const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+    const origLabel = couponApplyBtn.textContent;
+    couponApplyBtn.textContent = '…';
+    couponApplyBtn.disabled = true;
+
+    try {
+      const result = await apiValidateCoupon(code, subtotal);
+      if (result.ok && result.data.valid) {
+        appliedCoupon = { code: result.data.code, type: result.data.type, value: result.data.value };
+        if (couponMsgEl) {
+          couponMsgEl.style.color = 'var(--gold)';
+          couponMsgEl.textContent = `✓ "${result.data.code}" applied — ${result.data.type === 'percent' ? result.data.value + '% off' : 'PKR ' + result.data.value.toLocaleString() + ' off'}`;
+          couponMsgEl.style.display = 'block';
+        }
+      } else {
+        appliedCoupon = null;
+        if (couponMsgEl) {
+          couponMsgEl.style.color = '#c0392b';
+          couponMsgEl.textContent = result.data?.error || 'Invalid coupon code.';
+          couponMsgEl.style.display = 'block';
+        }
+      }
+    } catch {
+      appliedCoupon = null;
+      if (couponMsgEl) {
+        couponMsgEl.style.color = '#c0392b';
+        couponMsgEl.textContent = 'Network error — could not check coupon.';
+        couponMsgEl.style.display = 'block';
+      }
+    }
+
+    couponApplyBtn.textContent = origLabel;
+    couponApplyBtn.disabled = false;
+    renderSummary();
+  });
 
   /* ── Auto-fill delivery form if user is logged in ── */
   const loggedInUser = getCurrentUser();
@@ -118,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const fee      = getDeliveryFee(subtotal, method);
+    const discount = computeDiscount(subtotal);
     const d        = orderData.delivery || {};
     document.getElementById('order-summary-full').innerHTML = `
       <div class="confirm-section">
@@ -141,8 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="confirm-section">
         <div class="ck-summary-row"><span>Subtotal</span><span>PKR ${subtotal.toLocaleString()}</span></div>
+        ${discount > 0 ? `<div class="ck-summary-row"><span>Discount${appliedCoupon ? ' (' + appliedCoupon.code + ')' : ''}</span><span>− PKR ${discount.toLocaleString()}</span></div>` : ''}
         <div class="ck-summary-row"><span>Delivery</span><span>${fee === 0 ? 'FREE' : 'PKR ' + fee.toLocaleString()}</span></div>
-        <div class="ck-summary-row ck-total-row"><span>Total</span><span>PKR ${(subtotal+fee).toLocaleString()}</span></div>
+        <div class="ck-summary-row ck-total-row"><span>Total</span><span>PKR ${Math.max(0, subtotal - discount + fee).toLocaleString()}</span></div>
       </div>`;
     goToStep(3);
   });
@@ -185,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         delivery:       orderData.delivery,
         paymentMethod:  payMethod,
         deliveryMethod: delivMethod,
+        couponCode:     appliedCoupon?.code || null,
       });
 
       if (result.ok) {

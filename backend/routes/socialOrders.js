@@ -29,6 +29,7 @@ router.post('/', requireAdmin, async (req, res) => {
       paymentMethod,
       status,
       notes,
+      couponCode,
     } = req.body;
 
     /* ── Validation ── */
@@ -55,7 +56,25 @@ router.post('/', requireAdmin, async (req, res) => {
       ? 0
       : (subtotal >= 5000 ? 0 : 200);
 
-    const total    = subtotal + deliveryFee;
+    /* ── Coupon (optional) — same rule set as website checkout ── */
+    let discount   = 0;
+    let couponMeta = null;
+    if (couponCode) {
+      let couponDoc;
+      if (isFirebaseAvailable()) {
+        const cleanCode = String(couponCode).trim().toUpperCase();
+        const snap = await getDB().collection('coupons').where('code', '==', cleanCode).limit(1).get();
+        couponDoc = snap.empty ? null : { ...snap.docs[0].data(), id: snap.docs[0].id };
+      } else {
+        couponDoc = store.findCoupon(couponCode);
+      }
+      const check = store.checkCoupon(couponDoc, subtotal);
+      if (!check.ok) return res.status(400).json({ error: check.error });
+      discount   = check.discount;
+      couponMeta = { code: check.coupon.code, type: check.coupon.type, value: check.coupon.value, discount };
+    }
+
+    const total    = Math.max(0, subtotal - discount) + deliveryFee;
     const orderRef = 'SOC-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
     const order = {
@@ -68,6 +87,8 @@ router.post('/', requireAdmin, async (req, res) => {
       notes:         notes?.trim() || '',
       items:         enrichedItems,
       subtotal,
+      discount,
+      coupon:        couponMeta,
       deliveryFee,
       total,
       paymentMethod: payMethod,
@@ -80,6 +101,11 @@ router.post('/', requireAdmin, async (req, res) => {
       await getDB().collection('social_orders').doc(orderRef).set(order);
     } else {
       store.socialOrders.unshift(order);
+    }
+
+    /* Record coupon usage only after the order is safely saved */
+    if (couponMeta) {
+      await store.recordCouponUse(couponMeta.code, isFirebaseAvailable, getDB).catch(e => console.error('recordCouponUse failed:', e.message));
     }
 
     /* Emit SSE notification to admin */

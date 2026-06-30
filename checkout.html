@@ -229,8 +229,19 @@
             <h3 class="ck-summary-title">Your Bag</h3>
             <div id="ck-summary-items"></div>
             <div class="ck-summary-divider"></div>
+
+            <!-- Coupon code -->
+            <div class="ck-coupon-row">
+              <input type="text" id="ck-coupon-input" placeholder="Coupon code" autocomplete="off"/>
+              <button type="button" id="ck-coupon-apply-btn" class="btn-outline">Apply</button>
+            </div>
+            <p id="ck-coupon-msg" style="display:none"></p>
+
             <div class="ck-summary-row">
               <span>Subtotal</span><span id="ck-subtotal">PKR 0</span>
+            </div>
+            <div class="ck-summary-row" id="ck-discount-row" style="display:none">
+              <span>Discount</span><span id="ck-discount" style="color:var(--gold)">− PKR 0</span>
             </div>
             <div class="ck-summary-row">
               <span>Delivery</span><span id="ck-delivery-fee">FREE</span>

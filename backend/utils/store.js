@@ -19,6 +19,7 @@ const store = {
   users:        [],
   activityLogs: [],
   abandoned:    [],
+  coupons:      [],   /* discount coupons — super_admin managed */
 
   /* Admin users with role support */
   adminUsers: [
@@ -242,6 +243,68 @@ const store = {
   },
   findAdminUserById(id) {
     return this.adminUsers.find(u => u.id === id);
+  },
+
+  /* ── Coupons ── */
+  findCoupon(code) {
+    const v = (code || '').trim().toUpperCase();
+    return this.coupons.find(c => c.code === v);
+  },
+
+  /* Pure validation — takes an already-fetched coupon object (or null/undefined
+     if not found) plus the order subtotal, and returns either
+     { ok:false, error } or { ok:true, coupon, discount, total }.
+     Kept separate from lookup so callers can fetch the coupon fresh from
+     Firebase (source of truth) and still share these exact rules. */
+  checkCoupon(coupon, subtotal) {
+    if (!coupon) return { ok: false, error: 'Invalid coupon code.' };
+    if (coupon.active === false) return { ok: false, error: 'This coupon is no longer active.' };
+    if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+      return { ok: false, error: 'This coupon has expired.' };
+    }
+    if (coupon.maxUses != null && coupon.usedCount >= coupon.maxUses) {
+      return { ok: false, error: 'This coupon has reached its usage limit.' };
+    }
+    if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) {
+      return { ok: false, error: `This coupon requires a minimum order of PKR ${coupon.minOrderAmount.toLocaleString()}.` };
+    }
+
+    let discount = coupon.type === 'percent'
+      ? Math.round(subtotal * (coupon.value / 100))
+      : coupon.value;
+    discount = Math.min(discount, subtotal); /* never discount below PKR 0 */
+
+    return { ok: true, coupon, discount, total: subtotal - discount };
+  },
+
+  /* Convenience wrapper for in-memory mode: looks up by code in this.coupons
+     then runs checkCoupon. Firebase-mode callers fetch the coupon themselves
+     and call checkCoupon directly (see coupons.js /validate). */
+  validateCoupon(code, subtotal) {
+    return this.checkCoupon(this.findCoupon(code), subtotal);
+  },
+
+  /* Increments usedCount once an order is actually placed with this coupon.
+     Called from orders.js / socialOrders.js AFTER the order is saved.
+     Pass the live coupon doc id when known (Firebase mode) to avoid a
+     second lookup-by-code query. */
+  async recordCouponUse(code, isFirebaseAvailable, getDB, couponId) {
+    if (isFirebaseAvailable && isFirebaseAvailable()) {
+      try {
+        let id = couponId;
+        if (!id) {
+          const cleanCode = String(code || '').trim().toUpperCase();
+          const snap = await getDB().collection('coupons').where('code', '==', cleanCode).limit(1).get();
+          if (snap.empty) return;
+          id = snap.docs[0].id;
+        }
+        const { FieldValue } = require('firebase-admin/firestore');
+        await getDB().collection('coupons').doc(id).update({ usedCount: FieldValue.increment(1) });
+      } catch (e) { console.error('recordCouponUse Firestore update failed:', e.message); }
+      return;
+    }
+    const coupon = this.findCoupon(code);
+    if (coupon) coupon.usedCount = (coupon.usedCount || 0) + 1;
   },
 
   /* ── Staff summary (per-staff activity counts) ── */
