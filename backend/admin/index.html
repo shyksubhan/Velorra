@@ -1501,6 +1501,28 @@ function apiFetch(path, options = {}) {
   return fetch(`${API}${path}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}`, ...(options.headers || {}) },
+  }).then(res => {
+    /* Global session-kill handler — if the server says this token is no
+       longer valid (password changed elsewhere, account deactivated,
+       deleted, etc.) force the user back to the login screen right away
+       instead of leaving them on a broken page. Skip this for the
+       change-password call itself, since a 401 there just means "wrong
+       current password" and should NOT log the user out. */
+    if (res.status === 401 && !path.includes('/auth/change-password') && !path.includes('/auth/login')) {
+      res.clone().json().then(data => {
+        clearSession();
+        showLogin();
+        const err = document.getElementById('login-error');
+        if (err) {
+          err.textContent = data?.error || 'Your session has ended. Please sign in again.';
+          err.style.display = 'block';
+        }
+      }).catch(() => {
+        clearSession();
+        showLogin();
+      });
+    }
+    return res;
   });
 }
 
@@ -3422,7 +3444,14 @@ async function changePassword() {
   const res  = await apiFetch('/auth/change-password', { method: 'PATCH', body: JSON.stringify({ currentPassword: curr, newPassword: nw }) });
   const data = await res.json();
   if (res.ok) {
-    showPwMsg('Password changed successfully! ✓', 'success');
+    /* Server issues a fresh token tied to the new password version so THIS
+       session stays logged in, while every other open session/device gets
+       logged out on its next request. */
+    if (data.token) {
+      adminToken = data.token;
+      localStorage.setItem('velorra_admin_token', adminToken);
+    }
+    showPwMsg('Password changed successfully! All other devices have been logged out. ✓', 'success');
     document.getElementById('pw-current').value = document.getElementById('pw-new').value = document.getElementById('pw-confirm').value = '';
   } else showPwMsg(data.error || 'Failed to change password.', 'error');
 }

@@ -21,16 +21,35 @@ function signToken(payload, expiresIn = '30d') {
 
 const VALID_ROLES = ['admin', 'supervisor'];
 
-/* ── Lazily initialize the built-in super admin from .env ── */
-function initSuperAdmin() {
+/* ── Lazily initialize the built-in super admin from .env, then overlay
+   any password change that was persisted to Firestore. This way a
+   password change survives Render restarts/redeploys instead of
+   reverting to the .env default. ── */
+async function initSuperAdmin() {
   const u = store.adminUsers[0];
   if (!u.username) {
     u.username = (process.env.ADMIN_USERNAME || 'admin').toLowerCase();
     u.email    = u.username;
   }
-  /* Hash the password only once */
+  /* Hash the .env password only once, as a fallback baseline */
   if (!u.passwordHash && process.env.ADMIN_PASSWORD) {
     u.passwordHash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10);
+  }
+  /* Overlay a previously-changed password from Firestore, if one exists.
+     Only do this once per server boot (cheap flag) to avoid a Firestore
+     read on every single login attempt. */
+  if (!u._loadedFromFirestore && isFirebaseAvailable()) {
+    u._loadedFromFirestore = true; /* mark attempted regardless of outcome */
+    try {
+      const doc = await getDB().collection('adminUsers').doc('super-admin-1').get();
+      if (doc.exists) {
+        const saved = doc.data();
+        if (saved.passwordHash) u.passwordHash = saved.passwordHash;
+        if (saved.tokenVersion) u.tokenVersion  = saved.tokenVersion;
+      }
+    } catch (err) {
+      console.error('Could not load persisted super admin record:', err.message);
+    }
   }
 }
 
@@ -121,7 +140,7 @@ router.post('/login', async (req, res) => {
     const normalEmail = email.trim().toLowerCase();
 
     /* ── Admin login ── */
-    initSuperAdmin();
+    await initSuperAdmin();
     const adminUser = await findAdminUserByUsername(normalEmail);
     if (adminUser && adminUser.active) {
       const passMatch = adminUser.passwordHash
@@ -134,7 +153,7 @@ router.post('/login', async (req, res) => {
         if (isFirebaseAvailable() && adminUser.role !== 'super_admin') {
           try { await getDB().collection('adminUsers').doc(adminUser.id).update({ lastLogin: adminUser.lastLogin }); } catch {}
         }
-        const token = signToken({ uid: adminUser.id, email: adminUser.username, isAdmin: true, role: adminUser.role });
+        const token = signToken({ uid: adminUser.id, email: adminUser.username, isAdmin: true, role: adminUser.role, tokenVersion: adminUser.tokenVersion || 0 });
         return res.json({
           message: `Welcome, ${adminUser.fname}! ✓`,
           token,
@@ -212,9 +231,35 @@ router.patch('/change-password', requireAuth, async (req, res) => {
         ? await bcrypt.compare(currentPassword, adminUser.passwordHash)
         : currentPassword === process.env.ADMIN_PASSWORD;
       if (!match) return res.status(401).json({ error: 'Current password is incorrect.' });
-      adminUser.passwordHash = await bcrypt.hash(newPassword, 12);
+
+      const newHash = await bcrypt.hash(newPassword, 12);
+      adminUser.passwordHash = newHash;
+      adminUser.tokenVersion = (adminUser.tokenVersion || 0) + 1; /* invalidate all existing sessions */
       process.env.ADMIN_PASSWORD = newPassword;
-      return res.json({ message: 'Password changed successfully.' });
+
+      /* ── Persist to Firestore so the change survives server restarts/redeploys ── */
+      if (isFirebaseAvailable()) {
+        try {
+          await getDB().collection('adminUsers').doc('super-admin-1').set({
+            id:           'super-admin-1',
+            username:     adminUser.username,
+            email:        adminUser.email,
+            passwordHash: newHash,
+            role:         'super_admin',
+            fname:        adminUser.fname,
+            lname:        adminUser.lname,
+            active:       true,
+            tokenVersion: adminUser.tokenVersion,
+            updatedAt:    new Date().toISOString(),
+          }, { merge: true });
+        } catch (err) {
+          console.error('Failed to persist super admin password to Firestore:', err.message);
+        }
+      }
+
+      /* Issue a fresh token for THIS session so the user changing the password isn't logged out too */
+      const freshToken = signToken({ uid: 'super-admin-1', isAdmin: true, role: 'super_admin', tokenVersion: adminUser.tokenVersion });
+      return res.json({ message: 'Password changed successfully. You have been logged out of all other devices.', token: freshToken });
     }
 
     if (isFirebaseAvailable()) {
@@ -328,7 +373,10 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
         const updates = {};
         if (role)   updates.role   = role;
         if (active !== undefined) updates.active = active;
-        if (password) updates.passwordHash = await bcrypt.hash(password, 12);
+        if (password) {
+          updates.passwordHash = await bcrypt.hash(password, 12);
+          updates.tokenVersion = (doc.data().tokenVersion || 0) + 1; /* force logout everywhere */
+        }
         await ref.update(updates);
         /* Update in-memory cache */
         const inMem = store.adminUsers.find(u => u.id === req.params.id);
@@ -342,7 +390,10 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
     if (user.id === 'super-admin-1') return res.status(403).json({ error: 'Cannot modify the primary super admin.' });
     if (role)   user.role   = role;
     if (active !== undefined) user.active = active;
-    if (password) user.passwordHash = await bcrypt.hash(password, 12);
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, 12);
+      user.tokenVersion = (user.tokenVersion || 0) + 1; /* force logout everywhere */
+    }
     return res.json({ message: 'User updated.', user: { id: user.id, fname: user.fname, role: user.role, active: user.active } });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update user.' });

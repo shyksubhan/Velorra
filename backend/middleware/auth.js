@@ -43,9 +43,29 @@ async function requireAdmin(req, res, next) {
       return res.status(403).json({ error: 'Admin access required.' });
     }
 
-    /* The bootstrap super admin (super-admin-1) can never be deleted, so it
-       always passes once the JWT itself is valid. */
-    if (req.user.uid === 'super-admin-1') return next();
+    /* The bootstrap super admin (super-admin-1) is handled specially below
+       because it lives partly in-memory and partly in Firestore. */
+    if (req.user.uid === 'super-admin-1') {
+      try {
+        let liveTokenVersion = store.adminUsers.find(u => u.id === 'super-admin-1')?.tokenVersion || 0;
+        /* Fall back to Firestore in case this server instance hasn't loaded
+           the latest persisted version yet (e.g. right after a redeploy on
+           a different instance changed the password). */
+        if (isFirebaseAvailable()) {
+          try {
+            const doc = await getDB().collection('adminUsers').doc('super-admin-1').get();
+            if (doc.exists && doc.data().tokenVersion) liveTokenVersion = doc.data().tokenVersion;
+          } catch {}
+        }
+        const tokenVersion = req.user.tokenVersion || 0;
+        if (tokenVersion < liveTokenVersion) {
+          return res.status(401).json({ error: 'Your password was changed. Please sign in again.' });
+        }
+      } catch (err) {
+        console.error('Super admin token version check failed:', err.message);
+      }
+      return next();
+    }
 
     try {
       let liveUser = store.findAdminUserById(req.user.uid);
@@ -58,6 +78,13 @@ async function requireAdmin(req, res, next) {
       }
       if (liveUser.active === false) {
         return res.status(401).json({ error: 'Your account has been deactivated. Please contact your administrator.' });
+      }
+      /* Token version check for staff accounts too — invalidates sessions
+         after a supervisor/admin's password is reset. */
+      const tokenVersion = req.user.tokenVersion || 0;
+      const liveVersion  = liveUser.tokenVersion || 0;
+      if (tokenVersion < liveVersion) {
+        return res.status(401).json({ error: 'Your password was changed. Please sign in again.' });
       }
       next();
     } catch (err) {
