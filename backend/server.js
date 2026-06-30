@@ -37,6 +37,9 @@ app.use(cors({
     'http://127.0.0.1:3001',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
+    'https://velorra-vvp3.onrender.com',
+    'https://velorrajewelry.store',
+    'https://www.velorrajewelry.store',
     'null',   /* file:// protocol */
   ],
   credentials: true,
