@@ -191,6 +191,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     if (req.user.isAdmin) {
+      if (req.user.uid === 'super-admin-1') await initSuperAdmin();
       const u = req.user.uid === 'super-admin-1'
         ? store.adminUsers.find(u => u.id === 'super-admin-1')
         : store.findAdminUserById(req.user.uid);
@@ -220,6 +221,16 @@ router.patch('/change-password', requireAuth, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both current and new password are required.' });
     if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+
+    /* CRITICAL: make sure the in-memory super admin record has the latest
+       Firestore-saved password overlaid before checking "current password" —
+       otherwise, on a fresh server boot (Render restart/sleep) where the
+       admin never re-hit /login, this would still be comparing against the
+       stale .env baseline password instead of the last password the admin
+       actually set. */
+    if (req.user.isAdmin && req.user.role === 'super_admin') {
+      await initSuperAdmin();
+    }
 
     if (req.user.isAdmin) {
       if (req.user.role !== 'super_admin') {
