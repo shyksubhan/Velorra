@@ -73,7 +73,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.text(company.phone || '+92 300 1112233', 50, startY + 64);
     
     // Divider
-    doc.moveTo(50, startY + 85).lineTo(545, startY + 85).stroke(C_GOLD);
+    doc.moveTo(50, startY + 115).lineTo(545, startY + 115).stroke(C_GOLD);
 
     // Company Info (Right aligned)
     doc.fontSize(24).fillColor(C_BLACK).font('Helvetica-Bold').text('INVOICE', 350, startY, { align: 'right', width: 195 });
@@ -91,7 +91,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.text(`Invoice Status:   Generated`, 350, startY + 100, { align: 'right', width: 195 });
 
     // BILL TO (Left aligned styled card)
-    let billY = startY + 110;
+    let billY = startY + 140;
     doc.rect(50, billY, 250, 85).fillAndStroke(C_CREAM, C_BORDER);
     doc.fillColor(C_BLACK).fontSize(9).font('Helvetica-Bold').text('BILL TO', 65, billY + 15);
     doc.fontSize(9).font('Helvetica').fillColor(C_TEXT);
@@ -158,22 +158,9 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.text(`PKR ${(order.total || 0).toLocaleString()}`, 445, ty, { width: 85, align: 'right' });
     y += 140;
 
-    // --- ADVANCE & COD BOX ---
+    // --- REMAINING COD BOX ---
     const advancePaid = Number(statusOrder.advanceAmount) || Number(order.advanceAmount) || 0;
-    const remaining = Math.max(0, (order.total || 0) - advancePaid);
-    
-    doc.rect(50, y, 280, 85).fillAndStroke(C_CREAM, C_BORDER);
-    doc.fillColor(C_BLACK).fontSize(9).font('Helvetica-Bold');
-    doc.text('Advance Paid', 65, y + 15);
-    doc.text(`PKR ${advancePaid.toLocaleString()}`, 200, y + 15, { width: 110, align: 'left' });
-    doc.font('Helvetica').fillColor(C_MUTED);
-    doc.text('Advance Method', 65, y + 30);
-    doc.text(statusOrder.advanceMethod || order.advanceMethod || '—', 200, y + 30, { width: 110, align: 'left' });
-    doc.text('Reference No', 65, y + 45);
-    doc.text(statusOrder.advanceRef || order.advanceRef || '—', 200, y + 45, { width: 110, align: 'left' });
-    doc.text('Advance Date', 65, y + 60);
-    const advDate = statusOrder.advanceDate || order.advanceDate;
-    doc.text(advDate ? new Date(advDate).toLocaleDateString() : '—', 200, y + 60, { width: 110, align: 'left' });
+    const remaining = isCod ? Math.max(0, (order.total || 0) - advancePaid) : 0;
 
     // Highlight Box (Rounded)
     doc.roundedRect(340, y, 205, 85, 4).fillAndStroke(C_BLACK, C_GOLD);

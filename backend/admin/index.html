@@ -2683,7 +2683,7 @@ function renderInvoices(list) {
     const isCod = i.snapshot?.paymentMethod === 'cod';
     const total = i.total || 0;
     const advance = Number(i.liveAdvanceAmount !== undefined ? i.liveAdvanceAmount : i.snapshot?.advanceAmount) || 0;
-    const remaining = Math.max(0, total - advance);
+    const remaining = isCod ? Math.max(0, total - advance) : 0;
     const liveStatus = i.liveStatus || i.snapshot?.status || 'Pending';
     let badgeStyle = 'background: #f39c12; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
     if(liveStatus === 'Processing') badgeStyle = 'background: #3498db; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;';
