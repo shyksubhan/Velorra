@@ -68,11 +68,21 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
 
     // Company Details (under logo)
     doc.fontSize(8).fillColor(C_MUTED).font('Helvetica');
-    doc.text(company.website || 'velorrajewelry.com', 50, startY + 40);
-    doc.text(company.email || 'velorrajewelry@gmail.com', 50, startY + 52);
-    doc.text(company.phone || '+92 331 4978295', 50, startY + 64);
-    doc.text(company.instagram || '@velorrajewelry_', 50, startY + 76);
-    doc.text(company.address || 'Lahore, Punjab, Pakistan', 50, startY + 88);
+    const fWeb = company.website || 'velorrajewelry.store';
+    const fEmail = company.email || 'velorrajewelry@gmail.com';
+    const fPhone = company.phone || '+92 331 4978295';
+    const fInsta = company.instagram || '@velorrajewelry_';
+    const fAddr = company.address || 'Lahore, Punjab, Pakistan';
+
+    doc.text(fWeb, 50, startY + 40, { link: 'https://' + fWeb.replace(/^https?:\/\//, '') });
+    doc.text(fEmail, 50, startY + 52, { link: 'mailto:' + fEmail });
+    doc.text(fPhone, 50, startY + 64, { link: 'https://wa.me/' + fPhone.replace(/[\+\s]/g, '') });
+    
+    const instaSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`;
+    SVGtoPDF(doc, instaSvg, 50, startY + 74, { width: 10, height: 10 });
+    doc.text(fInsta, 65, startY + 76, { link: 'https://instagram.com/' + fInsta.replace('@', '') });
+    
+    doc.text(fAddr, 50, startY + 88);
     
     // Divider
     doc.moveTo(50, startY + 115).lineTo(545, startY + 115).stroke(C_GOLD);
@@ -220,7 +230,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.fillColor(C_GOLD).fontSize(9).font('Helvetica-Bold');
     doc.text(`Thank you for shopping with ${company.name}!`, 0, 795, { align: 'center', width: 600 });
     doc.fillColor('#dddddd').fontSize(8).font('Helvetica');
-    const fWeb = company.website || 'velorrajewelry.com';
+    const fWeb = company.website || 'velorrajewelry.store';
     const fEmail = company.email || 'velorrajewelry@gmail.com';
     const fPhone = company.phone || '+92 331 4978295';
     doc.text(`${fWeb}   |   ${fEmail}   |   ${fPhone}`, 0, 810, { align: 'center', width: 600 });

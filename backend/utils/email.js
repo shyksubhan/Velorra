@@ -193,13 +193,13 @@ async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath, liveOrd
   const store = require('./store');
   const company = store.settings?.company || { 
     name: 'Velorra Jewelry', 
-    website: 'velorrajewelry.com', 
+    website: 'velorrajewelry.store', 
     email: 'velorrajewelry@gmail.com',
     phone: '+92 331 4978295',
     logoUrl: ''
   };
 
-  let webUrl = company.website || 'https://velorrajewelry.com';
+  let webUrl = company.website || 'https://velorrajewelry.store';
   if (!webUrl.startsWith('http')) webUrl = 'https://' + webUrl;
 
   const isCod = true; // For display purposes in this context, or we can pass it if we want. We'll just genericize or assume from the invoiceRef.
