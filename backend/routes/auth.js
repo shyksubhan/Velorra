@@ -233,6 +233,7 @@ router.patch('/change-password', requireAuth, async (req, res) => {
       if (!match) return res.status(401).json({ error: 'Current password is incorrect.' });
 
       const previousHash = adminUser.passwordHash; /* in case we need to roll back */
+      const newHash = await bcrypt.hash(newPassword, 12);
       adminUser.passwordHash = newHash;
       adminUser.tokenVersion = (adminUser.tokenVersion || 0) + 1; /* invalidate all existing sessions */
       process.env.ADMIN_PASSWORD = newPassword;
