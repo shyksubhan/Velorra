@@ -187,7 +187,10 @@
   const colorsHTML = (product.colors && product.colors.length)
     ? `<p class="pd-option-label">Color</p>
        <div class="color-options">
-         ${product.colors.map((c, i) => `<div class="color-opt${i === 0 ? ' active' : ''}" data-color="${c}" title="${c}" style="background:${velorraColorSwatch(c)};border:1px solid var(--border);"></div>`).join('')}
+         ${product.colors.map((c, i) => {
+           const cName = (typeof c === 'string') ? c : c.name;
+           return `<div class="color-opt${i === 0 ? ' active' : ''}" data-color="${cName}">${cName}</div>`;
+         }).join('')}
        </div>`
     : '';
 
