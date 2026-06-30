@@ -20,6 +20,18 @@ const store = {
   activityLogs: [],
   abandoned:    [],
   coupons:      [],   /* discount coupons — super_admin managed */
+  invoices:     [],   /* generated invoices */
+  settings: {
+    company: {
+      name: 'Velorra',
+      address: '',
+      phone: '',
+      email: '',
+      website: '',
+      socials: ''
+    },
+    invoiceTrigger: 'manual' /* 'manual', 'on_creation', 'on_confirmation' */
+  },
 
   /* Admin users with role support */
   adminUsers: [

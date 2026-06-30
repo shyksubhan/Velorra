@@ -171,6 +171,38 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
   return results;
 }
 
+/* ── Send Invoice Email ── */
+async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath }) {
+  const resend = getResend();
+  const fs = require('fs');
+  const path = require('path');
+  
+  let attachments = [];
+  if (pdfPath && fs.existsSync(pdfPath)) {
+    const pdfData = fs.readFileSync(pdfPath);
+    attachments = [
+      {
+        filename: `${invoiceRef}.pdf`,
+        content: pdfData
+      }
+    ];
+  }
+
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Your Invoice ${invoiceRef} | Velorra Jewelry`,
+    html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;color:#ccc;">
+      <h1 style="color:#c9a84c;">VELORRA <span style="color:#fff;">Jewelry</span></h1>
+      <h2 style="color:#fff;">Invoice ${invoiceRef}</h2>
+      <p>Dear ${customerName},</p>
+      <p>Please find your invoice attached to this email.</p>
+      <p style="color:#888;font-size:.85rem;margin-top:24px;">Thank you for shopping with us!<br>Questions? velorrajewelry@gmail.com</p>
+    </body></html>`,
+    attachments
+  });
+}
+
 module.exports = {
   sendOrderConfirmation,
   sendNewOrderNotification,
@@ -178,4 +210,5 @@ module.exports = {
   sendNewsletterWelcome,
   sendReplyEmail,
   sendBulkPromotion,
+  sendInvoiceEmail,
 };

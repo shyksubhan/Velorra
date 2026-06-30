@@ -316,6 +316,9 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="nav-item" onclick="showPage('roles')" id="nav-roles">
       <i class="fa-solid fa-shield-halved"></i><span>Users & Roles</span>
     </div>
+    <div class="nav-item" onclick="showPage('invoices')" id="nav-invoices">
+      <i class="fa-solid fa-file-invoice"></i><span>Invoices</span>
+    </div>
     <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
       <i class="fa-solid fa-gear"></i><span>Settings</span>
     </div>
@@ -369,6 +372,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
     <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-orders">—</div><div class="stat-label">Total Orders</div><div class="stat-sub" id="s-pending-text"></div></div>
     <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">—</div><div class="stat-label">Total Revenue</div></div>
+    
+    <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-val" id="s-invoices">—</div><div class="stat-label">Total Invoices</div></div>
+    <div class="stat-card"><div class="stat-icon">💵</div><div class="stat-val" id="s-cod-orders">—</div><div class="stat-label">COD Orders</div></div>
+    <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-val" id="s-advance">—</div><div class="stat-label">Advance Received</div></div>
+    <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-val" id="s-outstanding-cod">—</div><div class="stat-label">Outstanding COD</div></div>
+
     <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="s-profit">—</div><div class="stat-label">Today's Profit</div><div class="stat-sub" id="s-profit-sub"></div></div>
     <div class="stat-card"><div class="stat-icon">💹</div><div class="stat-val" id="s-total-profit">—</div><div class="stat-label">Total Profit</div><div class="stat-sub" style="color:var(--muted);font-size:0.65rem">all time</div></div>
     <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-val" id="s-products">—</div><div class="stat-label">Products</div></div>
@@ -1031,6 +1040,28 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <div id="page-settings" class="page" style="display:none">
   <div class="page-header"><h1>Settings</h1></div>
 
+  <div class="settings-section" id="company-settings-section">
+    <h3><i class="fa-solid fa-building" style="color:var(--gold);margin-right:8px"></i>Company & Invoice Settings</h3>
+    <div id="company-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label>Company Name</label><input type="text" id="cs-name" placeholder="e.g. Velorra"/></div>
+      <div class="form-group"><label>Company Logo URL</label><input type="text" id="cs-logo" placeholder="https://..."/></div>
+      <div class="form-group"><label>Contact Phone</label><input type="text" id="cs-phone"/></div>
+      <div class="form-group"><label>Contact Email</label><input type="text" id="cs-email"/></div>
+      <div class="form-group"><label>Website URL</label><input type="text" id="cs-website"/></div>
+      <div class="form-group"><label>Invoice Auto-Generation Trigger</label>
+        <select id="cs-invoiceTrigger">
+          <option value="manual">Manual Only</option>
+          <option value="on_order_creation">On Order Creation</option>
+          <option value="on_order_confirmation">On Order Confirmation</option>
+        </select>
+      </div>
+      <div class="form-group" style="grid-column:1/-1"><label>Address</label><input type="text" id="cs-address"/></div>
+    </div>
+    <button class="btn btn-gold" onclick="saveCompanySettings()" style="margin-top:12px">Save Company Settings</button>
+  </div>
+
   <div class="settings-section">
     <h3><i class="fa-solid fa-key" style="color:var(--gold);margin-right:8px"></i>Change Password</h3>
     <div id="pw-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
@@ -1064,6 +1095,20 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 </div>
 
 </div><!-- /main -->
+
+<!-- ── INVOICES PAGE ── -->
+<div id="page-invoices" class="page" style="display:none">
+  <div class="page-header">
+    <h1><i class="fa-solid fa-file-invoice" style="color:var(--gold);margin-right:8px"></i>Invoice History</h1>
+    <button class="btn btn-outline" onclick="loadInvoices()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Invoice Ref</th><th>Order Ref</th><th>Customer</th><th>Total</th><th>Status</th><th>Email Status</th><th>Downloads</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody id="invoices-body"><tr><td colspan="9" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
 
 <!-- ════════════════════════════ MODALS ════════════════════════ -->
 
@@ -1601,6 +1646,7 @@ function showPage(name) {
   if (name === 'abandoned')     loadAbandoned();
   if (name === 'social-orders') loadSocialOrders();
   if (name === 'coupons')       loadCoupons();
+  if (name === 'invoices')      loadInvoices();
 }
 
 /* ═══════════════════ DASHBOARD ═══════════════════ */
@@ -1664,6 +1710,11 @@ function renderDashStats(data) {
   document.getElementById('s-subscribers').textContent = data.subscribers?.total ?? 0;
   document.getElementById('s-msgs').textContent        = data.unreadMessages ?? 0;
   document.getElementById('s-users').textContent       = data.users?.total ?? 0;
+
+  if (document.getElementById('s-invoices')) document.getElementById('s-invoices').textContent = data.totalInvoices || 0;
+  if (document.getElementById('s-cod-orders')) document.getElementById('s-cod-orders').textContent = data.totalCodOrders || 0;
+  if (document.getElementById('s-advance')) document.getElementById('s-advance').textContent = 'PKR ' + (data.totalAdvanceReceived || 0).toLocaleString();
+  if (document.getElementById('s-outstanding-cod')) document.getElementById('s-outstanding-cod').textContent = 'PKR ' + (data.outstandingCodBalance || 0).toLocaleString();
 
   /* Pending badge — always from website orders */
   const pending = data.orders?.statuses?.Pending || 0;
@@ -2531,7 +2582,27 @@ function viewOrder(id) {
   const o = allOrders.find(o => o.id === id);
   if (!o) return;
   document.getElementById('order-modal-title').textContent = `Order — ${o.id}`;
+  
+  const isCod = o.paymentMethod === 'cod';
+  const advanceSection = `
+    <div style="margin-top:16px;padding:16px;background:rgba(184,136,58,0.05);border:1px solid var(--gold);border-radius:6px;">
+      <h4 style="margin-top:0;margin-bottom:12px;font-size:0.9rem;color:var(--gold)">Advance Payment Details</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group" style="margin:0"><label>Status</label><select id="adv-status" style="padding:6px;font-size:0.85rem"><option value="Pending" ${o.advanceStatus==='Pending'?'selected':''}>Pending</option><option value="Received" ${o.advanceStatus==='Received'?'selected':''}>Received</option></select></div>
+        <div class="form-group" style="margin:0"><label>Amount (PKR)</label><input type="number" id="adv-amount" value="${o.advanceAmount||''}" style="padding:6px;font-size:0.85rem"/></div>
+        <div class="form-group" style="margin:0"><label>Method</label><input type="text" id="adv-method" value="${o.advanceMethod||''}" placeholder="e.g. Easypaisa" style="padding:6px;font-size:0.85rem"/></div>
+        <div class="form-group" style="margin:0"><label>Reference ID</label><input type="text" id="adv-ref" value="${o.advanceRef||''}" placeholder="e.g. TID123" style="padding:6px;font-size:0.85rem"/></div>
+        <div class="form-group" style="margin:0;grid-column:1/-1"><label>Date</label><input type="date" id="adv-date" value="${o.advanceDate||''}" style="padding:6px;font-size:0.85rem"/></div>
+      </div>
+      <button class="btn btn-gold btn-sm" style="margin-top:12px;width:100%" onclick="updateAdvance('${o.id}')">Update Advance Payment</button>
+    </div>
+  `;
+
   document.getElementById('order-modal-body').innerHTML = `
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px;">
+      <button class="btn btn-outline btn-sm" onclick="generateInvoice('${o.id}')"><i class="fa-solid fa-file-invoice"></i> Generate Invoice</button>
+      <button class="btn btn-outline btn-sm" onclick="viewInvoicesForOrder('${o.id}')"><i class="fa-solid fa-history"></i> History</button>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div><small style="color:var(--muted)">Customer</small><p>${o.delivery?.fname} ${o.delivery?.lname}</p></div>
       <div><small style="color:var(--muted)">Email</small><p>${o.delivery?.email}</p></div>
@@ -2546,8 +2617,88 @@ function viewOrder(id) {
     ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Total</span><span style="color:var(--gold)">PKR ${(o.total||0).toLocaleString()}</span></div>
+    ${isCod ? advanceSection : ''}
   `;
   openModal('order-modal');
+}
+
+async function updateAdvance(id) {
+  const payload = {
+    advanceStatus: document.getElementById('adv-status').value,
+    advanceAmount: document.getElementById('adv-amount').value,
+    advanceMethod: document.getElementById('adv-method').value,
+    advanceRef: document.getElementById('adv-ref').value,
+    advanceDate: document.getElementById('adv-date').value
+  };
+  try {
+    const res = await apiFetch('/orders/'+id+'/advance', { method: 'PATCH', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if(res.ok) { toast(data.message, 'success'); loadOrders(); loadStats(); }
+    else toast(data.error || 'Failed to update', 'error');
+  } catch(e) { toast('Error', 'error'); }
+}
+
+async function generateInvoice(orderId) {
+  try {
+    const res = await apiFetch('/invoices/generate', { method: 'POST', body: JSON.stringify({ orderId }) });
+    const data = await res.json();
+    if(res.ok) { 
+      toast(data.message, 'success');
+      loadStats();
+      showPage('invoices'); 
+    }
+    else toast(data.error || 'Failed', 'error');
+  } catch(e) { toast('Error', 'error'); }
+}
+
+let allInvoices = [];
+async function loadInvoices() {
+  const tbody = document.getElementById('invoices-body');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center"><div class="spinner"></div></td></tr>';
+  try {
+    const res = await apiFetch('/invoices');
+    const data = await res.json();
+    allInvoices = data.invoices || [];
+    renderInvoices(allInvoices);
+  } catch { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Failed to load invoices.</td></tr>'; }
+}
+
+function renderInvoices(list) {
+  const tbody = document.getElementById('invoices-body');
+  if(!list.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No invoices found.</td></tr>'; return; }
+  tbody.innerHTML = list.map(i => `
+    <tr>
+      <td><strong style="color:var(--gold)">${i.id}</strong></td>
+      <td>${i.orderId}</td>
+      <td>${i.customerName}</td>
+      <td>PKR ${(i.total||0).toLocaleString()}</td>
+      <td><span class="badge badge-delivered">${i.status}</span></td>
+      <td><small style="color:var(--muted)">${i.emailStatus||'Not Sent'}</small></td>
+      <td>${i.downloadCount||0}</td>
+      <td>${new Date(i.createdAt).toLocaleDateString()}</td>
+      <td style="display:flex;gap:4px">
+        <a href="${i.pdfUrl}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i></a>
+        <button class="btn btn-gold btn-sm" onclick="emailInvoice('${i.id}')"><i class="fa-solid fa-envelope"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function emailInvoice(id) {
+  try {
+    const res = await apiFetch('/invoices/'+id+'/email', { method: 'POST' });
+    const data = await res.json();
+    if(res.ok) { toast(data.message, 'success'); loadInvoices(); }
+    else toast(data.error || 'Failed to email', 'error');
+  } catch(e) { toast('Error sending email', 'error'); }
+}
+
+function viewInvoicesForOrder(orderId) {
+  closeModal('order-modal');
+  showPage('invoices');
+  const filtered = allInvoices.filter(i => i.orderId === orderId);
+  renderInvoices(filtered);
 }
 
 /* ═══════════════════ PRODUCTS ═══════════════════ */

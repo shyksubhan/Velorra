@@ -24,6 +24,8 @@ const reviewRoutes       = require('./routes/reviews');
 const resellerRoutes     = require('./routes/resellers');
 const socialOrderRoutes  = require('./routes/socialOrders');
 const couponRoutes       = require('./routes/coupons');
+const settingsRoutes     = require('./routes/settings');
+const invoiceRoutes      = require('./routes/invoices');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -130,6 +132,8 @@ app.use('/api/payments',      paymentsRoutes);
 app.use('/api/upload',        uploadRoutes);
 app.use('/api/reviews',       reviewRoutes);
 app.use('/api/resellers',     resellerRoutes);
+app.use('/api/settings',      settingsRoutes);
+app.use('/api/invoices',      invoiceRoutes);
 
 /* ── Abandoned Checkout Tracking ──
    Persisted to Firestore (collection: "abandoned") when Firebase is

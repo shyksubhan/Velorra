@@ -344,4 +344,47 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
   }
 });
 
+/* ── PATCH /api/orders/:id/advance (admin) ── */
+router.patch('/:id/advance', requireAdmin, async (req, res) => {
+  try {
+    const { advanceStatus, advanceAmount, advanceDate, advanceMethod, advanceRef } = req.body;
+
+    if (isFirebaseAvailable()) {
+      const db = getDB();
+      const ref = db.collection('orders').doc(req.params.id);
+      if (!(await ref.get()).exists) return res.status(404).json({ error: 'Order not found.' });
+      await ref.update({
+        advanceStatus: advanceStatus || 'Pending',
+        advanceAmount: Number(advanceAmount) || 0,
+        advanceDate: advanceDate || '',
+        advanceMethod: advanceMethod || '',
+        advanceRef: advanceRef || '',
+        updatedAt: new Date().toISOString()
+      });
+    } else {
+      const idx = store.orders.findIndex(o => o.id === req.params.id);
+      if (idx < 0) return res.status(404).json({ error: 'Order not found.' });
+      store.orders[idx].advanceStatus = advanceStatus || 'Pending';
+      store.orders[idx].advanceAmount = Number(advanceAmount) || 0;
+      store.orders[idx].advanceDate = advanceDate || '';
+      store.orders[idx].advanceMethod = advanceMethod || '';
+      store.orders[idx].advanceRef = advanceRef || '';
+      store.orders[idx].updatedAt = new Date().toISOString();
+    }
+
+    store.logActivity({
+      staffId: req.user?.uid,
+      staffName: req.user?.email || 'Unknown',
+      staffRole: req.user?.role,
+      action: 'order_advance_update',
+      details: { orderId: req.params.id, advanceAmount }
+    });
+
+    store.emit('order_advance_changed', { id: req.params.id });
+    return res.json({ message: `Advance payment updated for order ${req.params.id}.` });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to update advance payment.' });
+  }
+});
+
 module.exports = router;

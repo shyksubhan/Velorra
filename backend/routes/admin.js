@@ -97,6 +97,19 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
       /* Social profit */
       const todaySocialProfit = Math.round(todaySocialOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
       const totalSocialProfit = Math.round(activeSocialOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
+      /* ── Invoice Analytics ── */
+      let totalInvoices = store.invoices.length;
+      try {
+        if (isFirebaseAvailable()) {
+          const invSnap = await getDB().collection('invoices').get();
+          totalInvoices = invSnap.size;
+        }
+      } catch (e) {}
+
+      const codOrders = activeOrders.filter(o => o.paymentMethod === 'cod');
+      const totalCodOrders = codOrders.length;
+      const totalAdvanceReceived = codOrders.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
+      const outstandingCodBalance = codOrders.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
 
       return res.json(maskRevenue({
         orders:              { total: ordersSnap.size,  statuses: statusCounts },
@@ -123,6 +136,11 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
         monthCombinedRevenue:Math.round(monthRevenue + monthSocialRevenue),
         todayCombinedProfit: todayProfit + todaySocialProfit,
         totalCombinedProfit: totalProfit + totalSocialProfit,
+        /* invoice analytics */
+        totalInvoices,
+        totalCodOrders,
+        totalAdvanceReceived,
+        outstandingCodBalance,
         demoMode:            false,
       }, req.user.role));
     }
@@ -160,6 +178,13 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.combinedRevenue      = base.totalRevenue + base.socialRevenue;
     base.todayCombinedProfit  = base.todayProfit  + base.todaySocialProfit;
     base.totalCombinedProfit  = (store.lifetimeEarnings().totals.profit || 0) + base.totalSocialProfit;
+
+    /* Invoice Analytics Demo */
+    base.totalInvoices = store.invoices.length;
+    const cods = orders.filter(o => o.status !== 'Cancelled' && o.paymentMethod === 'cod');
+    base.totalCodOrders = cods.length;
+    base.totalAdvanceReceived = cods.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
+    base.outstandingCodBalance = cods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
 
     return res.json(maskRevenue({ ...base, demoMode: true }, req.user.role));
 
