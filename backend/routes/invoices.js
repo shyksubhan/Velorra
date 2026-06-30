@@ -151,7 +151,7 @@ router.get('/:id/download', async (req, res) => {
       await getDB().collection('invoices').doc(invId).update({ downloadCount: inv.downloadCount, lastDownloadDate: inv.lastDownloadDate });
     }
 
-    res.download(pdfPath, `${invId}.pdf`);
+    res.download(pdfPath, `${inv.orderId}.pdf`);
   } catch (err) {
     return res.status(500).json({ error: 'Download failed.' });
   }

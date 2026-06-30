@@ -193,9 +193,9 @@ async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath, liveOrd
   const store = require('./store');
   const company = store.settings?.company || { 
     name: 'Velorra Jewelry', 
-    website: 'https://velorra.com', 
-    email: 'support@velorra.com',
-    phone: '+92 300 1112233',
+    website: 'velorrajewelry.com', 
+    email: 'velorrajewelry@gmail.com',
+    phone: '+92 331 4978295',
     logoUrl: ''
   };
 
