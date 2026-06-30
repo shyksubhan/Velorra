@@ -1094,21 +1094,33 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
-</div><!-- /main -->
-
 <!-- ── INVOICES PAGE ── -->
-<div id="page-invoices" class="page" style="display:none">
+<div id="page-invoices" class="page" style="display:none; width: 100%;">
   <div class="page-header">
     <h1><i class="fa-solid fa-file-invoice" style="color:var(--gold);margin-right:8px"></i>Invoice History</h1>
     <button class="btn btn-outline" onclick="loadInvoices()"><i class="fa-solid fa-rotate"></i> Refresh</button>
   </div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Invoice Ref</th><th>Order Ref</th><th>Customer</th><th>Total</th><th>Status</th><th>Email Status</th><th>Downloads</th><th>Date</th><th>Action</th></tr></thead>
+  <div class="table-wrap" style="width: 100%;">
+    <table style="width: 100%;">
+      <thead>
+        <tr>
+          <th>INVOICE / ORDER REF</th>
+          <th>CUSTOMER</th>
+          <th>PAYMENT METHOD</th>
+          <th>STATUS</th>
+          <th>TOTAL</th>
+          <th>ADVANCE</th>
+          <th>REMAINING</th>
+          <th>DATE</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
       <tbody id="invoices-body"><tr><td colspan="9" class="empty-state"><div class="spinner"></div></td></tr></tbody>
     </table>
   </div>
 </div>
+
+</div><!-- /main -->
 
 <!-- ════════════════════════════ MODALS ════════════════════════ -->
 
@@ -2667,22 +2679,35 @@ async function loadInvoices() {
 function renderInvoices(list) {
   const tbody = document.getElementById('invoices-body');
   if(!list.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No invoices found.</td></tr>'; return; }
-  tbody.innerHTML = list.map(i => `
+  tbody.innerHTML = list.map(i => {
+    const isCod = i.snapshot?.paymentMethod === 'cod';
+    const total = i.total || 0;
+    const advance = Number(i.snapshot?.advanceAmount) || 0;
+    const remaining = Math.max(0, total - advance);
+    return `
     <tr>
       <td><strong style="color:var(--gold)">${i.id}</strong></td>
-      <td>${i.orderId}</td>
-      <td>${i.customerName}</td>
-      <td>PKR ${(i.total||0).toLocaleString()}</td>
+      <td>
+        <div style="font-weight:500;">${i.customerName}</div>
+        <div style="font-size:0.8rem;color:var(--muted);">${i.snapshot?.delivery?.phone || ''}</div>
+      </td>
+      <td>
+        <span class="badge ${isCod ? 'badge-pending' : 'badge-delivered'}">${isCod ? 'COD' : 'Online'}</span>
+      </td>
       <td><span class="badge badge-delivered">${i.status}</span></td>
-      <td><small style="color:var(--muted)">${i.emailStatus||'Not Sent'}</small></td>
-      <td>${i.downloadCount||0}</td>
-      <td>${new Date(i.createdAt).toLocaleDateString()}</td>
-      <td style="display:flex;gap:4px">
-        <a href="${i.pdfUrl}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i></a>
-        <button class="btn btn-gold btn-sm" onclick="emailInvoice('${i.id}')"><i class="fa-solid fa-envelope"></i></button>
+      <td>PKR ${total.toLocaleString()}</td>
+      <td>PKR ${advance.toLocaleString()}</td>
+      <td><strong style="color:${remaining > 0 ? '#c0392b' : 'var(--success)'}">PKR ${remaining.toLocaleString()}</strong></td>
+      <td>
+        <div>${new Date(i.createdAt).toLocaleDateString()}</div>
+        <div style="font-size:0.75rem;color:var(--muted)">${new Date(i.createdAt).toLocaleTimeString()}</div>
+      </td>
+      <td style="display:flex;gap:6px;align-items:center;">
+        <a href="${i.pdfUrl}" target="_blank" class="btn btn-outline btn-sm" title="View / Download PDF" style="display:flex;align-items:center;justify-content:center;padding:6px 10px;"><i class="fa-solid fa-download"></i></a>
+        <button class="btn btn-gold btn-sm" onclick="emailInvoice('${i.id}')" title="Send Email" style="display:flex;align-items:center;justify-content:center;padding:6px 10px;"><i class="fa-solid fa-envelope"></i></button>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
 }
 
 async function emailInvoice(id) {
