@@ -230,9 +230,6 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.fillColor(C_GOLD).fontSize(9).font('Helvetica-Bold');
     doc.text(`Thank you for shopping with ${company.name}!`, 0, 795, { align: 'center', width: 600 });
     doc.fillColor('#dddddd').fontSize(8).font('Helvetica');
-    const fWeb = company.website || 'velorrajewelry.store';
-    const fEmail = company.email || 'velorrajewelry@gmail.com';
-    const fPhone = company.phone || '+92 331 4978295';
     doc.text(`${fWeb}   |   ${fEmail}   |   ${fPhone}`, 0, 810, { align: 'center', width: 600 });
 
     doc.end();
