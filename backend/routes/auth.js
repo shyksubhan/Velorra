@@ -232,12 +232,16 @@ router.patch('/change-password', requireAuth, async (req, res) => {
         : currentPassword === process.env.ADMIN_PASSWORD;
       if (!match) return res.status(401).json({ error: 'Current password is incorrect.' });
 
-      const newHash = await bcrypt.hash(newPassword, 12);
+      const previousHash = adminUser.passwordHash; /* in case we need to roll back */
       adminUser.passwordHash = newHash;
       adminUser.tokenVersion = (adminUser.tokenVersion || 0) + 1; /* invalidate all existing sessions */
       process.env.ADMIN_PASSWORD = newPassword;
 
-      /* ── Persist to Firestore so the change survives server restarts/redeploys ── */
+      /* ── Persist to Firestore so the change survives server restarts/redeploys ──
+         IMPORTANT: if this write fails, we must NOT tell the user it succeeded —
+         otherwise the new password only lives in RAM and silently reverts to the
+         old one the next time Render sleeps/restarts/redeploys. */
+      let firestorePersisted = false;
       if (isFirebaseAvailable()) {
         try {
           await getDB().collection('adminUsers').doc('super-admin-1').set({
@@ -252,14 +256,29 @@ router.patch('/change-password', requireAuth, async (req, res) => {
             tokenVersion: adminUser.tokenVersion,
             updatedAt:    new Date().toISOString(),
           }, { merge: true });
+          firestorePersisted = true;
         } catch (err) {
           console.error('Failed to persist super admin password to Firestore:', err.message);
+          /* Roll back so login + Firestore stay consistent instead of silently
+             drifting apart until the next restart wipes the in-memory change. */
+          adminUser.passwordHash = previousHash;
+          adminUser.tokenVersion = (adminUser.tokenVersion || 1) - 1;
+          process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD; /* unchanged baseline */
+          return res.status(500).json({
+            error: 'Password was NOT saved — Firestore write failed: ' + err.message +
+              '. Nothing has changed; please check server logs and try again.',
+          });
         }
       }
 
       /* Issue a fresh token for THIS session so the user changing the password isn't logged out too */
       const freshToken = signToken({ uid: 'super-admin-1', isAdmin: true, role: 'super_admin', tokenVersion: adminUser.tokenVersion });
-      return res.json({ message: 'Password changed successfully. You have been logged out of all other devices.', token: freshToken });
+      return res.json({
+        message: firestorePersisted
+          ? 'Password changed successfully. You have been logged out of all other devices.'
+          : 'Password changed for this session only — Firebase is not connected, so it will NOT survive a server restart.',
+        token: freshToken,
+      });
     }
 
     if (isFirebaseAvailable()) {
