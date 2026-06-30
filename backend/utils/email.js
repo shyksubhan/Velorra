@@ -7,7 +7,7 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM = 'Velorra Jewelry <onboarding@resend.dev>';
+const FROM = 'Velorra Jewelry <orders@velorrajewelry.store>';
 const TO   = process.env.EMAIL_TO;
 
 /* ── Order Confirmation Email (to customer) ── */
@@ -171,150 +171,6 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
   return results;
 }
 
-/* ── Send Invoice Email ── */
-async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath, liveOrder }) {
-  const resend = getResend();
-  if (!resend) return console.log('Resend missing. Simulated email to:', to);
-
-  const fs = require('fs');
-  const path = require('path');
-  
-  let attachments = [];
-  if (pdfPath && fs.existsSync(pdfPath)) {
-    const pdfData = fs.readFileSync(pdfPath);
-    attachments = [
-      {
-        filename: `${invoiceRef}.pdf`,
-        content: pdfData
-      }
-    ];
-  }
-
-  const store = require('./store');
-  const company = store.settings?.company || { 
-    name: 'Velorra Jewelry', 
-    website: 'velorrajewelry.store', 
-    email: 'velorrajewelry@gmail.com',
-    phone: '+92 331 4978295',
-    logoUrl: ''
-  };
-
-  let webUrl = company.website || 'https://velorrajewelry.store';
-  if (!webUrl.startsWith('http')) webUrl = 'https://' + webUrl;
-
-  const isCod = true; // For display purposes in this context, or we can pass it if we want. We'll just genericize or assume from the invoiceRef.
-  const logoHtml = company.logoUrl 
-    ? `<img src="${company.logoUrl}" alt="${company.name}" style="max-height: 45px; display: block; margin: 0 auto;">`
-    : `<h1 style="color:#b8883a; font-family: Georgia, serif; font-size: 28px; margin: 0; font-weight: normal; letter-spacing: 2px;">${company.name.toUpperCase()}</h1>`;
-
-  const oStatus = liveOrder?.status || 'Pending';
-  const deliveryStatus = oStatus === 'Pending' ? 'Not Shipped' :
-                         oStatus === 'Processing' ? 'Preparing Shipment' :
-                         oStatus === 'Shipped' ? 'In Transit' :
-                         oStatus === 'Delivered' ? 'Delivered' :
-                         oStatus === 'Cancelled' ? 'Cancelled' : 'Not Shipped';
-                         
-  const advancePaid = Number(liveOrder?.advanceAmount) || 0;
-  let pStatus = 'Unpaid';
-  if (advancePaid > 0) {
-    pStatus = advancePaid >= (liveOrder?.total || 0) ? 'Paid' : 'Partial (Advance)';
-  } else if (liveOrder?.paymentMethod !== 'cod') {
-    pStatus = 'Paid';
-  }
-
-  const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-    .wrapper { width: 100%; max-width: 600px; margin: 0 auto; background-color: #0a0a0a; color: #ffffff; }
-    .header { padding: 40px 20px; text-align: center; border-bottom: 2px solid #b8883a; }
-    .content { padding: 40px 30px; }
-    .title { font-size: 24px; color: #ffffff; margin-top: 0; font-weight: 600; margin-bottom: 10px; }
-    .text { font-size: 14px; color: #cccccc; line-height: 1.6; margin-bottom: 30px; }
-    
-    .order-box { background-color: #1a1a1a; border: 1px solid #333333; padding: 25px; border-radius: 4px; margin-bottom: 30px; }
-    .order-row { display: table; width: 100%; margin-bottom: 15px; }
-    .order-row:last-child { margin-bottom: 0; }
-    .order-col { display: table-cell; width: 50%; vertical-align: top; }
-    .label { font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
-    .value { font-size: 14px; color: #ffffff; font-weight: 500; display: block; }
-    .value-gold { color: #b8883a; }
-    
-    .btn-container { text-align: center; margin: 30px 0; }
-    .btn-primary { display: inline-block; padding: 14px 30px; background-color: transparent; color: #b8883a; text-decoration: none; border: 1px solid #b8883a; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-radius: 2px; }
-    
-    .footer { padding: 30px; text-align: center; border-top: 1px solid #333333; }
-    .footer-links { font-size: 12px; color: #888888; margin-bottom: 20px; }
-    .footer-links a { color: #888888; text-decoration: none; margin: 0 10px; }
-    .copyright { font-size: 11px; color: #555555; margin: 0; }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="header">
-      ${logoHtml}
-    </div>
-    
-    <div class="content">
-      <h2 class="title">Your Invoice is Ready!</h2>
-      <div class="text">
-        Dear ${customerName},<br><br>
-        Thank you for shopping with ${company.name}. We've attached your invoice for your recent order.
-      </div>
-      
-      <div class="order-box">
-        <div class="order-row">
-          <div class="order-col">
-            <span class="label">Order Number</span>
-            <span class="value">${invoiceRef}</span>
-          </div>
-          <div class="order-col">
-            <span class="label">Order Status</span>
-            <span class="value value-gold">${oStatus}</span>
-          </div>
-        </div>
-        <div class="order-row" style="margin-top: 20px;">
-          <div class="order-col">
-            <span class="label">Payment Status</span>
-            <span class="value">${pStatus}</span>
-          </div>
-          <div class="order-col">
-            <span class="label">Delivery Status</span>
-            <span class="value">${deliveryStatus}</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="btn-container">
-        <a href="https://velorra-vvp3.onrender.com/api/invoices/${invoiceRef}/download" class="btn-primary" style="background-color:#b8883a;color:#0a0a0a;margin-bottom:10px;display:block;">Download Invoice</a>
-        <a href="${webUrl}" class="btn-primary" style="display:block;">View Store</a>
-      </div>
-    </div>
-    
-    <div class="footer">
-      <div class="footer-links">
-        <a href="${webUrl}">Website</a> | 
-        <a href="mailto:${company.email}">Email</a> | 
-        <a href="tel:${company.phone}">Phone</a>
-      </div>
-      <p class="copyright">&copy; ${new Date().getFullYear()} ${company.name}. All rights reserved.</p>
-    </div>
-  </div>
-</body>
-</html>`;
-
-  await resend.emails.send({
-    from: FROM,
-    to,
-    subject: `Your Invoice ${invoiceRef} | ${company.name}`,
-    html: htmlContent,
-    attachments
-  });
-}
-
 module.exports = {
   sendOrderConfirmation,
   sendNewOrderNotification,
@@ -322,5 +178,4 @@ module.exports = {
   sendNewsletterWelcome,
   sendReplyEmail,
   sendBulkPromotion,
-  sendInvoiceEmail,
 };
