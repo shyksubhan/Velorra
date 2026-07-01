@@ -777,8 +777,26 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <h1>Products</h1>
       <p id="product-count-label" style="color:var(--muted);font-size:0.8rem;margin-top:2px;"></p>
     </div>
-    <div class="ml-auto">
+    <div class="ml-auto" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
       <input class="search-input" id="product-search" placeholder="Search…" oninput="filterProductsTable()"/>
+      <select class="filter-sel" id="product-category-filter" onchange="filterProductsTable()" title="Filter by category">
+        <option value="">All Categories</option>
+        <option value="scrunchies">Scrunchies</option>
+        <option value="catchers">Catchers</option>
+        <option value="hair-bands">Hair Bands</option>
+        <option value="pins">Pins</option>
+        <option value="ponies">Ponies</option>
+        <option value="fancy">Fancy Accessories</option>
+        <option value="bracelets">Bracelets</option>
+        <option value="rings">Rings</option>
+        <option value="earrings">Earrings</option>
+        <option value="necklace">Necklace</option>
+        <option value="gift-items">Gift Items</option>
+      </select>
+      <select class="filter-sel" id="product-sort-order" onchange="filterProductsTable()" title="Sort by time added">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+      </select>
       <button class="btn btn-outline" onclick="exportProductsExcel()" title="Export to Excel"><i class="fa-solid fa-file-excel"></i> Export</button>
       <button class="btn btn-gold" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add Product</button>
     </div>
@@ -2795,42 +2813,228 @@ function viewInvoicesForOrder(orderId) {
 /* ═══════════════════ PRODUCTS ═══════════════════ */
 function exportProductsExcel() {
   if (!allProducts.length) { toast('No products to export.', 'error'); return; }
+  if (!window.XLSX) { toast('XLSX library not available', 'error'); return; }
 
-  const rows = [
-    ['#', 'Product Name', 'Category', 'Cost Price (PKR)', 'Sale Price (PKR)', 'Profit (PKR)', 'Profit %', 'Stock']
-  ];
+  /* ── Respect current filter & sort ── */
+  const q    = document.getElementById('product-search')?.value.toLowerCase() || '';
+  const cat  = document.getElementById('product-category-filter')?.value || '';
+  const sort = document.getElementById('product-sort-order')?.value || 'newest';
 
-  allProducts.forEach((p, i) => {
+  let products = allProducts.filter(p => {
+    const matchSearch = !q || p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
+    const matchCat    = !cat || p.category === cat;
+    return matchSearch && matchCat;
+  });
+  products = [...products].sort((a, b) => {
+    const ta = a.createdAt?.seconds ?? a.createdAt?._seconds ?? (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
+    const tb = b.createdAt?.seconds ?? b.createdAt?._seconds ?? (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
+    return sort === 'oldest' ? ta - tb : tb - ta;
+  });
+
+  const wb = XLSX.utils.book_new();
+
+  /* ────────────────────────────────────────────────
+     SHEET 1 — All Products (or filtered view)
+  ──────────────────────────────────────────────── */
+  const headers = ['#', 'Product Name', 'Category', 'Sub-Category', 'Cost Price (PKR)', 'Sale Price (PKR)', 'Profit (PKR)', 'Profit %', 'Stock Status', 'Date Added'];
+  const dataRows = products.map((p, i) => {
     const cost   = p.purchasePrice != null ? Number(p.purchasePrice) : null;
     const sale   = p.price         != null ? Number(p.price)         : null;
     const profit = (cost != null && sale != null) ? sale - cost : null;
-    const pct    = (cost != null && sale != null && cost > 0) ? ((profit / cost) * 100).toFixed(1) + '%' : '—';
-    rows.push([
+    const pct    = (cost != null && sale != null && cost > 0) ? parseFloat(((profit / cost) * 100).toFixed(1)) : null;
+    let dateAdded = '';
+    if (p.createdAt) {
+      const ts = p.createdAt.seconds ?? p.createdAt._seconds;
+      const d  = ts ? new Date(ts * 1000) : new Date(p.createdAt);
+      if (!isNaN(d)) dateAdded = d.toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' });
+    }
+    return [
       i + 1,
       p.name || '',
-      [p.category, p.subcategory].filter(Boolean).join(' › '),
-      cost  != null ? cost  : '—',
-      sale  != null ? sale  : '—',
-      profit != null ? profit : '—',
-      pct,
+      p.category || '',
+      p.subcategory || '',
+      cost   != null ? cost   : '',
+      sale   != null ? sale   : '',
+      profit != null ? profit : '',
+      pct    != null ? pct    : '',
       p.inStock ? 'In Stock' : 'Out of Stock',
-    ]);
+      dateAdded,
+    ];
   });
 
-  /* Build CSV (opens in Excel perfectly) */
-  const csvContent = rows.map(row =>
-    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-  ).join('\n');
+  const wsData = [headers, ...dataRows];
+  const ws1 = XLSX.utils.aoa_to_sheet(wsData);
 
-  const BOM = '\uFEFF'; /* UTF-8 BOM so Excel shows Urdu/special chars correctly */
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `Velorra_Products_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('Excel file downloaded!', 'success');
+  /* Column widths */
+  ws1['!cols'] = [
+    { wch: 5  },  /* # */
+    { wch: 32 },  /* Product Name */
+    { wch: 18 },  /* Category */
+    { wch: 16 },  /* Sub-Category */
+    { wch: 18 },  /* Cost Price */
+    { wch: 18 },  /* Sale Price */
+    { wch: 16 },  /* Profit */
+    { wch: 10 },  /* Profit % */
+    { wch: 14 },  /* Stock */
+    { wch: 15 },  /* Date Added */
+  ];
+
+  /* Freeze top row */
+  ws1['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+  /* Header styling — gold background, white bold text */
+  const headerStyle = {
+    font:      { bold: true, color: { rgb: 'FFFFFF' }, sz: 11, name: 'Calibri' },
+    fill:      { fgColor: { rgb: 'B8860B' } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border:    { bottom: { style: 'medium', color: { rgb: '8B6508' } } },
+  };
+
+  /* Alternate row colors */
+  const rowEven = { fgColor: { rgb: 'FFF8E7' } };  /* pale gold */
+  const rowOdd  = { fgColor: { rgb: 'FFFFFF' } };  /* white */
+  const inStockStyle  = { font: { color: { rgb: '1A7A3C' }, bold: true }, fill: { fgColor: { rgb: 'D4EDDA' } } };
+  const outStockStyle = { font: { color: { rgb: '8B1A1A' }, bold: true }, fill: { fgColor: { rgb: 'F8D7DA' } } };
+  const numberStyle   = { alignment: { horizontal: 'right' }, numFmt: '#,##0' };
+  const pctStyle      = { alignment: { horizontal: 'right' }, numFmt: '0.0"%"' };
+
+  /* Apply header styles */
+  const colLetters = ['A','B','C','D','E','F','G','H','I','J'];
+  colLetters.forEach(col => {
+    const cell = ws1[col + '1'];
+    if (cell) cell.s = headerStyle;
+  });
+
+  /* Apply data row styles */
+  dataRows.forEach((row, ri) => {
+    const r = ri + 2; /* 1-indexed, skip header */
+    const isEven = ri % 2 === 0;
+    const baseFill = isEven ? rowEven : rowOdd;
+
+    colLetters.forEach((col, ci) => {
+      const addr = col + r;
+      if (!ws1[addr]) return;
+      const cell = ws1[addr];
+
+      /* Base style */
+      cell.s = {
+        fill:      { fgColor: baseFill.fgColor },
+        font:      { name: 'Calibri', sz: 10 },
+        alignment: { vertical: 'center' },
+        border:    {
+          bottom: { style: 'thin', color: { rgb: 'E8D5A3' } },
+          right:  { style: 'thin', color: { rgb: 'E8D5A3' } },
+        },
+      };
+
+      /* Stock status coloring */
+      if (ci === 8) {
+        const isIn = cell.v === 'In Stock';
+        cell.s = { ...cell.s, ...(isIn ? inStockStyle : outStockStyle), alignment: { horizontal: 'center', vertical: 'center' } };
+      }
+      /* Number columns */
+      if (ci >= 4 && ci <= 6 && cell.v !== '') {
+        cell.s = { ...cell.s, ...numberStyle };
+        cell.t = 'n';
+      }
+      /* Profit % */
+      if (ci === 7 && cell.v !== '') {
+        cell.s = { ...cell.s, ...pctStyle };
+        cell.t = 'n';
+      }
+      /* Center # */
+      if (ci === 0) cell.s.alignment = { horizontal: 'center', vertical: 'center' };
+    });
+  });
+
+  /* Row height for header */
+  ws1['!rows'] = [{ hpt: 28 }];
+
+  XLSX.utils.book_append_sheet(wb, ws1, cat ? `${cat.charAt(0).toUpperCase()+cat.slice(1)}` : 'All Products');
+
+  /* ────────────────────────────────────────────────
+     SHEET 2 — One sheet per category
+  ──────────────────────────────────────────────── */
+  const categories = [
+    { key: 'scrunchies',  label: 'Scrunchies',        color: 'C0392B' },
+    { key: 'catchers',    label: 'Catchers',           color: '8E44AD' },
+    { key: 'hair-bands',  label: 'Hair Bands',         color: '2980B9' },
+    { key: 'pins',        label: 'Pins',               color: '27AE60' },
+    { key: 'ponies',      label: 'Ponies',             color: 'D35400' },
+    { key: 'fancy',       label: 'Fancy Accessories',  color: 'E91E8C' },
+    { key: 'bracelets',   label: 'Bracelets',          color: '16A085' },
+    { key: 'rings',       label: 'Rings',              color: 'C0392B' },
+    { key: 'earrings',    label: 'Earrings',           color: '8E44AD' },
+    { key: 'necklace',    label: 'Necklace',           color: '2471A3' },
+    { key: 'gift-items',  label: 'Gift Items',         color: '1E8449' },
+  ];
+
+  categories.forEach(({ key, label, color }) => {
+    const catProducts = allProducts.filter(p => p.category === key);
+    if (!catProducts.length) return;
+
+    const catRows = catProducts.map((p, i) => {
+      const cost   = p.purchasePrice != null ? Number(p.purchasePrice) : null;
+      const sale   = p.price         != null ? Number(p.price)         : null;
+      const profit = (cost != null && sale != null) ? sale - cost : null;
+      const pct    = (cost != null && sale != null && cost > 0) ? parseFloat(((profit / cost) * 100).toFixed(1)) : null;
+      let dateAdded = '';
+      if (p.createdAt) {
+        const ts = p.createdAt.seconds ?? p.createdAt._seconds;
+        const d  = ts ? new Date(ts * 1000) : new Date(p.createdAt);
+        if (!isNaN(d)) dateAdded = d.toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' });
+      }
+      return [i+1, p.name||'', p.subcategory||'', cost??'', sale??'', profit??'', pct??'', p.inStock?'In Stock':'Out of Stock', dateAdded];
+    });
+
+    const catHeaders = ['#', 'Product Name', 'Sub-Category', 'Cost Price (PKR)', 'Sale Price (PKR)', 'Profit (PKR)', 'Profit %', 'Stock Status', 'Date Added'];
+    const wsC = XLSX.utils.aoa_to_sheet([catHeaders, ...catRows]);
+    wsC['!cols'] = [{ wch:5 },{ wch:32 },{ wch:16 },{ wch:18 },{ wch:18 },{ wch:16 },{ wch:10 },{ wch:14 },{ wch:15 }];
+    wsC['!rows'] = [{ hpt: 26 }];
+    wsC['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+    const catHeaderStyle = {
+      font:      { bold: true, color: { rgb: 'FFFFFF' }, sz: 11, name: 'Calibri' },
+      fill:      { fgColor: { rgb: color } },
+      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      border:    { bottom: { style: 'medium', color: { rgb: '000000' } } },
+    };
+    ['A','B','C','D','E','F','G','H','I'].forEach(col => {
+      const cell = wsC[col + '1'];
+      if (cell) cell.s = catHeaderStyle;
+    });
+
+    catRows.forEach((row, ri) => {
+      const r = ri + 2;
+      const isEven = ri % 2 === 0;
+      ['A','B','C','D','E','F','G','H','I'].forEach((col, ci) => {
+        const addr = col + r;
+        if (!wsC[addr]) return;
+        const cell = wsC[addr];
+        cell.s = {
+          fill:      { fgColor: { rgb: isEven ? 'F5F5F5' : 'FFFFFF' } },
+          font:      { name: 'Calibri', sz: 10 },
+          alignment: { vertical: 'center' },
+          border:    { bottom: { style: 'thin', color: { rgb: 'DDDDDD' } }, right: { style: 'thin', color: { rgb: 'DDDDDD' } } },
+        };
+        if (ci === 7) {
+          const isIn = cell.v === 'In Stock';
+          cell.s = { ...cell.s, font: { color: { rgb: isIn ? '1A7A3C' : '8B1A1A' }, bold: true, sz:10, name:'Calibri' }, fill: { fgColor: { rgb: isIn ? 'D4EDDA' : 'F8D7DA' } }, alignment: { horizontal:'center', vertical:'center' } };
+        }
+        if (ci >= 3 && ci <= 5 && cell.v !== '') { cell.t = 'n'; cell.s.alignment = { horizontal:'right', vertical:'center' }; }
+        if (ci === 6 && cell.v !== '') { cell.t = 'n'; cell.s.alignment = { horizontal:'right', vertical:'center' }; }
+        if (ci === 0) cell.s.alignment = { horizontal:'center', vertical:'center' };
+      });
+    });
+
+    /* Sheet name max 31 chars */
+    const sheetName = label.slice(0, 31);
+    XLSX.utils.book_append_sheet(wb, wsC, sheetName);
+  });
+
+  const dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Velorra_Products_${dateStr}.xlsx`);
+  toast('Beautiful Excel file downloaded! ✓', 'success');
 }
 
 async function loadProducts() {
@@ -2845,8 +3049,24 @@ async function loadProducts() {
 }
 
 function filterProductsTable() {
-  const q = document.getElementById('product-search').value.toLowerCase();
-  renderProducts(allProducts.filter(p => p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q)));
+  const q   = document.getElementById('product-search').value.toLowerCase();
+  const cat = document.getElementById('product-category-filter')?.value || '';
+  const sort = document.getElementById('product-sort-order')?.value || 'newest';
+
+  let filtered = allProducts.filter(p => {
+    const matchSearch = !q || p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
+    const matchCat    = !cat || p.category === cat;
+    return matchSearch && matchCat;
+  });
+
+  /* Sort by createdAt timestamp — fall back to array index if missing */
+  filtered = [...filtered].sort((a, b) => {
+    const ta = a.createdAt?.seconds ?? a.createdAt?._seconds ?? (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
+    const tb = b.createdAt?.seconds ?? b.createdAt?._seconds ?? (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
+    return sort === 'oldest' ? ta - tb : tb - ta;
+  });
+
+  renderProducts(filtered);
 }
 
 function renderProducts(products) {
