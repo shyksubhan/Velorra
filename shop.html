@@ -55,7 +55,7 @@
     <div class="filter-bar">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="scrunchies">Scrunchies</button>
-      <button class="filter-btn" data-filter="catchers">Catchers</button>
+      <button class="filter-btn" data-filter="catchers">Hair Clips</button>
       <button class="filter-btn" data-filter="hair-bands">Hair Bands</button>
       <button class="filter-btn" data-filter="pins">Pins</button>
       <button class="filter-btn" data-filter="ponies">Ponies</button>
@@ -104,7 +104,7 @@
         <h4>Shop</h4>
         <ul>
           <li><a href="shop?cat=scrunchies">Scrunchies</a></li>
-          <li><a href="shop?cat=catchers">Catchers</a></li>
+          <li><a href="shop?cat=catchers">Hair Clips</a></li>
           <li><a href="shop?cat=hair-bands">Hair Bands</a></li>
           <li><a href="shop?cat=pins">Pins</a></li>
           <li><a href="shop?cat=ponies">Ponies</a></li>
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
     if (heading) {
-      const labels = { scrunchies:'Scrunchies', catchers:'Catchers', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
+      const labels = { scrunchies:'Scrunchies', catchers:'Hair Clips', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
       if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
     }
   }
