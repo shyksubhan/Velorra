@@ -773,9 +773,13 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <!-- ── PRODUCTS ── -->
 <div id="page-products" class="page" style="display:none">
   <div class="page-header">
-    <h1>Products</h1>
+    <div>
+      <h1>Products</h1>
+      <p id="product-count-label" style="color:var(--muted);font-size:0.8rem;margin-top:2px;"></p>
+    </div>
     <div class="ml-auto">
       <input class="search-input" id="product-search" placeholder="Search…" oninput="filterProductsTable()"/>
+      <button class="btn btn-outline" onclick="exportProductsExcel()" title="Export to Excel"><i class="fa-solid fa-file-excel"></i> Export</button>
       <button class="btn btn-gold" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add Product</button>
     </div>
   </div>
@@ -2789,6 +2793,46 @@ function viewInvoicesForOrder(orderId) {
 }
 
 /* ═══════════════════ PRODUCTS ═══════════════════ */
+function exportProductsExcel() {
+  if (!allProducts.length) { toast('No products to export.', 'error'); return; }
+
+  const rows = [
+    ['#', 'Product Name', 'Category', 'Cost Price (PKR)', 'Sale Price (PKR)', 'Profit (PKR)', 'Profit %', 'Stock']
+  ];
+
+  allProducts.forEach((p, i) => {
+    const cost   = p.purchasePrice != null ? Number(p.purchasePrice) : null;
+    const sale   = p.price         != null ? Number(p.price)         : null;
+    const profit = (cost != null && sale != null) ? sale - cost : null;
+    const pct    = (cost != null && sale != null && cost > 0) ? ((profit / cost) * 100).toFixed(1) + '%' : '—';
+    rows.push([
+      i + 1,
+      p.name || '',
+      [p.category, p.subcategory].filter(Boolean).join(' › '),
+      cost  != null ? cost  : '—',
+      sale  != null ? sale  : '—',
+      profit != null ? profit : '—',
+      pct,
+      p.inStock ? 'In Stock' : 'Out of Stock',
+    ]);
+  });
+
+  /* Build CSV (opens in Excel perfectly) */
+  const csvContent = rows.map(row =>
+    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+
+  const BOM = '\uFEFF'; /* UTF-8 BOM so Excel shows Urdu/special chars correctly */
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `Velorra_Products_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Excel file downloaded!', 'success');
+}
+
 async function loadProducts() {
   const tbody = document.getElementById('products-body');
   tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
@@ -2807,6 +2851,11 @@ function filterProductsTable() {
 
 function renderProducts(products) {
   const wrap = document.getElementById('products-body');
+  /* Update count label */
+  const total = allProducts.length;
+  const showing = products.length;
+  const label = document.getElementById('product-count-label');
+  if (label) label.textContent = showing === total ? `${total} product${total !== 1 ? 's' : ''}` : `Showing ${showing} of ${total} products`;
   if (!products.length) { wrap.innerHTML = `<div class="empty-state"><i class="fa-solid fa-tags"></i><p>No products found</p></div>`; return; }
   wrap.innerHTML = products.map(p => {
     const img   = p.images && p.images.length ? p.images[0] : null;
