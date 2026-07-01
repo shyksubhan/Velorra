@@ -197,6 +197,21 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 @keyframes spin{to{transform:rotate(360deg);}}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.4);}}
 
+/* ── Product Admin Cards Grid ── */
+.product-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:4px 0;}
+.pac{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s;position:relative;}
+.pac:hover{box-shadow:0 6px 24px rgba(0,0,0,.15);transform:translateY(-2px);}
+.pac-img{height:180px;background:var(--card2);overflow:hidden;flex-shrink:0;}
+.pac-featured{position:absolute;top:10px;left:10px;background:var(--gold);color:#1a1a1a;font-size:0.62rem;font-weight:700;letter-spacing:0.08em;padding:3px 8px;border-radius:20px;}
+.pac-body{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1;}
+.pac-name{font-weight:700;font-size:0.9rem;color:var(--text);line-height:1.3;}
+.pac-cat{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.pac-price{font-size:0.95rem;color:var(--gold);font-weight:700;display:flex;align-items:center;gap:8px;}
+.pac-price s{color:var(--muted);font-size:0.75rem;font-weight:400;}
+.pac-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pac-actions{display:flex;gap:8px;margin-top:4px;}
+.pac-actions .btn{flex:1;font-size:0.75rem;padding:6px 8px;display:flex;align-items:center;justify-content:center;gap:5px;}
+
 /* ── Responsive — Tablet (<=900px) ── */
 @media(max-width:900px){
   :root{--sidebar:72px;}
@@ -764,10 +779,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <button class="btn btn-gold" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add Product</button>
     </div>
   </div>
-  <div class="table-wrap">
-    <table><thead><tr><th>Icon</th><th>Name</th><th>Category</th><th class="cost-cell">Purchase</th><th>Sale Price</th><th>Stock</th><th>Featured</th><th>Actions</th></tr></thead>
-    <tbody id="products-body"></tbody></table>
-  </div>
+  <div id="products-body" class="product-admin-grid"></div>
 </div>
 
 <!-- ── MESSAGES ── -->
@@ -2794,22 +2806,37 @@ function filterProductsTable() {
 }
 
 function renderProducts(products) {
-  const tbody = document.getElementById('products-body');
-  if (!products.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-tags"></i><p>No products</p></div></td></tr>`; return; }
-  tbody.innerHTML = products.map(p => `
-    <tr>
-      <td style="font-size:1.4rem">${p.emoji || '🛍️'}</td>
-      <td><strong>${p.name}</strong>${p.badge ? ` <span class="badge badge-new">${p.badge}</span>` : ''}</td>
-      <td style="color:var(--muted);text-transform:capitalize">${p.category}</td>
-      <td class="cost-cell">${p.purchasePrice != null ? 'PKR ' + p.purchasePrice.toLocaleString() : '—'}</td>
-      <td>PKR ${(p.price || 0).toLocaleString()}${p.priceOld ? ` <s style="color:var(--muted);font-size:0.78rem">PKR ${p.priceOld.toLocaleString()}</s>` : ''}</td>
-      <td><span class="badge ${p.inStock ? 'badge-delivered' : 'badge-cancelled'}">${p.inStock ? 'In Stock' : 'Out of Stock'}</span></td>
-      <td>${p.featured ? '⭐ Yes' : 'No'}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editProductById('${p.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button>
-      </td>
-    </tr>`).join('');
+  const wrap = document.getElementById('products-body');
+  if (!products.length) { wrap.innerHTML = `<div class="empty-state"><i class="fa-solid fa-tags"></i><p>No products found</p></div>`; return; }
+  wrap.innerHTML = products.map(p => {
+    const img   = p.images && p.images.length ? p.images[0] : null;
+    const media = img
+      ? `<img src="${img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;"/>`
+      : p.video
+        ? `<video src="${p.video}#t=0.1" muted preload="metadata" playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+        : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2.2rem;">${p.emoji || '🛍️'}</div>`;
+    const stockBadge = p.inStock
+      ? `<span class="badge badge-delivered">In Stock</span>`
+      : `<span class="badge badge-cancelled">Out of Stock</span>`;
+    return `
+    <div class="pac">
+      <div class="pac-img">${media}</div>
+      ${p.featured ? '<div class="pac-featured">⭐ Featured</div>' : ''}
+      <div class="pac-body">
+        <div class="pac-name">${p.name}${p.badge ? ` <span class="badge badge-new">${p.badge}</span>` : ''}</div>
+        <div class="pac-cat">${p.category}${p.subcategory ? ' › ' + p.subcategory : ''}</div>
+        <div class="pac-price">PKR ${(p.price||0).toLocaleString()}${p.priceOld ? `<s>PKR ${p.priceOld.toLocaleString()}</s>` : ''}</div>
+        <div class="pac-meta">
+          ${stockBadge}
+          ${p.purchasePrice != null ? `<span style="color:var(--muted);font-size:0.72rem">Cost: PKR ${p.purchasePrice.toLocaleString()}</span>` : ''}
+        </div>
+        <div class="pac-actions">
+          <button class="btn btn-outline btn-sm" onclick="editProductById('${p.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 /* ── Gallery upload state (current product being added/edited) ── */
