@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product — Velorra Jewelry</title>
-  <meta name="description" content="Shop premium fashion at Velorra Jewelry." />
+  <title>Buy Hair Accessories &amp; Jewelry Online Pakistan | Velorra Jewelry</title>
+  <meta name="description" content="Buy trendy hair accessories and jewelry online in Pakistan. Cash on delivery. Fast shipping. Velorra Jewelry — Lahore." />
+  <link rel="canonical" href="https://velorrajewelry.store/product" id="canonical-tag" />
+  <meta property="og:type" content="product" />
+  <meta property="og:site_name" content="Velorra Jewelry" />
+  <meta property="og:title" content="Velorra Jewelry" id="og-title" />
+  <meta property="og:description" content="Buy hair accessories online Pakistan — COD available." id="og-desc" />
+  <meta property="og:image" content="https://velorrajewelry.store/images/logo.svg" id="og-image" />
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
@@ -170,7 +176,44 @@
     return;
   }
 
-  document.title = `${product.name} — Velorra`;
+  document.title = `${product.name} — Buy Online Pakistan | Velorra Jewelry`;
+
+  /* ── Dynamic SEO meta ── */
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content',
+    `Buy ${product.name} online in Pakistan — PKR ${Number(product.price).toLocaleString()}. Cash on delivery. Fast shipping. ${product.description ? product.description.slice(0,80) : 'Trendy hair accessories & jewelry'} — Velorra Jewelry, Lahore.`
+  );
+  const ogTitle = document.getElementById('og-title');
+  if (ogTitle) ogTitle.setAttribute('content', `${product.name} | Velorra Jewelry Pakistan`);
+  const ogDesc = document.getElementById('og-desc');
+  if (ogDesc) ogDesc.setAttribute('content', `Buy ${product.name} — PKR ${Number(product.price).toLocaleString()}. Cash on delivery across Pakistan. Shop now at Velorra Jewelry.`);
+  const ogImg = document.getElementById('og-image');
+  if (ogImg && product.images && product.images[0]) ogImg.setAttribute('content', product.images[0]);
+  const canonical = document.getElementById('canonical-tag');
+  const slug = product.name ? product.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') : product.id;
+  if (canonical) canonical.setAttribute('href', `https://velorrajewelry.store/product?id=${encodeURIComponent(product.id)}&name=${slug}`);
+
+  /* ── Product Schema (Google Rich Results) ── */
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description || `${product.name} — trendy hair accessory from Velorra Jewelry Pakistan`,
+    "brand": { "@type": "Brand", "name": "Velorra Jewelry" },
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "PKR",
+      "price": product.price,
+      "availability": product.inStock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      "seller": { "@type": "Organization", "name": "Velorra Jewelry" },
+      "url": `https://velorrajewelry.store/product?id=${encodeURIComponent(product.id)}`
+    }
+  };
+  if (product.images && product.images[0]) schema.image = product.images[0];
+  const schemaEl = document.createElement('script');
+  schemaEl.type = 'application/ld+json';
+  schemaEl.textContent = JSON.stringify(schema);
+  document.head.appendChild(schemaEl);
 
   const emoji = product.emoji || '🛍️';
   const oldPriceHTML = product.priceOld
