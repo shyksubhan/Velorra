@@ -8,7 +8,7 @@
 
 /* ── Category slug → Display name map ── */
 const VELORRA_CAT_LABELS = {
-  'catchers':    'Hair Clips',
+  'clips':    'Hair Clips',
   'scrunchies':  'Scrunchies',
   'hair-bands':  'Hair Bands',
   'pins':        'Pins',

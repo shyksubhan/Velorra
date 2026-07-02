@@ -405,7 +405,7 @@ app.get('/sitemap.xml', async (req, res) => {
   ];
 
   const categories = [
-    'scrunchies','catchers','hair-bands','pins','ponies','fancy',
+    'scrunchies','clips','hair-bands','pins','ponies','fancy',
     'bracelets','rings','earrings','necklace','gift-items'
   ];
   const catUrls = categories.map(c => ({
