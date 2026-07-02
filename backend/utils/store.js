@@ -69,19 +69,12 @@ const store = {
   /* ── Live Visitor Tracking ── */
   _visitors: new Map(), /* sessionId → { page, lastSeen } */
   VISITOR_TIMEOUT_MS: 35000, /* 35s — frontend pings every 25s */
-  _peakVisitors: 0,   /* all-time peak concurrent visitors */
-  _peakVisitorsAt: null, /* timestamp when peak was hit */
 
   visitorPing(sessionId, page) {
     this._visitors.set(sessionId, { page: page || '/', lastSeen: Date.now() });
     this._pruneVisitors();
     const count = this._visitors.size;
-    /* Update peak if current count is higher */
-    if (count > this._peakVisitors) {
-      this._peakVisitors  = count;
-      this._peakVisitorsAt = new Date().toISOString();
-    }
-    this.emit('visitor_update', { count, visitors: this.visitorList(), peak: this._peakVisitors, peakAt: this._peakVisitorsAt });
+    this.emit('visitor_update', { count, visitors: this.visitorList() });
     return count;
   },
 
@@ -89,7 +82,7 @@ const store = {
     this._visitors.delete(sessionId);
     this._pruneVisitors();
     const count = this._visitors.size;
-    this.emit('visitor_update', { count, visitors: this.visitorList(), peak: this._peakVisitors, peakAt: this._peakVisitorsAt });
+    this.emit('visitor_update', { count, visitors: this.visitorList() });
     return count;
   },
 
@@ -101,7 +94,6 @@ const store = {
   },
 
   visitorCount() { this._pruneVisitors(); return this._visitors.size; },
-  peakVisitors()  { return { count: this._peakVisitors, at: this._peakVisitorsAt }; },
 
   visitorList() {
     this._pruneVisitors();
@@ -201,7 +193,8 @@ const store = {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().slice(0, 10);
-      if (dateStr < launch) break;  /* stop once we go before launch — nothing to show */
+      /* Skip days before launch — but do NOT break, keep going for full 30-day range */
+      if (dateStr < launch) continue;
       out.push(this.dailyStatement(dateStr));
     }
     return out;

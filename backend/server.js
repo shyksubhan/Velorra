@@ -351,8 +351,7 @@ app.get('/api/visitors', (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
   } catch { return res.status(401).json({ error: 'Invalid token' }); }
-  const peak = store.peakVisitors();
-  res.json({ count: store.visitorCount(), visitors: store.visitorList(), peak: peak.count, peakAt: peak.at });
+  res.json({ count: store.visitorCount(), visitors: store.visitorList() });
 });
 
 /* ── Admin dashboard HTML ── serve the file directly to avoid router path issues */
@@ -403,17 +402,33 @@ app.use((err, req, res, next) => {
 });
 
 /* ── Start ── */
-/* ── On startup: load persisted abandoned records from file into memory ── */
-try {
-  const fs   = require('fs');
-  const path = require('path');
-  const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
-  if (fs.existsSync(AB_FILE)) {
-    const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
-    store.abandoned = saved;
-    console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
-  }
-} catch (e) { console.warn('Could not load abandoned.json:', e.message); }
+/* ── On startup: load persisted abandoned records + site launch date from Firestore ── */
+async function startup() {
+  /* 1. Load abandoned records from file */
+  try {
+    const fs   = require('fs');
+    const path = require('path');
+    const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
+    if (fs.existsSync(AB_FILE)) {
+      const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
+      store.abandoned = saved;
+      console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
+    }
+  } catch (e) { console.warn('Could not load abandoned.json:', e.message); }
+
+  /* 2. Load site launch date from Firestore (overrides env / default) */
+  try {
+    if (getDB && getDB()) {
+      const doc = await getDB().collection('settings').doc('global').get();
+      if (doc.exists && doc.data().siteLaunchDate) {
+        store.setSiteLaunchDate(doc.data().siteLaunchDate);
+        console.log(`✅ Site launch date loaded from Firestore: ${store.siteLaunchDate}`);
+      }
+    }
+  } catch (e) { console.warn('Could not load siteLaunchDate from Firestore:', e.message); }
+}
+
+startup().catch(e => console.warn('Startup error:', e.message));
 
 app.listen(PORT, () => {
   console.log('\n╔════════════════════════════════════════════════╗');

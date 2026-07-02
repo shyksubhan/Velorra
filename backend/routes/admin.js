@@ -302,13 +302,39 @@ router.get('/daily-statements/history', requireRole('super_admin'), async (req, 
 
 /* ── GET /api/admin/monthly-statements — Month-by-month statements since launch (super_admin ONLY) ──
    Unlike the 30-day daily history, this always starts from siteLaunchDate,
-   however long ago that was — it is never capped. ── */
+   however long ago that was — it is never capped.
+   Optional ?month=YYYY-MM to fetch a SINGLE month's detailed statement. ── */
 router.get('/monthly-statements', requireRole('super_admin'), async (req, res) => {
   try {
+    /* Single-month detailed view (for per-month export) */
+    if (req.query.month) {
+      const stmt = store.monthlyStatement(req.query.month);
+      return res.json({ statements: [stmt], since: store.siteLaunchDate, single: true });
+    }
     return res.json({ statements: store.monthlyStatementHistory(), since: store.siteLaunchDate });
   } catch (err) {
     console.error('Monthly statements error:', err);
     return res.status(500).json({ error: 'Failed to compute monthly statements.' });
+  }
+});
+
+/* ── GET /api/admin/daily-statements?month=YYYY-MM — All days of a specific month ── */
+router.get('/daily-statements', requireRole('super_admin'), async (req, res) => {
+  try {
+    const { month } = req.query;
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ error: 'month param required (YYYY-MM).' });
+    }
+    const [y, m] = month.split('-').map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const statements = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      statements.push(store.dailyStatement(dateStr));
+    }
+    return res.json({ statements, month });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to compute monthly daily breakdown.' });
   }
 });
 
@@ -320,11 +346,21 @@ router.get('/site-launch-date', requireRole('super_admin'), (req, res) => {
 /* ── PUT /api/admin/site-launch-date — Set/correct the launch date (super_admin ONLY) ──
    All daily/monthly/lifetime statements key off this date, so super_admin
    can set it once to match the real go-live day of the store. ── */
-router.put('/site-launch-date', requireRole('super_admin'), (req, res) => {
+router.put('/site-launch-date', requireRole('super_admin'), async (req, res) => {
   try {
     const { date } = req.body;
     if (!date) return res.status(400).json({ error: 'A date is required.' });
     const saved = store.setSiteLaunchDate(date);
+    /* Persist to Firestore so it survives server restarts */
+    if (isFirebaseAvailable()) {
+      try {
+        await getDB().collection('settings').doc('global').set({ siteLaunchDate: saved }, { merge: true });
+      } catch (e) { console.warn('Could not persist launch date to Firestore:', e.message); }
+    }
+    store.logActivity({
+      staffId: req.user.uid, staffName: req.user.email || 'Unknown',
+      staffRole: req.user.role, action: 'launch_date_updated', details: { date: saved }
+    });
     return res.json({ message: 'Site launch date updated.', siteLaunchDate: saved });
   } catch (err) {
     return res.status(400).json({ error: err.message || 'Invalid date.' });

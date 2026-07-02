@@ -449,10 +449,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="table-header">
       <h3>Monthly Statements <span style="color:var(--muted);font-weight:400;font-size:0.78rem;" id="monthly-since-label">— since launch</span></h3>
       <button class="btn btn-outline" onclick="loadMonthlyStatements()" style="margin-left:auto"><i class="fa-solid fa-rotate"></i> Refresh</button>
-      <button class="btn btn-gold" onclick="exportMonthlyStatementsExcel()"><i class="fa-solid fa-file-excel"></i> Export Monthly Statement</button>
+      <button class="btn btn-gold" onclick="exportMonthlyStatementsExcel()"><i class="fa-solid fa-file-excel"></i> Export All Months</button>
     </div>
-    <table><thead><tr><th>Month</th><th>Items Sold</th><th>Orders</th><th>Revenue</th><th>Cost</th><th>Net Profit</th></tr></thead>
-    <tbody id="monthly-statements-body"><tr><td colspan="6" class="empty-state"><div class="spinner"></div></td></tr></tbody></table>
+    <table><thead><tr><th>Month</th><th>Items Sold</th><th>Orders</th><th>Revenue</th><th>Cost</th><th>Net Profit</th><th>Export</th></tr></thead>
+    <tbody id="monthly-statements-body"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody></table>
   </div>
 </div>
 
@@ -782,7 +782,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <select class="filter-sel" id="product-category-filter" onchange="filterProductsTable()" title="Filter by category">
         <option value="">All Categories</option>
         <option value="scrunchies">Scrunchies</option>
-        <option value="catchers">Hair Clips</option>
+        <option value="catchers">Catchers</option>
         <option value="hair-bands">Hair Bands</option>
         <option value="pins">Pins</option>
         <option value="ponies">Ponies</option>
@@ -957,12 +957,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div class="stat-val" id="v-count" style="color:#22c55e;font-size:2.4rem">0</div>
       <div class="stat-label">Active Right Now</div>
       <div class="stat-sub" style="color:var(--muted)">last 35 seconds</div>
-    </div>
-    <div class="stat-card" style="border:1.5px solid rgba(184,136,58,0.3);background:linear-gradient(135deg,rgba(184,136,58,0.06),transparent)">
-      <div class="stat-icon">🏆</div>
-      <div class="stat-val" id="v-peak" style="color:var(--gold);font-size:2.4rem">0</div>
-      <div class="stat-label">Peak Concurrent Users</div>
-      <div class="stat-sub" id="v-peak-at" style="color:var(--muted);font-size:0.7rem">All-time highest</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">📄</div>
@@ -1197,7 +1191,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <select id="p-category">
             <option value="">Select category</option>
             <option value="scrunchies">Scrunchies</option>
-            <option value="catchers">Hair Clips</option>
+            <option value="catchers">Catchers</option>
             <option value="hair-bands">Hair Bands</option>
             <option value="pins">Pins</option>
             <option value="ponies">Ponies</option>
@@ -1375,21 +1369,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <!-- ════════════════════════════ JAVASCRIPT ═════════════════════ -->
 <script>
 const API = 'https://velorra-vvp3.onrender.com/api';
-
-/* ── Category slug → Display name ── */
-const VELORRA_CAT_LABELS = {
-  'catchers':   'Hair Clips',
-  'scrunchies': 'Scrunchies',
-  'hair-bands': 'Hair Bands',
-  'pins':       'Pins',
-  'ponies':     'Ponies',
-  'fancy':      'Fancy Accessories',
-  'bracelets':  'Bracelets',
-  'rings':      'Rings',
-  'earrings':   'Earrings',
-  'necklace':   'Necklace',
-  'gift-items': 'Gift Items',
-};
 let adminToken  = localStorage.getItem('velorra_admin_token') || null;
 let currentUser = null;
 let notifications = [];
@@ -1664,7 +1643,6 @@ function connectSSE() {
         /* Real-time visitor count update */
         const count = payload.data?.count ?? 0;
         updateVisitorCount(count);
-        if (payload.data?.peak !== undefined) updatePeakVisitors(payload.data.peak, payload.data.peakAt);
         if (document.getElementById('page-visitors').style.display !== 'none') {
           renderVisitors(payload.data?.visitors || []);
         }
@@ -2023,16 +2001,16 @@ async function loadMonthlyStatements() {
   try {
     const res  = await apiFetch('/admin/monthly-statements');
     const data = await res.json();
-    if (!res.ok) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>${data.error || 'Failed to load statements.'}</p></div></td></tr>`; return; }
+    if (!res.ok) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><p>${data.error || 'Failed to load statements.'}</p></div></td></tr>`; return; }
     monthlyStatementsData = data.statements || [];
     document.getElementById('monthly-since-label').textContent = data.since ? `— since ${new Date(data.since).toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })}` : '— since launch';
     renderMonthlyStatements(monthlyStatementsData);
-  } catch { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>Failed to load statements.</p></div></td></tr>`; }
+  } catch { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><p>Failed to load statements.</p></div></td></tr>`; }
 }
 
 function renderMonthlyStatements(statements) {
   const tbody = document.getElementById('monthly-statements-body');
-  if (!statements.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-calendar"></i><p>No statements yet</p></div></td></tr>`; return; }
+  if (!statements.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-calendar"></i><p>No statements yet</p></div></td></tr>`; return; }
   tbody.innerHTML = statements.map(s => {
     const itemsSold = s.lines.reduce((sum, l) => sum + (l.qty || 0), 0);
     const isCurrentMonth = s.month === new Date().toISOString().slice(0,7);
@@ -2046,6 +2024,7 @@ function renderMonthlyStatements(statements) {
       <td>PKR ${s.totals.revenue.toLocaleString()}</td>
       <td>PKR ${s.totals.cost.toLocaleString()}</td>
       <td style="font-weight:700;color:${s.totals.profit > 0 ? 'var(--green)' : 'var(--muted)'}">PKR ${s.totals.profit.toLocaleString()}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="exportSingleMonthExcel('${s.month}','${label}')"><i class="fa-solid fa-file-excel"></i> Export</button></td>
     </tr>`;
   }).join('');
 }
@@ -2101,6 +2080,99 @@ function exportMonthlyStatementsExcel() {
 
     XLSX.writeFile(wb, `VELORRA JEWELRY - Monthly Statement - ${today()}.xlsx`);
     toast('Monthly statement exported ✓', 'success');
+  } catch (err) {
+    toast('Export failed: ' + err.message, 'error');
+  }
+}
+
+/* Export a single month's full statement — summary + all days + itemised sales */
+async function exportSingleMonthExcel(monthStr, monthLabel) {
+  try {
+    toast('Preparing statement…', 'info');
+    const res  = await apiFetch(`/admin/monthly-statements?month=${monthStr}`);
+    const data = await res.json();
+    const stmt = (data.statements || [])[0];
+    if (!stmt) { toast('No data for this month.', 'error'); return; }
+
+    const wb = XLSX.utils.book_new();
+    const [y, m] = monthStr.split('-').map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+
+    /* ── Sheet 1: Day-by-day breakdown ── */
+    const dayMap = {};
+    (stmt.lines || []).forEach(l => {
+      const day = (l.date || '').slice(0, 10);
+      if (!dayMap[day]) dayMap[day] = { revenue: 0, cost: 0, profit: 0, orders: new Set(), items: 0 };
+      dayMap[day].revenue += l.revenue || 0;
+      dayMap[day].cost    += l.cost    || 0;
+      dayMap[day].profit  += l.profit  || 0;
+      dayMap[day].orders.add(l.orderId);
+      dayMap[day].items   += l.qty     || 0;
+    });
+
+    const dayRows = [];
+    let totRev = 0, totCost = 0, totProfit = 0, totOrders = 0, totItems = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dd = dayMap[dateStr];
+      const rev  = dd ? Math.round(dd.revenue) : 0;
+      const cost = dd ? Math.round(dd.cost)    : 0;
+      const prof = dd ? Math.round(dd.profit)  : 0;
+      const ords = dd ? dd.orders.size         : 0;
+      const itms = dd ? dd.items               : 0;
+      totRev += rev; totCost += cost; totProfit += prof; totOrders += ords; totItems += itms;
+      dayRows.push({
+        'Date':             dateStr,
+        'Items Sold':       itms,
+        'Orders':           ords,
+        'Revenue (PKR)':    rev,
+        'Cost (PKR)':       cost,
+        'Net Profit (PKR)': prof,
+      });
+    }
+    dayRows.push({
+      'Date':             `TOTAL — ${monthLabel}`,
+      'Items Sold':       totItems,
+      'Orders':           totOrders,
+      'Revenue (PKR)':    totRev,
+      'Cost (PKR)':       totCost,
+      'Net Profit (PKR)': totProfit,
+    });
+
+    const wsDays = XLSX.utils.json_to_sheet(dayRows);
+    wsDays['!cols'] = [{wch:14},{wch:12},{wch:10},{wch:15},{wch:13},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsDays, 'Daily Breakdown');
+
+    /* ── Sheet 2: Itemised sales ── */
+    const lineRows = (stmt.lines || []).map(l => ({
+      'Date':                  (l.date || '').slice(0,10),
+      'Order Ref':             l.orderId,
+      'Product':               l.product,
+      'Qty':                   l.qty,
+      'Purchase Price (PKR)':  l.purchasePrice ?? '',
+      'Sale Price (PKR)':      l.salePrice,
+      'Revenue (PKR)':         l.revenue,
+      'Cost (PKR)':            l.cost,
+      'Profit (PKR)':          l.profit,
+    }));
+    const wsLines = XLSX.utils.json_to_sheet(lineRows.length ? lineRows : [{ Date:'', Note:'No sales this month' }]);
+    wsLines['!cols'] = [{wch:13},{wch:14},{wch:26},{wch:6},{wch:18},{wch:15},{wch:14},{wch:12},{wch:13}];
+    XLSX.utils.book_append_sheet(wb, wsLines, 'Itemised Sales');
+
+    /* ── Sheet 3: Month summary ── */
+    const wsSummary = XLSX.utils.json_to_sheet([{
+      'Month':              monthLabel,
+      'Total Items Sold':   totItems,
+      'Total Orders':       totOrders,
+      'Total Revenue (PKR)': totRev,
+      'Total Cost (PKR)':   totCost,
+      'Net Profit (PKR)':   totProfit,
+    }]);
+    wsSummary['!cols'] = [{wch:16},{wch:16},{wch:14},{wch:18},{wch:16},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Month Summary');
+
+    XLSX.writeFile(wb, `VELORRA - ${monthLabel} Statement.xlsx`);
+    toast(`${monthLabel} statement exported ✓`, 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
   }
@@ -2979,7 +3051,7 @@ function exportProductsExcel() {
   ──────────────────────────────────────────────── */
   const categories = [
     { key: 'scrunchies',  label: 'Scrunchies',        color: 'C0392B' },
-    { key: 'catchers',    label: 'Hair Clips',           color: '8E44AD' },
+    { key: 'catchers',    label: 'Catchers',           color: '8E44AD' },
     { key: 'hair-bands',  label: 'Hair Bands',         color: '2980B9' },
     { key: 'pins',        label: 'Pins',               color: '27AE60' },
     { key: 'ponies',      label: 'Ponies',             color: 'D35400' },
@@ -3115,7 +3187,7 @@ function renderProducts(products) {
       ${p.featured ? '<div class="pac-featured">⭐ Featured</div>' : ''}
       <div class="pac-body">
         <div class="pac-name">${p.name}${p.badge ? ` <span class="badge badge-new">${p.badge}</span>` : ''}</div>
-        <div class="pac-cat">${VELORRA_CAT_LABELS[p.category] || p.category}${p.subcategory ? ' › ' + p.subcategory : ''}</div>
+        <div class="pac-cat">${p.category}${p.subcategory ? ' › ' + p.subcategory : ''}</div>
         <div class="pac-price">PKR ${(p.price||0).toLocaleString()}${p.priceOld ? `<s>PKR ${p.priceOld.toLocaleString()}</s>` : ''}</div>
         <div class="pac-meta">
           ${stockBadge}
@@ -4210,26 +4282,11 @@ async function loadVisitors() {
     const count = data.count ?? 0;
     const visitors = data.visitors || [];
     updateVisitorCount(count);
-    updatePeakVisitors(data.peak ?? 0, data.peakAt);
     renderVisitors(visitors);
     const lu = document.getElementById('v-last-update');
     if (lu) lu.textContent = new Date().toLocaleTimeString('en-PK');
   } catch (err) {
     console.error('Visitors load error:', err);
-  }
-}
-
-function updatePeakVisitors(peak, peakAt) {
-  const el = document.getElementById('v-peak');
-  const elAt = document.getElementById('v-peak-at');
-  if (el) el.textContent = peak;
-  if (elAt) {
-    if (peakAt) {
-      const d = new Date(peakAt);
-      elAt.textContent = 'Peak on ' + d.toLocaleDateString('en-PK', { day:'numeric', month:'short' }) + ' at ' + d.toLocaleTimeString('en-PK', { hour:'2-digit', minute:'2-digit' });
-    } else {
-      elAt.textContent = 'All-time highest';
-    }
   }
 }
 
