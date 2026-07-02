@@ -181,7 +181,8 @@
 /* -- Auto-filter from URL ?cat= parameter -- */
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
-  const cat    = params.get('cat');
+  let cat    = params.get('cat');
+  if (cat === 'catchers') cat = 'clips';
   if (cat) {
     const btn = document.querySelector(`.filter-btn[data-filter="${cat}"]`);
     if (btn) {
@@ -191,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
     if (heading) {
-      const labels = { scrunchies:'Scrunchies', 'clips':'Hair Clips', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
+      const labels = { scrunchies:'Scrunchies', 'clips':'Hair Clips', 'catchers':'Hair Clips', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
       if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
     }
   }

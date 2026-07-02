@@ -9,6 +9,7 @@
 /* ── Category slug → Display name map ── */
 const VELORRA_CAT_LABELS = {
   'clips':    'Hair Clips',
+  'catchers': 'Hair Clips',
   'scrunchies':  'Scrunchies',
   'hair-bands':  'Hair Bands',
   'pins':        'Pins',
@@ -37,17 +38,20 @@ function velorraProductCardHTML(p) {
   const mainImage = (p.images && p.images.length) ? p.images[0] : null;
   const hasVideo  = !!p.video;
 
+  const cat = p.category === 'catchers' ? 'clips' : p.category;
+  const subcat = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
+
   const mediaHTML = mainImage
     ? `<img src="${mainImage}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"/>`
     : hasVideo
       ? `<video src="${p.video}#t=0.1" muted preload="metadata" playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
       : `<div class="product-img-placeholder">
            <div class="pi-icon">${emoji}</div>
-           <div class="pi-label">${velorCatLabel(p.subcategory || p.category)}</div>
+           <div class="pi-label">${velorCatLabel(subcat || cat)}</div>
          </div>`;
 
   return `
-    <div class="product-card reveal" data-category="${p.category}" data-id="${p.id}">
+    <div class="product-card reveal" data-category="${cat}" data-id="${p.id}">
       <a href="product?id=${encodeURIComponent(p.id)}&name=${p.name ? p.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') : ''}">
         <div class="product-img-wrap">
           ${badge}
@@ -55,7 +59,7 @@ function velorraProductCardHTML(p) {
         </div>
       </a>
       <div class="product-info">
-        <p class="product-category">${velorCatLabel(p.subcategory || p.category)}</p>
+        <p class="product-category">${velorCatLabel(subcat || cat)}</p>
         <h3 class="product-name">${p.name}</h3>
         <div class="product-pricing">
           <span class="product-price">PKR ${Number(p.price).toLocaleString()}</span>

@@ -302,7 +302,7 @@ const DOMAIN = 'https://velorrajewelry.store';
         ${galleryThumbsHTML}
       </div>
       <div>
-        <p class="pd-breadcrumb"><a href="shop">Shop</a> / <a href="shop?cat=${product.category}">${product.subcategory || product.category}</a> / ${product.name}</p>
+        <p class="pd-breadcrumb"><a href="shop">Shop</a> / <a href="shop?cat=${product.category === 'catchers' ? 'clips' : product.category}">${velorCatLabel(product.subcategory || product.category)}</a> / ${product.name}</p>
         <h1 class="pd-title">${product.name}</h1>
         <div class="pd-price">PKR ${Number(product.price).toLocaleString()}${oldPriceHTML}</div>
         ${stockHTML}
