@@ -147,6 +147,10 @@
    Product Detail Page — loads the product matching ?id= from
    the backend and renders the detail layout dynamically.
    ============================================================ */
+
+/* Site domain for JSON-LD structured data / OG meta tags */
+const DOMAIN = 'https://velorrajewelry.store';
+
 (async function () {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -236,8 +240,8 @@
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home",  "item": "${DOMAIN}/" },
-      { "@type": "ListItem", "position": 2, "name": "Shop",  "item": "${DOMAIN}/shop" },
+      { "@type": "ListItem", "position": 1, "name": "Home",  "item": `${DOMAIN}/` },
+      { "@type": "ListItem", "position": 2, "name": "Shop",  "item": `${DOMAIN}/shop` },
       { "@type": "ListItem", "position": 3, "name": product.category, "item": `${DOMAIN}/shop?cat=${product.category}` },
       { "@type": "ListItem", "position": 4, "name": product.name, "item": productUrl }
     ]
