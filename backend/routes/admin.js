@@ -27,6 +27,65 @@ function maskRevenue(payload, role) {
   return rest;
 }
 
+/* ── POST /api/admin/fix-clips-category — ONE-TIME migration (super_admin + admin only) ──
+   Renames any product with category/subcategory "catchers" to "clips".
+   Safe to call more than once — only touches matching products.
+   Remove this route once you've confirmed it worked. ── */
+router.post('/fix-clips-category', requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    if (!isFirebaseAvailable()) {
+      return res.status(503).json({ error: 'Firebase not connected on this server.' });
+    }
+    const db = getDB();
+    const snap = await db.collection('products').get();
+
+    const report = [];
+    const batch = db.batch();
+    let count = 0;
+
+    snap.docs.forEach(doc => {
+      const data = doc.data();
+      const updates = {};
+      if (data.category === 'catchers') updates.category = 'clips';
+      if (data.subcategory === 'catchers') updates.subcategory = 'clips';
+      if (Object.keys(updates).length > 0) {
+        batch.update(doc.ref, updates);
+        count++;
+        report.push({ id: doc.id, name: data.name || null, updates });
+      }
+    });
+
+    if (count > 0) await batch.commit();
+
+    return res.json({ message: `Updated ${count} product(s).`, updated: report });
+  } catch (err) {
+    console.error('fix-clips-category error:', err);
+    return res.status(500).json({ error: 'Migration failed: ' + err.message });
+  }
+});
+
+/* ── GET /api/admin/list-categories — diagnostic (super_admin + admin only) ──
+   Lists every product's category/subcategory so you can see the exact
+   values stored in Firestore. ── */
+router.get('/list-categories', requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    if (!isFirebaseAvailable()) {
+      return res.status(503).json({ error: 'Firebase not connected on this server.' });
+    }
+    const db = getDB();
+    const snap = await db.collection('products').get();
+    const products = snap.docs.map(d => ({
+      id: d.id,
+      name: d.data().name || null,
+      category: d.data().category,
+      subcategory: d.data().subcategory || null,
+    }));
+    return res.json({ total: products.length, products });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed: ' + err.message });
+  }
+});
+
 /* ── GET /api/admin/stats — REAL stats from shared store (super_admin + admin only) ── */
 router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
