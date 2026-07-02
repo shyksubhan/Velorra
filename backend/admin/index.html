@@ -958,6 +958,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div class="stat-label">Active Right Now</div>
       <div class="stat-sub" style="color:var(--muted)">last 35 seconds</div>
     </div>
+    <div class="stat-card" style="border:1.5px solid rgba(184,136,58,0.3);background:linear-gradient(135deg,rgba(184,136,58,0.06),transparent)">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-val" id="v-peak" style="color:var(--gold);font-size:2.4rem">0</div>
+      <div class="stat-label">Peak Concurrent Users</div>
+      <div class="stat-sub" id="v-peak-at" style="color:var(--muted);font-size:0.7rem">All-time highest</div>
+    </div>
     <div class="stat-card">
       <div class="stat-icon">📄</div>
       <div class="stat-val" id="v-pages-count" style="font-size:2rem">—</div>
@@ -1369,6 +1375,21 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <!-- ════════════════════════════ JAVASCRIPT ═════════════════════ -->
 <script>
 const API = 'https://velorra-vvp3.onrender.com/api';
+
+/* ── Category slug → Display name ── */
+const VELORRA_CAT_LABELS = {
+  'catchers':   'Hair Clips',
+  'scrunchies': 'Scrunchies',
+  'hair-bands': 'Hair Bands',
+  'pins':       'Pins',
+  'ponies':     'Ponies',
+  'fancy':      'Fancy Accessories',
+  'bracelets':  'Bracelets',
+  'rings':      'Rings',
+  'earrings':   'Earrings',
+  'necklace':   'Necklace',
+  'gift-items': 'Gift Items',
+};
 let adminToken  = localStorage.getItem('velorra_admin_token') || null;
 let currentUser = null;
 let notifications = [];
@@ -1643,6 +1664,7 @@ function connectSSE() {
         /* Real-time visitor count update */
         const count = payload.data?.count ?? 0;
         updateVisitorCount(count);
+        if (payload.data?.peak !== undefined) updatePeakVisitors(payload.data.peak, payload.data.peakAt);
         if (document.getElementById('page-visitors').style.display !== 'none') {
           renderVisitors(payload.data?.visitors || []);
         }
@@ -3093,7 +3115,7 @@ function renderProducts(products) {
       ${p.featured ? '<div class="pac-featured">⭐ Featured</div>' : ''}
       <div class="pac-body">
         <div class="pac-name">${p.name}${p.badge ? ` <span class="badge badge-new">${p.badge}</span>` : ''}</div>
-        <div class="pac-cat">${p.category}${p.subcategory ? ' › ' + p.subcategory : ''}</div>
+        <div class="pac-cat">${VELORRA_CAT_LABELS[p.category] || p.category}${p.subcategory ? ' › ' + p.subcategory : ''}</div>
         <div class="pac-price">PKR ${(p.price||0).toLocaleString()}${p.priceOld ? `<s>PKR ${p.priceOld.toLocaleString()}</s>` : ''}</div>
         <div class="pac-meta">
           ${stockBadge}
@@ -4188,11 +4210,26 @@ async function loadVisitors() {
     const count = data.count ?? 0;
     const visitors = data.visitors || [];
     updateVisitorCount(count);
+    updatePeakVisitors(data.peak ?? 0, data.peakAt);
     renderVisitors(visitors);
     const lu = document.getElementById('v-last-update');
     if (lu) lu.textContent = new Date().toLocaleTimeString('en-PK');
   } catch (err) {
     console.error('Visitors load error:', err);
+  }
+}
+
+function updatePeakVisitors(peak, peakAt) {
+  const el = document.getElementById('v-peak');
+  const elAt = document.getElementById('v-peak-at');
+  if (el) el.textContent = peak;
+  if (elAt) {
+    if (peakAt) {
+      const d = new Date(peakAt);
+      elAt.textContent = 'Peak on ' + d.toLocaleDateString('en-PK', { day:'numeric', month:'short' }) + ' at ' + d.toLocaleTimeString('en-PK', { hour:'2-digit', minute:'2-digit' });
+    } else {
+      elAt.textContent = 'All-time highest';
+    }
   }
 }
 

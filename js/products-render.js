@@ -6,6 +6,25 @@
    that admin add/edit/delete actions actually show up live.
    ============================================================ */
 
+/* ── Category slug → Display name map ── */
+const VELORRA_CAT_LABELS = {
+  'catchers':    'Hair Clips',
+  'scrunchies':  'Scrunchies',
+  'hair-bands':  'Hair Bands',
+  'pins':        'Pins',
+  'ponies':      'Ponies',
+  'fancy':       'Fancy Accessories',
+  'bracelets':   'Bracelets',
+  'rings':       'Rings',
+  'earrings':    'Earrings',
+  'necklace':    'Necklace',
+  'gift-items':  'Gift Items',
+};
+function velorCatLabel(cat) {
+  if (!cat) return '';
+  return VELORRA_CAT_LABELS[cat.toLowerCase()] || cat;
+}
+
 /* ── Build the HTML for a single product card ── */
 function velorraProductCardHTML(p) {
   const badge = p.badge ? `<span class="product-badge${p.badge === 'New' ? ' new' : ''}">${p.badge}</span>` : '';
@@ -24,7 +43,7 @@ function velorraProductCardHTML(p) {
       ? `<video src="${p.video}#t=0.1" muted preload="metadata" playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
       : `<div class="product-img-placeholder">
            <div class="pi-icon">${emoji}</div>
-           <div class="pi-label">${p.subcategory || p.category}</div>
+           <div class="pi-label">${velorCatLabel(p.subcategory || p.category)}</div>
          </div>`;
 
   return `
@@ -36,7 +55,7 @@ function velorraProductCardHTML(p) {
         </div>
       </a>
       <div class="product-info">
-        <p class="product-category">${p.subcategory || p.category}</p>
+        <p class="product-category">${velorCatLabel(p.subcategory || p.category)}</p>
         <h3 class="product-name">${p.name}</h3>
         <div class="product-pricing">
           <span class="product-price">PKR ${Number(p.price).toLocaleString()}</span>

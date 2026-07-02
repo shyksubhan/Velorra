@@ -351,7 +351,8 @@ app.get('/api/visitors', (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded.isAdmin) return res.status(403).json({ error: 'Forbidden' });
   } catch { return res.status(401).json({ error: 'Invalid token' }); }
-  res.json({ count: store.visitorCount(), visitors: store.visitorList() });
+  const peak = store.peakVisitors();
+  res.json({ count: store.visitorCount(), visitors: store.visitorList(), peak: peak.count, peakAt: peak.at });
 });
 
 /* ── Admin dashboard HTML ── serve the file directly to avoid router path issues */
