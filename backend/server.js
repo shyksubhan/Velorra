@@ -389,6 +389,64 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+
+/* ── GET /sitemap.xml — Dynamic sitemap including all live products ── */
+app.get('/sitemap.xml', async (req, res) => {
+  const { getDB } = require('./utils/firebase');
+  const today = new Date().toISOString().slice(0, 10);
+
+  const staticUrls = [
+    { loc: 'https://velorrajewelry.store/',         priority: '1.0', changefreq: 'weekly'  },
+    { loc: 'https://velorrajewelry.store/shop',     priority: '0.9', changefreq: 'daily'   },
+    { loc: 'https://velorrajewelry.store/about',    priority: '0.7', changefreq: 'monthly' },
+    { loc: 'https://velorrajewelry.store/contact',  priority: '0.6', changefreq: 'monthly' },
+    { loc: 'https://velorrajewelry.store/policy',   priority: '0.5', changefreq: 'monthly' },
+    { loc: 'https://velorrajewelry.store/reseller', priority: '0.6', changefreq: 'monthly' },
+  ];
+
+  const categories = [
+    'scrunchies','catchers','hair-bands','pins','ponies','fancy',
+    'bracelets','rings','earrings','necklace','gift-items'
+  ];
+  const catUrls = categories.map(c => ({
+    loc: `https://velorrajewelry.store/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
+  }));
+
+  /* Fetch live products from Firestore */
+  let productUrls = [];
+  try {
+    let db;
+    try { db = getDB(); } catch(_) {}
+    if (db) {
+      const snap = await db.collection('products').where('inStock', '==', true).get();
+      productUrls = snap.docs.map(d => ({
+        loc: `https://velorrajewelry.store/product?id=${d.id}`,
+        priority: '0.8',
+        changefreq: 'weekly',
+        lastmod: d.data().updatedAt ? new Date(d.data().updatedAt).toISOString().slice(0,10) : today
+      }));
+    }
+  } catch(e) { console.warn('Sitemap: could not fetch products', e.message); }
+
+  const allUrls = [...staticUrls, ...catUrls, ...productUrls];
+
+  const urlTags = allUrls.map(u => `  <url>
+    <loc>${u.loc}</loc>
+    <lastmod>${u.lastmod || today}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlTags}
+</urlset>`;
+
+  res.setHeader('Content-Type', 'application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.send(xml);
+});
+
 /* ── Catch-all ── */
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'API endpoint not found.' });
@@ -402,33 +460,17 @@ app.use((err, req, res, next) => {
 });
 
 /* ── Start ── */
-/* ── On startup: load persisted abandoned records + site launch date from Firestore ── */
-async function startup() {
-  /* 1. Load abandoned records from file */
-  try {
-    const fs   = require('fs');
-    const path = require('path');
-    const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
-    if (fs.existsSync(AB_FILE)) {
-      const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
-      store.abandoned = saved;
-      console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
-    }
-  } catch (e) { console.warn('Could not load abandoned.json:', e.message); }
-
-  /* 2. Load site launch date from Firestore (overrides env / default) */
-  try {
-    if (getDB && getDB()) {
-      const doc = await getDB().collection('settings').doc('global').get();
-      if (doc.exists && doc.data().siteLaunchDate) {
-        store.setSiteLaunchDate(doc.data().siteLaunchDate);
-        console.log(`✅ Site launch date loaded from Firestore: ${store.siteLaunchDate}`);
-      }
-    }
-  } catch (e) { console.warn('Could not load siteLaunchDate from Firestore:', e.message); }
-}
-
-startup().catch(e => console.warn('Startup error:', e.message));
+/* ── On startup: load persisted abandoned records from file into memory ── */
+try {
+  const fs   = require('fs');
+  const path = require('path');
+  const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
+  if (fs.existsSync(AB_FILE)) {
+    const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
+    store.abandoned = saved;
+    console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
+  }
+} catch (e) { console.warn('Could not load abandoned.json:', e.message); }
 
 app.listen(PORT, () => {
   console.log('\n╔════════════════════════════════════════════════╗');

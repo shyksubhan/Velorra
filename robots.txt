@@ -1,7 +1,20 @@
 User-agent: *
 Allow: /
-Disallow: /admin
+
+# Block admin panel from all bots
 Disallow: /admin/
 Disallow: /api/
+Disallow: /backend/
 
+# Block checkout and account pages (no SEO value)
+Disallow: /checkout
+Disallow: /account
+
+# Block query strings on shop (avoid duplicate content)
+Disallow: /shop?*
+
+# Allow shop category pages specifically
+Allow: /shop?cat=
+
+# Sitemap location
 Sitemap: https://velorrajewelry.store/sitemap.xml
