@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product — Velorra Jewelry</title>
-  <meta name="description" content="Shop premium fashion at Velorra Jewelry." />
+  <title>Product — Velorra Jewelry | Hair Accessories & Jewelry Pakistan</title>
+  <meta name="description" content="Shop premium hair accessories and jewelry at Velorra Jewelry Pakistan. Cash on Delivery available. Scrunchies, clips, pins, necklaces, earrings & more." />
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
@@ -147,10 +147,6 @@
    Product Detail Page — loads the product matching ?id= from
    the backend and renders the detail layout dynamically.
    ============================================================ */
-
-/* Site domain for JSON-LD structured data / OG meta tags */
-const DOMAIN = 'https://velorrajewelry.store';
-
 (async function () {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -240,8 +236,8 @@ const DOMAIN = 'https://velorrajewelry.store';
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home",  "item": `${DOMAIN}/` },
-      { "@type": "ListItem", "position": 2, "name": "Shop",  "item": `${DOMAIN}/shop` },
+      { "@type": "ListItem", "position": 1, "name": "Home",  "item": "${DOMAIN}/" },
+      { "@type": "ListItem", "position": 2, "name": "Shop",  "item": "${DOMAIN}/shop" },
       { "@type": "ListItem", "position": 3, "name": product.category, "item": `${DOMAIN}/shop?cat=${product.category}` },
       { "@type": "ListItem", "position": 4, "name": product.name, "item": productUrl }
     ]
@@ -302,7 +298,7 @@ const DOMAIN = 'https://velorrajewelry.store';
         ${galleryThumbsHTML}
       </div>
       <div>
-        <p class="pd-breadcrumb"><a href="shop">Shop</a> / <a href="shop?cat=${product.category === 'catchers' ? 'clips' : product.category}">${velorCatLabel(product.subcategory || product.category)}</a> / ${product.name}</p>
+        <p class="pd-breadcrumb"><a href="shop">Shop</a> / <a href="shop?cat=${product.category}">${product.subcategory || product.category}</a> / ${product.name}</p>
         <h1 class="pd-title">${product.name}</h1>
         <div class="pd-price">PKR ${Number(product.price).toLocaleString()}${oldPriceHTML}</div>
         ${stockHTML}
