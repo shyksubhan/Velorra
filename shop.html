@@ -59,8 +59,11 @@
 <!-- Page Hero -->
 <div class="page-hero">
   <div class="container">
-    <p class="section-label">The Full Edit</p>
-    <h1>Hair Accessories &amp; Jewelry <em>Collections</em> — Shop Online Pakistan</h1>
+    <p class="section-label">Premium Collections</p>
+    <h1>Hair Accessories <em style="color: var(--gold);">&amp;</em> Jewelry</h1>
+    <p style="max-width: 600px; margin: 16px auto 0; font-size: 1.1rem; color: var(--muted); line-height: 1.6; font-family: 'Inter', sans-serif;">
+      Discover Pakistan's finest online selection of premium scrunchies, elegant clips, and beautifully crafted jewelry pieces for every occasion.
+    </p>
   </div>
 </div>
 
@@ -203,7 +206,8 @@
 /* -- Auto-filter from URL ?cat= parameter -- */
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
-  const cat    = params.get('cat');
+  let cat    = params.get('cat');
+  if (cat === 'catchers') cat = 'clips';
   if (cat) {
     const btn = document.querySelector(`.filter-btn[data-filter="${cat}"]`);
     if (btn) {
@@ -213,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
     if (heading) {
-      const labels = { scrunchies:'Scrunchies', clips:'Hair Clips', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
+      const labels = { scrunchies:'Scrunchies', clips:'Hair Clips', catchers:'Hair Clips', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
       if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
     }
   }
