@@ -122,9 +122,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
       const cat = btn.dataset.filter;
       document.querySelectorAll('.product-card').forEach(card => {
-        const show = cat === 'all' || card.dataset.category === cat;
+        // if dataset.category is a comma-separated list or single string
+        let show = false;
+        if (cat === 'all') {
+          show = true;
+        } else if (cat === 'sale' && card.querySelector('.product-price-old')) {
+          show = true;
+        } else {
+          show = card.dataset.category === cat;
+        }
         card.style.display = show ? '' : 'none';
       });
+      if (typeof window.updateShopHero === 'function') {
+        window.updateShopHero(cat);
+      }
     });
   });
 
