@@ -10,14 +10,14 @@
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="https://velorrajewelry.store/shop" />
   <meta property="og:title"       content="Shop Hair Accessories & Jewelry — Velorra | Pakistan" />
-  <meta property="og:description" content="Browse 200+ hair accessories & jewelry pieces online in Pakistan. Scrunchies, pins, catchers, necklaces, earrings, rings, bracelets & more. COD available — Velorra Jewelry." />
+  <meta property="og:description" content="Browse 200+ hair accessories & jewelry pieces online in Pakistan. Scrunchies, pins, hair clips, necklaces, earrings, rings, bracelets & more. COD available — Velorra Jewelry." />
   <meta property="og:image"       content="https://velorrajewelry.store/images/categories/necklace.jpg" />
   <meta property="og:site_name"   content="Velorra Jewelry" />
   <meta property="og:locale"      content="en_PK" />
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Shop Hair Accessories & Jewelry — Velorra | Pakistan" />
-  <meta name="twitter:description" content="Browse 200+ hair accessories & jewelry pieces online in Pakistan. Scrunchies, pins, catchers, necklaces, earrings, rings, bracelets & more. COD available — Velorra Jewelry." />
+  <meta name="twitter:description" content="Browse 200+ hair accessories & jewelry pieces online in Pakistan. Scrunchies, pins, hair clips, necklaces, earrings, rings, bracelets & more. COD available — Velorra Jewelry." />
   <meta name="twitter:image"       content="https://velorrajewelry.store/images/categories/necklace.jpg" />
   <title>Shop Hair Accessories & Jewelry — Velorra | Pakistan</title>
 <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
@@ -66,11 +66,16 @@
 
 <section style="padding:60px 0 100px;">
   <div class="container">
+    <!-- SEO intro — crawlable by Googlebot -->
+    <p style="text-align:center;color:#9a8070;font-size:0.85rem;max-width:640px;margin:0 auto 32px;line-height:1.7;">
+      Discover Velorra Jewelry's complete collection — scrunchies, hair clips, hair bands, pins, ponies,
+      bracelets, rings, earrings, necklaces &amp; gift items. Shop online with Cash on Delivery across Pakistan.
+    </p>
     <!-- Filter Bar -->
     <div class="filter-bar">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="scrunchies">Scrunchies</button>
-      <button class="filter-btn" data-filter="catchers">Catchers</button>
+      <button class="filter-btn" data-filter="clips">Hair Clips</button>
       <button class="filter-btn" data-filter="hair-bands">Hair Bands</button>
       <button class="filter-btn" data-filter="pins">Pins</button>
       <button class="filter-btn" data-filter="ponies">Ponies</button>
@@ -83,6 +88,23 @@
       <button class="filter-btn" data-filter="sale">Sale</button>
     </div>
     <div class="products-grid" id="shop-products-grid">
+      <!-- Static SEO content visible to Googlebot (noscript) -->
+      <noscript><div style="grid-column:1/-1;padding:20px 0;font-family:sans-serif;line-height:1.8;">
+        <p>Shop Velorra Jewelry — Pakistan's finest hair accessories &amp; jewelry with Cash on Delivery.</p>
+        <ul>
+          <li>Scrunchies — silk &amp; satin scrunchies Pakistan</li>
+          <li>Hair Clips — stylish clips for women Pakistan</li>
+          <li>Hair Bands — elegant hair bands online Pakistan</li>
+          <li>Pins — decorative hair pins Pakistan</li>
+          <li>Ponies — ponytail holders online Pakistan</li>
+          <li>Fancy Accessories — bridal &amp; party hair accessories</li>
+          <li>Bracelets — gold &amp; silver bracelets Pakistan</li>
+          <li>Rings — fashion rings for women online Pakistan</li>
+          <li>Earrings — statement earrings Pakistan</li>
+          <li>Necklace — necklaces &amp; pendants online Pakistan</li>
+          <li>Gift Items — jewelry gift sets Pakistan</li>
+        </ul>
+      </div></noscript>
       <p style="grid-column:1/-1;text-align:center;padding:60px 0;opacity:0.5;">Loading products…</p>
     </div>
   </div>
@@ -119,7 +141,7 @@
         <h4>Shop</h4>
         <ul>
           <li><a href="shop?cat=scrunchies">Scrunchies</a></li>
-          <li><a href="shop?cat=catchers">Catchers</a></li>
+          <li><a href="shop?cat=clips">Hair Clips</a></li>
           <li><a href="shop?cat=hair-bands">Hair Bands</a></li>
           <li><a href="shop?cat=pins">Pins</a></li>
           <li><a href="shop?cat=ponies">Ponies</a></li>
@@ -191,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const heading = document.querySelector('.shop-header h1, .page-hero h1, section h1');
     if (heading) {
-      const labels = { scrunchies:'Scrunchies', catchers:'Catchers', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
+      const labels = { scrunchies:'Scrunchies', clips:'Hair Clips', 'hair-bands':'Hair Bands', pins:'Pins', ponies:'Ponies', fancy:'Fancy Accessories', bracelets:'Bracelets', rings:'Rings', earrings:'Earrings', necklace:'Necklace', 'gift-items':'Gift Items', sale:'Sale' };
       if (labels[cat]) heading.innerHTML = labels[cat] + '<em> Collection</em>';
     }
   }
