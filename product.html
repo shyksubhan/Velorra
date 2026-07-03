@@ -192,6 +192,7 @@
   if (twImg && product.images && product.images[0]) twImg.setAttribute('content', product.images[0]);
 
   /* ── JSON-LD Product Schema ── */
+  const DOMAIN = window.location.origin;
   const existingSchema = document.getElementById('product-schema-ld');
   if (existingSchema) existingSchema.remove();
   const schemaEl = document.createElement('script');
