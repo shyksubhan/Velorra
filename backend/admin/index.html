@@ -2335,7 +2335,11 @@ async function openSocialOrderModal() {
     try {
       const res  = await apiFetch('/products');
       const data = await res.json();
-      allProducts = data.products || [];
+      allProducts = (data.products || []).map(p => {
+        if (p.category === 'catchers') p.category = 'clips';
+        if (p.subcategory === 'catchers') p.subcategory = 'clips';
+        return p;
+      });
     } catch { /* search box will just show "no products found" until retried */ }
   }
   recalcSocialTotal();
@@ -3137,7 +3141,11 @@ async function loadProducts() {
   try {
     const res  = await apiFetch('/products');
     const data = await res.json();
-    allProducts = data.products || [];
+    allProducts = (data.products || []).map(p => {
+      if (p.category === 'catchers') p.category = 'clips';
+      if (p.subcategory === 'catchers') p.subcategory = 'clips';
+      return p;
+    });
     renderProducts(allProducts);
   } catch { toast('Failed to load products', 'error'); }
 }
