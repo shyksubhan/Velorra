@@ -13,7 +13,9 @@ function isFirebaseAvailable() {
 }
 
 function makeSlug(name) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  // Take first 5 words only for a clean short URL
+  const words = name.trim().split(/\s+/).slice(0, 5).join(' ');
+  return words.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
 async function seedFirestore(db) {
