@@ -418,13 +418,19 @@ app.get('/sitemap.xml', async (req, res) => {
     let db;
     try { db = getDB(); } catch(_) {}
     if (db) {
-      const snap = await db.collection('products').where('inStock', '==', true).get();
-      productUrls = snap.docs.map(d => ({
-        loc: `https://velorrajewelry.store/product?id=${d.id}`,
-        priority: '0.8',
-        changefreq: 'weekly',
-        lastmod: d.data().updatedAt ? new Date(d.data().updatedAt).toISOString().slice(0,10) : today
-      }));
+      const snap = await db.collection('products').get();
+      productUrls = snap.docs.map(d => {
+        const data = d.data();
+        const name = data.name || '';
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const id   = slug || d.id;
+        return {
+          loc: `https://velorrajewelry.store/product?id=${encodeURIComponent(id)}&name=${encodeURIComponent(id)}`,
+          priority: '0.7',
+          changefreq: 'weekly',
+          lastmod: data.createdAt ? new Date(data.createdAt).toISOString().slice(0,10) : today
+        };
+      }).filter(u => u.loc.includes('id=') && u.loc.length > 50);
     }
   } catch(e) { console.warn('Sitemap: could not fetch products', e.message); }
 
