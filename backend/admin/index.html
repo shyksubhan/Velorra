@@ -115,7 +115,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .dash-filter-btn:hover{border-color:var(--gold);color:var(--text);}
 .dash-filter-btn.active{background:var(--gold);color:#fff;border-color:var(--gold);}
 /* ── Social order items builder ── */
-.soc-item-row{display:grid;grid-template-columns:2.4fr 60px 90px 36px;gap:8px;margin-bottom:8px;align-items:start;}
+.soc-item-row{display:grid;grid-template-columns:2.2fr 55px 75px 75px 90px 36px;gap:8px;margin-bottom:8px;align-items:center;}
 .soc-item-row input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:0.82rem;outline:none;width:100%;}
 .soc-item-row input:focus{border-color:var(--gold);}
 .soc-item-row input:disabled{color:var(--muted);cursor:not-allowed;}
@@ -720,10 +720,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <span>Order Items *</span>
           <button type="button" class="btn btn-outline btn-sm" onclick="addSocialItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
         </label>
-        <div style="display:grid;grid-template-columns:2.4fr 60px 90px 36px;gap:8px;margin-bottom:6px;">
+        <div style="display:grid;grid-template-columns:2.2fr 55px 75px 75px 90px 36px;gap:8px;margin-bottom:6px;">
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Product</span>
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Qty</span>
-          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Price</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Cost</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Sale</span>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Total</span>
           <span></span>
         </div>
         <div id="soc-items-container"></div>
@@ -2358,15 +2360,16 @@ function addSocialItem() {
   row.innerHTML = `
     <div class="soc-product-search-wrap">
       <input type="hidden" id="si-pid-${idx}" value=""/>
-      <input type="hidden" id="si-cost-${idx}" value="0"/>
       <input placeholder="Search product…" id="si-search-${idx}"
              oninput="handleSocItemSearch(${idx})"
              onfocus="handleSocItemSearch(${idx})"
              autocomplete="off"/>
       <div class="soc-product-dropdown" id="si-dropdown-${idx}" style="display:none"></div>
     </div>
-    <input type="number" placeholder="1" min="1" id="si-qty-${idx}" value="1" oninput="recalcSocialTotal()"/>
-    <div class="soc-price-display" id="si-price-display-${idx}">PKR 0</div>
+    <input type="number" placeholder="Qty" min="0.01" step="any" id="si-qty-${idx}" value="1" oninput="recalcSocialTotal()" title="Quantity"/>
+    <input type="number" placeholder="Cost" id="si-cost-${idx}" value="0" oninput="recalcSocialTotal()" title="Unit Purchase Price"/>
+    <input type="number" placeholder="Sale" id="si-price-${idx}" value="0" oninput="recalcSocialTotal()" title="Unit Sale Price"/>
+    <div class="soc-price-display" id="si-row-total-${idx}">PKR 0</div>
     <button class="soc-item-remove" onclick="removeSocialItem(${idx})" title="Remove">✕</button>
   `;
   document.getElementById('soc-items-container').appendChild(row);
@@ -2386,7 +2389,8 @@ function handleSocItemSearch(idx) {
   if (!q) {
     document.getElementById(`si-pid-${idx}`).value = '';
     document.getElementById(`si-cost-${idx}`).value = '0';
-    document.getElementById(`si-price-display-${idx}`).textContent = 'PKR 0';
+    document.getElementById(`si-price-${idx}`).value = '0';
+    document.getElementById(`si-row-total-${idx}`).textContent = 'PKR 0';
     recalcSocialTotal();
   }
 
@@ -2415,7 +2419,8 @@ function selectSocProduct(idx, matchIdx) {
   document.getElementById(`si-search-${idx}`).value = product.name;
   document.getElementById(`si-pid-${idx}`).value     = product.id || '';
   document.getElementById(`si-cost-${idx}`).value    = product.purchasePrice != null ? product.purchasePrice : 0;
-  document.getElementById(`si-price-display-${idx}`).textContent = 'PKR ' + (product.price || 0).toLocaleString();
+  document.getElementById(`si-price-${idx}`).value   = product.price || 0;
+  document.getElementById(`si-row-total-${idx}`).textContent = 'PKR ' + (product.price || 0).toLocaleString();
   document.getElementById(`si-dropdown-${idx}`).style.display = 'none';
   recalcSocialTotal();
 }
@@ -2495,8 +2500,9 @@ function _socCurrentSubtotal() {
   document.querySelectorAll('#soc-items-container .soc-item-row').forEach(row => {
     const rowId   = row.id.replace('soc-item-row-', '');
     const qty     = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 0;
-    const priceEl = document.getElementById(`si-price-display-${rowId}`);
-    const price   = priceEl ? Number(priceEl.textContent.replace(/[^\d.]/g, '')) || 0 : 0;
+    const price   = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
+    const rowTotalEl = document.getElementById(`si-row-total-${rowId}`);
+    if (rowTotalEl) rowTotalEl.textContent = 'PKR ' + (qty * price).toLocaleString();
     subtotal += qty * price;
   });
   return subtotal;
@@ -2551,8 +2557,7 @@ async function saveSocialOrder() {
     const name    = (document.getElementById(`si-search-${rowId}`)?.value || '').trim();
     const pid     = document.getElementById(`si-pid-${rowId}`)?.value || '';
     const qty     = Number(document.getElementById(`si-qty-${rowId}`)?.value) || 1;
-    const priceEl = document.getElementById(`si-price-display-${rowId}`);
-    const price   = priceEl ? Number(priceEl.textContent.replace(/[^\d.]/g, '')) || 0 : 0;
+    const price   = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
     const purchasePrice = Number(document.getElementById(`si-cost-${rowId}`)?.value) || 0;
     if (!name) return; /* empty row, ignore */
     if (!pid) { hasUnselectedRow = true; return; } /* typed but never picked from the list */
