@@ -741,12 +741,20 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <p id="soc-coupon-msg" style="font-size:0.78rem;margin-top:6px;display:none"></p>
       </div>
 
+      <!-- Advance Payment -->
+      <div class="form-group">
+        <label>Advance Paid (PKR) <span style="color:var(--muted)">(optional)</span></label>
+        <input type="number" id="soc-advance-paid" placeholder="0" min="0" oninput="recalcSocialTotal()" />
+      </div>
+
       <!-- Auto-calculated totals -->
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Subtotal</span><span id="soc-subtotal">PKR 0</span></div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px" id="soc-discount-row"><span style="color:var(--muted)">Discount</span><span id="soc-discount-display" style="color:var(--green)">− PKR 0</span></div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Delivery Fee</span><span id="soc-delivery-display" style="color:var(--orange)">PKR 200</span></div>
         <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;border-top:1px solid var(--border);padding-top:8px;margin-top:2px"><span>Total</span><span id="soc-total-display" style="color:var(--gold)">PKR 200</span></div>
+        <div style="display:none;justify-content:space-between;margin-top:6px" id="soc-advance-row"><span style="color:var(--muted)">Advance Paid</span><span id="soc-advance-display" style="color:var(--green)">− PKR 0</span></div>
+        <div style="display:none;justify-content:space-between;font-weight:700;font-size:1rem;margin-top:6px" id="soc-due-row"><span>Amount Due</span><span id="soc-due-display" style="color:var(--red)">PKR 200</span></div>
         <p id="soc-delivery-note" style="font-size:0.72rem;color:var(--muted);margin-top:6px">COD: Free delivery for orders PKR 5,000+, otherwise PKR 200.</p>
       </div>
 
@@ -2521,6 +2529,8 @@ function recalcSocialTotal() {
     discount = Math.min(discount, subtotal);
   }
   const total = Math.max(0, subtotal - discount) + delFee;
+  const advance = Number(document.getElementById('soc-advance-paid')?.value) || 0;
+  const due = Math.max(0, total - advance);
 
   document.getElementById('soc-subtotal').textContent       = 'PKR ' + subtotal.toLocaleString();
   const discountRow = document.getElementById('soc-discount-row');
@@ -2528,6 +2538,14 @@ function recalcSocialTotal() {
   document.getElementById('soc-discount-display').textContent = '− PKR ' + discount.toLocaleString();
   document.getElementById('soc-delivery-display').textContent = 'PKR ' + delFee.toLocaleString();
   document.getElementById('soc-total-display').textContent  = 'PKR ' + total.toLocaleString();
+
+  const advanceRow = document.getElementById('soc-advance-row');
+  if (advanceRow) advanceRow.style.display = advance > 0 ? 'flex' : 'none';
+  const dueRow = document.getElementById('soc-due-row');
+  if (dueRow) dueRow.style.display = advance > 0 ? 'flex' : 'none';
+
+  if (document.getElementById('soc-advance-display')) document.getElementById('soc-advance-display').textContent = '− PKR ' + advance.toLocaleString();
+  if (document.getElementById('soc-due-display')) document.getElementById('soc-due-display').textContent = 'PKR ' + due.toLocaleString();
 
   const noteEl = document.getElementById('soc-delivery-note');
   if (noteEl) {
@@ -2543,6 +2561,7 @@ async function saveSocialOrder() {
   const city         = document.getElementById('soc-city').value.trim();
   const source       = document.getElementById('soc-source').value;
   const paymentMethod= document.getElementById('soc-payment').value;
+  const advancePaid  = Number(document.getElementById('soc-advance-paid')?.value) || 0;
   const status       = document.getElementById('soc-status').value;
   const notes        = document.getElementById('soc-notes').value.trim();
   const couponCode   = _socAppliedCoupon?.code || null;

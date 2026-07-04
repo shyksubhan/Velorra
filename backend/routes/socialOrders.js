@@ -30,6 +30,7 @@ router.post('/', requireAdmin, async (req, res) => {
       status,
       notes,
       couponCode,
+      advanceAmount,
     } = req.body;
 
     /* ── Validation ── */
@@ -91,6 +92,7 @@ router.post('/', requireAdmin, async (req, res) => {
       coupon:        couponMeta,
       deliveryFee,
       total,
+      advanceAmount: Number(advanceAmount) || 0,
       paymentMethod: payMethod,
       status:        STATUSES.includes(status) ? status : 'Pending',
       createdAt:     new Date().toISOString(),
