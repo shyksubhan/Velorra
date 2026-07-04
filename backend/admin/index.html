@@ -344,6 +344,9 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="nav-item" onclick="showPage('invoices')" id="nav-invoices">
       <i class="fa-solid fa-file-invoice"></i><span>Invoices</span>
     </div>
+    <div class="nav-item" onclick="showPage('spendings')" id="nav-spendings">
+      <i class="fa-solid fa-money-bill-transfer"></i><span>Spendings</span>
+    </div>
     <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
       <i class="fa-solid fa-gear"></i><span>Settings</span>
     </div>
@@ -405,6 +408,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
     <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="s-profit">—</div><div class="stat-label">Today's Profit</div><div class="stat-sub" id="s-profit-sub"></div></div>
     <div class="stat-card"><div class="stat-icon">💹</div><div class="stat-val" id="s-total-profit">—</div><div class="stat-label">Total Profit</div><div class="stat-sub" style="color:var(--muted);font-size:0.65rem">all time</div></div>
+    <div class="stat-card" id="card-spendings" style="display:none"><div class="stat-icon">💸</div><div class="stat-val" id="s-spendings" style="color:#ef4444">—</div><div class="stat-label">Total Spendings</div></div>
     <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-val" id="s-products">—</div><div class="stat-label">Products</div></div>
     <div class="stat-card"><div class="stat-icon">📧</div><div class="stat-val" id="s-subscribers">—</div><div class="stat-label">Subscribers</div></div>
     <div class="stat-card"><div class="stat-icon">✉️</div><div class="stat-val" id="s-msgs">—</div><div class="stat-label">Unread Messages</div></div>
@@ -1116,13 +1120,16 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <button class="btn btn-gold" onclick="saveCompanySettings()" style="margin-top:12px">Save Company Settings</button>
   </div>
 
-  <div class="settings-section">
-    <h3><i class="fa-solid fa-key" style="color:var(--gold);margin-right:8px"></i>Change Password</h3>
-    <div id="pw-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
-    <div class="form-group"><label>Current Password</label><input type="password" id="pw-current" placeholder="Your current password"/></div>
-    <div class="form-group"><label>New Password</label><input type="password" id="pw-new" placeholder="At least 8 characters"/></div>
-    <div class="form-group"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="Repeat new password"/></div>
-    <button class="btn btn-gold" onclick="changePassword()">Update Password</button>
+  <div class="settings-section" id="my-profile-section">
+    <h3><i class="fa-solid fa-user-pen" style="color:var(--gold);margin-right:8px"></i>My Profile</h3>
+    <div id="profile-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
+    <div class="form-row">
+      <div class="form-group"><label>First Name</label><input type="text" id="prof-fname" placeholder="First Name"/></div>
+      <div class="form-group"><label>Last Name</label><input type="text" id="prof-lname" placeholder="Last Name"/></div>
+    </div>
+    <div class="form-group"><label>Username</label><input type="text" id="prof-username" placeholder="Username"/></div>
+    <div class="form-group"><label>New Password (Optional)</label><input type="password" id="prof-password" placeholder="Leave blank to keep current password"/></div>
+    <button class="btn btn-gold" onclick="updateMyProfile()">Update Profile</button>
   </div>
 
   <div class="settings-section" id="launch-date-section">
@@ -1174,9 +1181,61 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
+<!-- ── SPENDINGS PAGE ── -->
+<div id="page-spendings" class="page" style="display:none; width: 100%;">
+  <div class="page-header">
+    <h1><i class="fa-solid fa-money-bill-transfer" style="color:var(--gold);margin-right:8px"></i>Spendings & Investments</h1>
+    <div class="ml-auto">
+      <button class="btn btn-gold" onclick="openSpendingModal()"><i class="fa-solid fa-plus"></i> Add Spending</button>
+      <button class="btn btn-outline" onclick="loadSpendings()" style="margin-left:8px"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+  </div>
+  <div class="table-wrap" style="width: 100%;">
+    <table style="width: 100%;">
+      <thead>
+        <tr>
+          <th>DATE</th>
+          <th>AMOUNT (PKR)</th>
+          <th>REASON / CATEGORY</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="spendings-body"><tr><td colspan="4" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
 </div><!-- /main -->
 
 <!-- ════════════════════════════ MODALS ════════════════════════ -->
+
+<!-- Add Spending Modal -->
+<div class="modal-overlay" id="spending-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3>Add Spending</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('spending-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Amount (PKR) *</label>
+        <input type="number" id="spending-amount" placeholder="e.g. 5000" />
+      </div>
+      <div class="form-group">
+        <label>Reason / Category *</label>
+        <input type="text" id="spending-reason" placeholder="e.g. Facebook Ads, Packaging, etc." />
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="spending-date" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('spending-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveSpending()">Save Spending</button>
+    </div>
+  </div>
+</div>
 
 <!-- Product Modal -->
 <div class="modal-overlay" id="product-modal">
@@ -1340,6 +1399,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div class="form-group"><label>Password *</label><input type="password" id="r-password" placeholder="Min 8 characters"/></div>
       <div class="form-group"><label>Role *</label>
         <select id="r-role">
+          <option value="super_admin">Super Admin — Full access to everything, including finance and deleting other roles</option>
           <option value="admin">Admin — Sees all data &amp; can modify, except earnings &amp; Excel exports</option>
           <option value="supervisor">Support Staff — Messages, orders (view + status + reply), and review approvals only</option>
         </select>
@@ -1496,6 +1556,8 @@ function applyRolePermissions(role) {
   /* Super Admin — sees everything */
   if (role === 'super_admin') {
     document.getElementById('activity-btn').style.display = 'inline-flex';
+    document.getElementById('nav-spendings').style.display = 'flex';
+    document.getElementById('card-spendings').style.display = 'flex';
     return;
   }
   /* Hide Add User button for non-super admins */
@@ -1741,6 +1803,12 @@ function showPage(name) {
   if (name === 'resellers')   loadResellers();
   if (name === 'reviews')     loadReviews();
   if (name === 'roles')     loadRoles();
+  if (name === 'settings') {
+    document.getElementById('prof-fname').value = currentUser.fname || '';
+    document.getElementById('prof-lname').value = currentUser.lname || '';
+    document.getElementById('prof-username').value = currentUser.username || '';
+  }
+  if (name === 'spendings') loadSpendings();
   if (name === 'settings')  loadSystemInfo();
   if (name === 'visitors')  loadVisitors();
   if (name === 'abandoned')     loadAbandoned();
@@ -1796,6 +1864,12 @@ function renderDashStats(data) {
   if (todayProfit !== undefined) {
     document.getElementById('s-profit').textContent     = 'PKR ' + todayProfit.toLocaleString();
     document.getElementById('s-profit-sub').textContent = todayProfit > 0 ? 'profit booked today' : 'no profit yet today';
+  }
+
+  /* Spendings */
+  if (document.getElementById('s-spendings')) {
+    const totalSpendings = data.totalSpendings || 0;
+    document.getElementById('s-spendings').textContent = 'PKR ' + totalSpendings.toLocaleString();
   }
 
   /* Total profit */
@@ -3960,40 +4034,115 @@ async function submitReply() {
   } catch { toast('Reply failed.', 'error'); }
 }
 
-/* ═══════════════════ SETTINGS ═══════════════════ */
-async function changePassword() {
-  const curr = document.getElementById('pw-current').value;
-  const nw   = document.getElementById('pw-new').value;
-  const conf = document.getElementById('pw-confirm').value;
-  const msg  = document.getElementById('pw-msg');
+/* ═══════════════════ SETTINGS / PROFILE ═══════════════════ */
+async function updateMyProfile() {
+  const fname = document.getElementById('prof-fname').value;
+  const lname = document.getElementById('prof-lname').value;
+  const username = document.getElementById('prof-username').value;
+  const nw   = document.getElementById('prof-password').value;
+  const msg  = document.getElementById('profile-msg');
 
   msg.style.display = 'none';
-  if (!curr || !nw) { showPwMsg('Fill in all fields.', 'error'); return; }
-  if (nw !== conf)  { showPwMsg('Passwords do not match.', 'error'); return; }
-  if (nw.length < 8){ showPwMsg('Password must be at least 8 characters.', 'error'); return; }
+  if (!username) { showProfileMsg('Username is required.', 'error'); return; }
+  if (nw && nw.length < 8) { showProfileMsg('Password must be at least 8 characters.', 'error'); return; }
 
-  const res  = await apiFetch('/auth/change-password', { method: 'PATCH', body: JSON.stringify({ currentPassword: curr, newPassword: nw }) });
+  const body = { fname, lname, username };
+  if (nw) body.password = nw;
+
+  const res  = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
   const data = await res.json();
   if (res.ok) {
-    /* Server issues a fresh token tied to the new password version so THIS
-       session stays logged in, while every other open session/device gets
-       logged out on its next request. */
-    if (data.token) {
-      adminToken = data.token;
-      localStorage.setItem('velorra_admin_token', adminToken);
-    }
-    showPwMsg('Password changed successfully! All other devices have been logged out. ✓', 'success');
-    document.getElementById('pw-current').value = document.getElementById('pw-new').value = document.getElementById('pw-confirm').value = '';
-  } else showPwMsg(data.error || 'Failed to change password.', 'error');
+    showProfileMsg('Profile updated successfully!', 'success');
+    currentUser.fname = fname;
+    currentUser.lname = lname;
+    currentUser.username = username;
+    document.getElementById('prof-password').value = '';
+    // update dashboard greeting
+    const greetName = fname || username || 'Admin';
+    const currentHour = new Date().getHours();
+    let greeting = 'Good evening';
+    if (currentHour < 12) greeting = 'Good morning';
+    else if (currentHour < 17) greeting = 'Good afternoon';
+    document.getElementById('dash-greeting').textContent = `${greeting}, ${greetName}!`;
+  } else showProfileMsg(data.error || 'Failed to update profile.', 'error');
 }
 
-function showPwMsg(text, type) {
-  const el = document.getElementById('pw-msg');
+function showProfileMsg(text, type) {
+  const el = document.getElementById('profile-msg');
   el.textContent  = text;
   el.style.display = 'block';
   el.style.background = type === 'success' ? 'rgba(34,197,94,.1)' : 'rgba(239,68,68,.1)';
   el.style.color  = type === 'success' ? 'var(--green)' : 'var(--red)';
   el.style.border = type === 'success' ? '1px solid rgba(34,197,94,.3)' : '1px solid rgba(239,68,68,.3)';
+}
+
+/* ═══════════════════ SPENDINGS ═══════════════════ */
+async function loadSpendings() {
+  const tbody = document.getElementById('spendings-body');
+  try {
+    const res = await apiFetch('/spendings');
+    const data = await res.json();
+    if (!res.ok) throw new Error();
+    tbody.innerHTML = '';
+    if (!data.spendings || data.spendings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fa-solid fa-receipt"></i><p>No spendings recorded yet.</p></td></tr>';
+      return;
+    }
+    data.spendings.forEach(s => {
+      const tr = document.createElement('tr');
+      const d = new Date(s.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      tr.innerHTML = `
+        <td>${d}</td>
+        <td style="color:var(--orange);font-weight:600">PKR ${s.amount.toLocaleString()}</td>
+        <td>${s.reason}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="deleteSpending('${s.id}')" style="color:var(--red);border-color:var(--red)"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load spendings.</td></tr>';
+  }
+}
+
+function openSpendingModal() {
+  document.getElementById('spending-amount').value = '';
+  document.getElementById('spending-reason').value = '';
+  document.getElementById('spending-date').value = new Date().toISOString().split('T')[0];
+  openModal('spending-modal');
+}
+
+async function saveSpending() {
+  const amount = document.getElementById('spending-amount').value;
+  const reason = document.getElementById('spending-reason').value;
+  const date = document.getElementById('spending-date').value;
+
+  if (!amount || !reason) return toast('Amount and reason are required', 'error');
+
+  const res = await apiFetch('/spendings', {
+    method: 'POST',
+    body: JSON.stringify({ amount, reason, date })
+  });
+  if (res.ok) {
+    toast('Spending added', 'success');
+    closeModal('spending-modal');
+    loadSpendings();
+    loadStats(); // refresh total spendings
+  } else {
+    const data = await res.json();
+    toast(data.error || 'Failed to add spending', 'error');
+  }
+}
+
+async function deleteSpending(id) {
+  if (!confirm('Are you sure you want to delete this spending record?')) return;
+  const res = await apiFetch('/spendings/' + id, { method: 'DELETE' });
+  if (res.ok) {
+    toast('Deleted', 'success');
+    loadSpendings();
+    loadStats(); // refresh total spendings
+  } else toast('Delete failed', 'error');
 }
 
 async function loadSystemInfo() {

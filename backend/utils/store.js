@@ -21,6 +21,7 @@ const store = {
   abandoned:    [],
   coupons:      [],   /* discount coupons — super_admin managed */
   invoices:     [],   /* generated invoices */
+  spendings:    [],   /* tracked expenses/investments */
   settings: {
     company: {
       name: 'Velorra',
@@ -323,7 +324,7 @@ const store = {
   /* ── Staff summary (per-staff activity counts) ── */
   staffSummary() {
     const summary = {};
-    this.adminUsers.filter(u => u.role !== 'super_admin').forEach(u => {
+    this.adminUsers.forEach(u => {
       summary[u.id] = {
         id:           u.id,
         name:         `${u.fname} ${u.lname || ''}`.trim(),
@@ -357,6 +358,8 @@ const store = {
     sOrders.forEach(o => {
       socialStatusCounts[o.status] = (socialStatusCounts[o.status] || 0) + 1;
     });
+    const totalSpendings = this.spendings.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+
     return {
       orders:              { total: orders.length,  statuses: statusCounts },
       socialOrders:        { total: sOrders.length, statuses: socialStatusCounts },
@@ -366,6 +369,7 @@ const store = {
       totalRevenue:        Math.round(revenue),
       socialRevenue:       Math.round(socialRevenue),
       combinedRevenue:     Math.round(revenue + socialRevenue),
+      totalSpendings:      Math.round(totalSpendings),
       users:               { total: this.users.length },
     };
   },

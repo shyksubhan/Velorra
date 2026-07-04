@@ -19,7 +19,7 @@ function signToken(payload, expiresIn = '30d') {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 }
 
-const VALID_ROLES = ['admin', 'supervisor'];
+const VALID_ROLES = ['super_admin', 'admin', 'supervisor'];
 
 /* ── Lazily initialize the built-in super admin from .env, then overlay
    any password change that was persisted to Firestore. This way a
@@ -389,42 +389,88 @@ router.post('/admin-users', requireAdmin, async (req, res) => {
 });
 
 /* ============================================================
+   PATCH /api/auth/profile — Update own profile (name, username, password)
+   ============================================================ */
+router.patch('/profile', requireAdmin, async (req, res) => {
+  try {
+    const { fname, lname, username, password } = req.body;
+    const uid = req.user.uid;
+    const updates = {};
+    
+    if (fname !== undefined) updates.fname = fname.trim();
+    if (lname !== undefined) updates.lname = lname.trim();
+    if (username !== undefined) {
+      const normalUsername = username.trim().toLowerCase();
+      // Check if username taken by someone else
+      const existing = await findAdminUserByUsername(normalUsername);
+      if (existing && existing.id !== uid) {
+        return res.status(409).json({ error: 'Username already taken.' });
+      }
+      updates.username = normalUsername;
+    }
+    if (password) {
+      updates.passwordHash = await bcrypt.hash(password, 12);
+      updates.tokenVersion = (req.user.tokenVersion || 0) + 1;
+    }
+
+    /* Try Firebase first */
+    if (isFirebaseAvailable()) {
+      try {
+        const ref = getDB().collection('adminUsers').doc(uid);
+        const doc = await ref.get();
+        if (doc.exists) await ref.update(updates);
+      } catch (e) {
+        console.error('Firebase profile update failed:', e);
+      }
+    }
+
+    const inMem = store.adminUsers.find(u => u.id === uid);
+    if (inMem) Object.assign(inMem, updates);
+
+    return res.json({ message: 'Profile updated successfully.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to update profile.' });
+  }
+});
+
+/* ============================================================
    PATCH /api/auth/admin-users/:id — Update role/status/password
    ============================================================ */
 router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
   try {
     if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can update admin users.' });
     const { role, active, password } = req.body;
+    const targetId = req.params.id;
+
+    const user = store.adminUsers.find(u => u.id === targetId);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    // Super admin cannot modify another super admin's password or role
+    if (user.role === 'super_admin' && targetId !== req.user.uid) {
+      return res.status(403).json({ error: 'Cannot modify another super admin.' });
+    }
+
+    const updates = {};
+    if (role)   updates.role   = role;
+    if (active !== undefined) updates.active = active;
+    if (password) {
+      updates.passwordHash = await bcrypt.hash(password, 12);
+      updates.tokenVersion = (user.tokenVersion || 0) + 1;
+    }
 
     /* Try Firebase first */
-    if (isFirebaseAvailable() && req.params.id !== 'super-admin-1') {
-      const ref = getDB().collection('adminUsers').doc(req.params.id);
-      const doc = await ref.get();
-      if (doc.exists) {
-        const updates = {};
-        if (role)   updates.role   = role;
-        if (active !== undefined) updates.active = active;
-        if (password) {
-          updates.passwordHash = await bcrypt.hash(password, 12);
-          updates.tokenVersion = (doc.data().tokenVersion || 0) + 1; /* force logout everywhere */
+    if (isFirebaseAvailable() && targetId !== 'super-admin-1') {
+      try {
+        const ref = getDB().collection('adminUsers').doc(targetId);
+        const doc = await ref.get();
+        if (doc.exists) {
+          await ref.update(updates);
         }
-        await ref.update(updates);
-        /* Update in-memory cache */
-        const inMem = store.adminUsers.find(u => u.id === req.params.id);
-        if (inMem) Object.assign(inMem, updates);
-        return res.json({ message: 'User updated.' });
-      }
+      } catch (e) { console.error('Firebase update error', e); }
     }
 
-    const user = store.adminUsers.find(u => u.id === req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found.' });
-    if (user.id === 'super-admin-1') return res.status(403).json({ error: 'Cannot modify the primary super admin.' });
-    if (role)   user.role   = role;
-    if (active !== undefined) user.active = active;
-    if (password) {
-      user.passwordHash = await bcrypt.hash(password, 12);
-      user.tokenVersion = (user.tokenVersion || 0) + 1; /* force logout everywhere */
-    }
+    // Always update in memory store
+    Object.assign(user, updates);
     return res.json({ message: 'User updated.', user: { id: user.id, fname: user.fname, role: user.role, active: user.active } });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update user.' });
@@ -437,7 +483,13 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
 router.delete('/admin-users/:id', requireAdmin, async (req, res) => {
   try {
     if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can delete admin users.' });
-    if (req.params.id === 'super-admin-1') return res.status(403).json({ error: 'Cannot delete the primary super admin.' });
+    
+    const user = store.adminUsers.find(u => u.id === req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    if (user.role === 'super_admin') {
+      return res.status(403).json({ error: 'Cannot delete a super admin.' });
+    }
 
     if (isFirebaseAvailable()) {
       try { await getDB().collection('adminUsers').doc(req.params.id).delete(); } catch {}

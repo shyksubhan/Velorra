@@ -26,6 +26,7 @@ const socialOrderRoutes  = require('./routes/socialOrders');
 const couponRoutes       = require('./routes/coupons');
 const settingsRoutes     = require('./routes/settings');
 const invoiceRoutes      = require('./routes/invoices');
+const spendingsRoutes    = require('./routes/spendings');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
