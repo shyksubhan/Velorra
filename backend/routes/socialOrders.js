@@ -100,10 +100,10 @@ router.post('/', requireAdmin, async (req, res) => {
     };
 
     if (isFirebaseAvailable()) {
-      await getDB().collection('social_orders').doc(orderRef).set(order);
-    } else {
-      store.socialOrders.unshift(order);
+      try { await getDB().collection('social_orders').doc(orderRef).set(order); }
+      catch(e) { console.error('Failed to save social order to Firebase:', e); }
     }
+    store.socialOrders.unshift(order);
 
     /* Record coupon usage only after the order is safely saved */
     if (couponMeta) {

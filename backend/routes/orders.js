@@ -97,10 +97,10 @@ router.post('/', async (req, res) => {
     };
 
     if (isFirebaseAvailable()) {
-      await getDB().collection('orders').doc(orderRef).set(order);
-    } else {
-      store.orders.unshift(order);
+      try { await getDB().collection('orders').doc(orderRef).set(order); }
+      catch(e) { console.error('Failed to save order to Firebase:', e); }
     }
+    store.orders.unshift(order);
 
     /* Record coupon usage only after the order is safely saved */
     if (couponMeta) {

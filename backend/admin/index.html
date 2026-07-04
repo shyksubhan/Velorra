@@ -1214,7 +1214,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <div class="modal-overlay" id="spending-modal">
   <div class="modal" style="max-width:400px">
     <div class="modal-header">
-      <h3>Add Spending</h3>
+      <h3 id="spending-modal-title">Add Spending</h3>
       <button class="btn btn-outline btn-sm" onclick="closeModal('spending-modal')">✕</button>
     </div>
     <div class="modal-body">
@@ -1233,7 +1233,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('spending-modal')">Cancel</button>
-      <button class="btn btn-gold" onclick="saveSpending()">Save Spending</button>
+      <button class="btn btn-gold" onclick="saveSpending()" id="spending-modal-btn">Save Spending</button>
     </div>
   </div>
 </div>
@@ -4107,6 +4107,7 @@ async function loadSpendings() {
         <td style="color:var(--orange);font-weight:600">PKR ${s.amount.toLocaleString()}</td>
         <td>${s.reason}</td>
         <td>
+          <button class="btn btn-outline btn-sm" onclick="openSpendingModal('${s.id}', ${s.amount}, '${esc(s.reason)}', '${s.date ? s.date.split('T')[0] : ''}')" style="margin-right:8px;color:var(--blue);border-color:var(--blue)"><i class="fa-solid fa-pen"></i></button>
           <button class="btn btn-outline btn-sm" onclick="deleteSpending('${s.id}')" style="color:var(--red);border-color:var(--red)"><i class="fa-solid fa-trash"></i></button>
         </td>
       `;
@@ -4117,10 +4118,15 @@ async function loadSpendings() {
   }
 }
 
-function openSpendingModal() {
-  document.getElementById('spending-amount').value = '';
-  document.getElementById('spending-reason').value = '';
-  document.getElementById('spending-date').value = new Date().toISOString().split('T')[0];
+let currentEditingSpendingId = null;
+
+function openSpendingModal(id = null, amount = '', reason = '', date = '') {
+  currentEditingSpendingId = id;
+  document.getElementById('spending-amount').value = amount;
+  document.getElementById('spending-reason').value = reason;
+  document.getElementById('spending-date').value = date || new Date().toISOString().split('T')[0];
+  document.getElementById('spending-modal-title').textContent = id ? 'Edit Spending' : 'Add Spending';
+  document.getElementById('spending-modal-btn').textContent = id ? 'Update Spending' : 'Save Spending';
   openModal('spending-modal');
 }
 
@@ -4131,18 +4137,21 @@ async function saveSpending() {
 
   if (!amount || !reason) return toast('Amount and reason are required', 'error');
 
-  const res = await apiFetch('/spendings', {
-    method: 'POST',
+  const method = currentEditingSpendingId ? 'PUT' : 'POST';
+  const url = currentEditingSpendingId ? '/spendings/' + currentEditingSpendingId : '/spendings';
+
+  const res = await apiFetch(url, {
+    method,
     body: JSON.stringify({ amount, reason, date })
   });
   if (res.ok) {
-    toast('Spending added', 'success');
+    toast(currentEditingSpendingId ? 'Spending updated' : 'Spending added', 'success');
     closeModal('spending-modal');
     loadSpendings();
     loadStats(); // refresh total spendings
   } else {
     const data = await res.json();
-    toast(data.error || 'Failed to add spending', 'error');
+    toast(data.error || 'Failed to save spending', 'error');
   }
 }
 

@@ -105,4 +105,44 @@ router.delete('/:id', requireRole('super_admin'), async (req, res) => {
   }
 });
 
+/* ── PUT /api/spendings/:id ── */
+router.put('/:id', requireRole('super_admin'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { amount, reason, date } = req.body;
+    
+    if (!amount || !reason) return res.status(400).json({ error: 'Amount and reason are required.' });
+
+    const idx = store.spendings.findIndex(s => s.id === id);
+    if (idx < 0) return res.status(404).json({ error: 'Spending not found.' });
+
+    const updated = {
+      ...store.spendings[idx],
+      amount: Number(amount),
+      reason: reason.trim(),
+      date: date || store.spendings[idx].date
+    };
+
+    if (isFirebaseAvailable()) {
+      try { await getDB().collection('spendings').doc(id).update({ amount: updated.amount, reason: updated.reason, date: updated.date }); }
+      catch (e) { console.error('Failed to update spending in Firebase:', e); }
+    }
+    
+    store.spendings[idx] = updated;
+
+    store.logActivity({
+      staffId: req.user.uid,
+      staffName: req.user.fname || req.user.email || 'Unknown',
+      staffRole: req.user.role,
+      action: 'spending_updated',
+      details: { amount: updated.amount, reason: updated.reason }
+    });
+
+    return res.json({ message: 'Spending updated.', spending: updated });
+  } catch (err) {
+    console.error('Update spending error:', err);
+    return res.status(500).json({ error: 'Failed to update spending.' });
+  }
+});
+
 module.exports = router;

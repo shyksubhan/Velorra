@@ -89,123 +89,6 @@ router.get('/list-categories', requireRole('super_admin', 'admin'), async (req, 
 /* ── GET /api/admin/stats — REAL stats from shared store (super_admin + admin only) ── */
 router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
-    if (isFirebaseAvailable()) {
-      const db = getDB();
-      const [ordersSnap, socialSnap, productsSnap, subscribersSnap, messagesSnap, usersSnap] = await Promise.all([
-        db.collection('orders').get(),
-        db.collection('social_orders').get(),
-        db.collection('products').get(),
-        db.collection('subscribers').get(),
-        db.collection('messages').where('read', '==', false).get(),
-        db.collection('users').where('isAdmin', '==', false).get(),
-      ]);
-      const orders       = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const products     = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      /* ── Website orders stats ── */
-      const statusCounts = {};
-      orders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
-      const activeOrders = orders.filter(o => o.status !== 'Cancelled');
-      const revenue      = activeOrders.reduce((s, o) => s + (o.total || 0), 0);
-
-      /* ── Social orders stats ── */
-      const socialStatusCounts = {};
-      socialOrders.forEach(o => { socialStatusCounts[o.status] = (socialStatusCounts[o.status] || 0) + 1; });
-      const activeSocialOrders = socialOrders.filter(o => o.status !== 'Cancelled');
-      const socialRevenue      = activeSocialOrders.reduce((s, o) => s + (o.total || 0), 0);
-
-      /* ── Date-filtered revenue ── */
-      const today      = new Date(); today.setHours(0,0,0,0);
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-
-      /* Website date-filtered */
-      const todayOrders    = activeOrders.filter(o => new Date(o.createdAt) >= today);
-      const todayRevenue   = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
-      const monthRevenue   = activeOrders
-        .filter(o => new Date(o.createdAt) >= monthStart)
-        .reduce((s, o) => s + (o.total || 0), 0);
-
-      /* Social date-filtered */
-      const todaySocialOrders  = activeSocialOrders.filter(o => new Date(o.createdAt) >= today);
-      const todaySocialRevenue = todaySocialOrders.reduce((s, o) => s + (o.total || 0), 0);
-      const monthSocialRevenue = activeSocialOrders
-        .filter(o => new Date(o.createdAt) >= monthStart)
-        .reduce((s, o) => s + (o.total || 0), 0);
-
-      /* ── Profit calculation ── */
-      const productMap = {};
-      products.forEach(p => {
-        productMap[p.id]   = p.purchasePrice ?? 0;
-        productMap[p.name] = p.purchasePrice ?? 0;
-      });
-
-      function calcOrderProfit(order) {
-        return (order.items || []).reduce((sum, item) => {
-          const pp   = item.purchasePrice ?? productMap[item.productId] ?? productMap[item.name] ?? 0;
-          const rev  = (item.price || 0) * (item.qty || 1);
-          const cost = (Number(pp) || 0) * (item.qty || 1);
-          return sum + (rev - cost);
-        }, 0);
-      }
-
-      /* Website profit */
-      const todayProfit = Math.round(todayOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
-      const totalProfit = Math.round(activeOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
-
-      /* Social profit */
-      const todaySocialProfit = Math.round(todaySocialOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
-      const totalSocialProfit = Math.round(activeSocialOrders.reduce((s, o) => s + calcOrderProfit(o), 0));
-      /* ── Invoice Analytics ── */
-      let totalInvoices = store.invoices.length;
-      try {
-        if (isFirebaseAvailable()) {
-          const invSnap = await getDB().collection('invoices').get();
-          totalInvoices = invSnap.size;
-        }
-      } catch (e) {}
-
-      const allActiveOrders = [...activeOrders, ...activeSocialOrders];
-      const codOrders = allActiveOrders.filter(o => o.paymentMethod === 'cod');
-      const totalCodOrders = codOrders.length;
-      const totalAdvanceReceived = codOrders.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
-      const outstandingCodBalance = codOrders.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
-
-      return res.json(maskRevenue({
-        orders:              { total: ordersSnap.size,  statuses: statusCounts },
-        socialOrders:        { total: socialSnap.size,  statuses: socialStatusCounts },
-        products:            { total: productsSnap.size },
-        subscribers:         { total: subscribersSnap.size },
-        unreadMessages:      messagesSnap.size,
-        users:               { total: usersSnap.size },
-        /* website-only */
-        totalRevenue:        Math.round(revenue),
-        todayRevenue:        Math.round(todayRevenue),
-        monthRevenue:        Math.round(monthRevenue),
-        todayProfit,
-        totalProfit,
-        /* social-only */
-        socialRevenue:       Math.round(socialRevenue),
-        todaySocialRevenue:  Math.round(todaySocialRevenue),
-        monthSocialRevenue:  Math.round(monthSocialRevenue),
-        todaySocialProfit,
-        totalSocialProfit,
-        /* combined */
-        combinedRevenue:     Math.round(revenue + socialRevenue),
-        todayCombinedRevenue:Math.round(todayRevenue + todaySocialRevenue),
-        monthCombinedRevenue:Math.round(monthRevenue + monthSocialRevenue),
-        todayCombinedProfit: todayProfit + todaySocialProfit,
-        totalCombinedProfit: totalProfit + totalSocialProfit,
-        /* invoice analytics */
-        totalInvoices,
-        totalCodOrders,
-        totalAdvanceReceived,
-        outstandingCodBalance,
-        demoMode:            false,
-      }, req.user.role));
-    }
-
-    /* Demo mode — read from shared store */
     const base    = store.stats();
     const orders  = store.orders;
     const sOrders = store.socialOrders;
@@ -246,8 +129,9 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.totalCodOrders = cods.length;
     base.totalAdvanceReceived = cods.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
     base.outstandingCodBalance = cods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
+    base.totalSpendings = store.spendings.reduce((s, x) => s + (Number(x.amount) || 0), 0);
 
-    return res.json(maskRevenue({ ...base, demoMode: true }, req.user.role));
+    return res.json(maskRevenue({ ...base, demoMode: false }, req.user.role));
 
   } catch (err) {
     console.error('Stats error:', err);
@@ -259,29 +143,19 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
 router.get('/recent-orders', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    let combined = [];
-
-    if (isFirebaseAvailable()) {
-      const db = getDB();
-      const [ordersSnap, socialSnap] = await Promise.all([
-        db.collection('orders').orderBy('createdAt', 'desc').limit(limit).get(),
-        db.collection('social_orders').orderBy('createdAt', 'desc').limit(limit).get()
-      ]);
-      const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const socials = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
-      combined = [...orders, ...socials];
-    } else {
-      const orders = store.orders.slice(0, limit);
-      const socials = store.socialOrders.slice(0, limit).map(o => ({ ...o, isSocial: true }));
-      combined = [...orders, ...socials];
-    }
+    
+    const orders = store.orders.slice(0, limit);
+    const socials = store.socialOrders.slice(0, limit).map(o => ({ ...o, isSocial: true }));
+    let combined = [...orders, ...socials];
 
     combined.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     return res.json({ orders: combined.slice(0, limit) });
   } catch (err) {
-    return res.json({ orders: store.orders.slice(0, 10) });
+    console.error('Recent orders error:', err);
+    return res.status(500).json({ error: 'Failed to fetch recent orders' });
   }
 });
+
 
 /* ── GET /api/admin/export/:type — Export data (super_admin ONLY — admin & supervisor blocked) ── */
 router.get('/export/:type', requireRole('super_admin'), async (req, res) => {
