@@ -154,7 +154,7 @@ router.post('/login', async (req, res) => {
       if (passMatch) {
         /* Update lastLogin */
         adminUser.lastLogin = new Date().toISOString();
-        if (isFirebaseAvailable() && adminUser.role !== 'super_admin') {
+        if (isFirebaseAvailable()) {
           try { await getDB().collection('adminUsers').doc(adminUser.id).update({ lastLogin: adminUser.lastLogin }); } catch {}
         }
         const token = signToken({ uid: adminUser.id, email: adminUser.username, isAdmin: true, role: adminUser.role, tokenVersion: adminUser.tokenVersion || 0 });
