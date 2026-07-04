@@ -34,11 +34,13 @@ router.post('/generate', requireAdmin, async (req, res) => {
 
     // Find the order
     let order = null;
+    const isSocial = orderId.startsWith('SOC-');
+    const colName = isSocial ? 'social_orders' : 'orders';
     if (isFirebaseAvailable()) {
-      const doc = await getDB().collection('orders').doc(orderId).get();
+      const doc = await getDB().collection(colName).doc(orderId).get();
       if (doc.exists) order = { id: doc.id, ...doc.data() };
     }
-    if (!order) order = store.orders.find(o => o.id === orderId);
+    if (!order) order = (isSocial ? store.socialOrders : store.orders).find(o => o.id === orderId);
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
     // Invoice ID is EXACTLY the Order ID
@@ -57,7 +59,7 @@ router.post('/generate', requireAdmin, async (req, res) => {
       type: 'standard',
       pdfUrl: `/api/invoices/${invId}/download`,
       pdfFilePath: pdfPath,
-      customerName: `${order.delivery?.fname || ''} ${order.delivery?.lname || ''}`,
+      customerName: order.customerName || `${order.delivery?.fname || ''} ${order.delivery?.lname || ''}`.trim(),
       total: order.total,
       snapshot: order,
       status: 'Generated',
@@ -134,11 +136,13 @@ router.get('/:id/download', async (req, res) => {
     const pdfPath = inv.pdfFilePath || path.join(INVOICES_DIR, `${invId}.pdf`);
 
     let liveOrder = null;
+    const isSocial = inv.orderId.startsWith('SOC-');
+    const colName = isSocial ? 'social_orders' : 'orders';
     if (isFirebaseAvailable()) {
-      const doc = await getDB().collection('orders').doc(inv.orderId).get();
+      const doc = await getDB().collection(colName).doc(inv.orderId).get();
       if (doc.exists) liveOrder = { id: doc.id, ...doc.data() };
     }
-    if (!liveOrder) liveOrder = store.orders.find(o => o.id === inv.orderId);
+    if (!liveOrder) liveOrder = (isSocial ? store.socialOrders : store.orders).find(o => o.id === inv.orderId);
 
     const company = store.settings?.company || { name: 'Velorra Jewelry', address: '', phone: '', email: '', website: '' };
     const { buildPdf } = require('../utils/pdfGenerator');
@@ -174,11 +178,13 @@ router.post('/:id/email', requireAdmin, async (req, res) => {
     if (!toEmail) return res.status(400).json({ error: 'Customer email missing.' });
 
     let liveOrder = null;
+    const isSocial = inv.orderId.startsWith('SOC-');
+    const colName = isSocial ? 'social_orders' : 'orders';
     if (isFirebaseAvailable()) {
-      const doc = await getDB().collection('orders').doc(inv.orderId).get();
+      const doc = await getDB().collection(colName).doc(inv.orderId).get();
       if (doc.exists) liveOrder = { id: doc.id, ...doc.data() };
     }
-    if (!liveOrder) liveOrder = store.orders.find(o => o.id === inv.orderId);
+    if (!liveOrder) liveOrder = (isSocial ? store.socialOrders : store.orders).find(o => o.id === inv.orderId);
 
     // Regenerate PDF before emailing
     const company = store.settings?.company || { name: 'Velorra Jewelry', address: '', phone: '', email: '', website: '' };
