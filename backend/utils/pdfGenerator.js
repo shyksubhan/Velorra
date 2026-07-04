@@ -106,12 +106,18 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     let billY = startY + 140;
     doc.rect(50, billY, 250, 85).fillAndStroke(C_CREAM, C_BORDER);
     doc.fillColor(C_BLACK).fontSize(9).font('Helvetica-Bold').text('BILL TO', 65, billY + 15);
+    const cName = order.customerName || `${order.delivery?.fname || ''} ${order.delivery?.lname || ''}`.trim() || 'Valued Customer';
+    const cPhone = order.phone || order.delivery?.phone || 'N/A';
+    const cEmail = order.email || order.delivery?.email || '';
+    const cCity = order.city || order.delivery?.city || '';
+    const cAddress = order.delivery?.address ? `${order.delivery.address}, ${cCity}` : cCity;
+
     doc.fontSize(9).font('Helvetica').fillColor(C_TEXT);
-    doc.text(`${order.delivery?.fname || ''} ${order.delivery?.lname || ''}`, 65, billY + 30);
+    doc.text(cName, 65, billY + 30);
     doc.fillColor(C_MUTED);
-    doc.text(order.delivery?.phone || '', 65, billY + 45);
-    doc.text(order.delivery?.email || '', 65, billY + 58);
-    doc.text(`${order.delivery?.address || ''}, ${order.delivery?.city || ''}`, 65, billY + 70);
+    doc.text(cPhone, 65, billY + 45);
+    doc.text(cEmail, 65, billY + 58);
+    doc.text(cAddress, 65, billY + 70);
 
     // --- TABLE HEADER ---
     let y = billY + 115;
