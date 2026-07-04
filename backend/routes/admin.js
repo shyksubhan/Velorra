@@ -165,7 +165,8 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
         }
       } catch (e) {}
 
-      const codOrders = activeOrders.filter(o => o.paymentMethod === 'cod');
+      const allActiveOrders = [...activeOrders, ...activeSocialOrders];
+      const codOrders = allActiveOrders.filter(o => o.paymentMethod === 'cod');
       const totalCodOrders = codOrders.length;
       const totalAdvanceReceived = codOrders.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
       const outstandingCodBalance = codOrders.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
@@ -240,7 +241,8 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
 
     /* Invoice Analytics Demo */
     base.totalInvoices = store.invoices.length;
-    const cods = orders.filter(o => o.status !== 'Cancelled' && o.paymentMethod === 'cod');
+    const allActiveDemo = [...orders, ...sOrders];
+    const cods = allActiveDemo.filter(o => o.status !== 'Cancelled' && o.paymentMethod === 'cod');
     base.totalCodOrders = cods.length;
     base.totalAdvanceReceived = cods.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
     base.outstandingCodBalance = cods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);

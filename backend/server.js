@@ -492,8 +492,19 @@ app.use((err, req, res, next) => {
         if (data.company) store.settings = { ...store.settings, company: data.company };
         console.log(`✅ Loaded global settings from Firestore.`);
       }
+
+      /* Load all orders into memory for store.js statement calculations */
+      const [ordersSnap, socialSnap, spendingsSnap] = await Promise.all([
+        db.collection('orders').get(),
+        db.collection('social_orders').get(),
+        db.collection('spendings').get()
+      ]);
+      store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      store.socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
+      store.spendings = spendingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      console.log(`✅ Loaded ${store.orders.length} orders, ${store.socialOrders.length} social orders, ${store.spendings.length} spendings from Firestore.`);
     }
-  } catch (e) { console.warn('Could not load global settings from Firestore:', e.message); }
+  } catch (e) { console.warn('Could not load data from Firestore:', e.message); }
 
   app.listen(PORT, () => {
     console.log('\n╔════════════════════════════════════════════════╗');
