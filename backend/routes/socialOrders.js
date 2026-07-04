@@ -154,6 +154,97 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 });
 
+/* ── PUT /api/social-orders/:id — Update/Edit social media order (admin only) ── */
+router.put('/:id', requireAdmin, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    let existingOrder = null;
+    let dbRef = null;
+
+    if (isFirebaseAvailable()) {
+      dbRef = getDB().collection('social_orders').doc(orderId);
+      const doc = await dbRef.get();
+      if (!doc.exists) return res.status(404).json({ error: 'Order not found.' });
+      existingOrder = doc.data();
+    } else {
+      existingOrder = store.socialOrders.find(o => o.id === orderId);
+      if (!existingOrder) return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    const {
+      customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount,
+    } = req.body;
+
+    if (!customerName?.trim()) return res.status(400).json({ error: 'Customer name is required.' });
+    if (!items?.length)        return res.status(400).json({ error: 'At least one item is required.' });
+    if (!source || !SOURCES.includes(source)) return res.status(400).json({ error: `Source must be one of: ${SOURCES.join(', ')}` });
+
+    const enrichedItems = items.map(i => ({
+      productId:     String(i.productId || '').trim(),
+      name:          String(i.name || '').trim(),
+      qty:           Number(i.qty)   || 1,
+      price:         Number(i.price) || 0,
+      purchasePrice: Number(i.purchasePrice) || 0,
+    }));
+
+    const subtotal  = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
+    const payMethod = paymentMethod || 'cod';
+    const deliveryFee = payMethod === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+
+    let discount = 0;
+    let couponMeta = null;
+    if (couponCode) {
+      let couponDoc;
+      if (isFirebaseAvailable()) {
+        const cleanCode = String(couponCode).trim().toUpperCase();
+        const snap = await getDB().collection('coupons').where('code', '==', cleanCode).limit(1).get();
+        couponDoc = snap.empty ? null : { ...snap.docs[0].data(), id: snap.docs[0].id };
+      } else {
+        couponDoc = store.findCoupon(couponCode);
+      }
+      const check = store.checkCoupon(couponDoc, subtotal);
+      if (!check.ok) return res.status(400).json({ error: check.error });
+      discount   = check.discount;
+      couponMeta = { code: check.coupon.code, type: check.coupon.type, value: check.coupon.value, discount };
+    }
+
+    const total = Math.max(0, subtotal - discount) + deliveryFee;
+
+    const updatedOrder = {
+      ...existingOrder,
+      source,
+      customerName:  customerName.trim(),
+      phone:         phone?.trim() || '',
+      city:          city?.trim()  || '',
+      notes:         notes?.trim() || '',
+      items:         enrichedItems,
+      subtotal,
+      discount,
+      coupon:        couponMeta,
+      deliveryFee,
+      total,
+      advanceAmount: Number(advanceAmount) || 0,
+      paymentMethod: payMethod,
+      status:        STATUSES.includes(status) ? status : 'Pending',
+      updatedAt:     new Date().toISOString(),
+    };
+
+    if (isFirebaseAvailable()) {
+      await dbRef.set(updatedOrder);
+    } else {
+      const idx = store.socialOrders.findIndex(o => o.id === orderId);
+      store.socialOrders[idx] = updatedOrder;
+    }
+
+    store.emit('order_status_changed', { id: orderId, status: updatedOrder.status, orderType: 'social' });
+
+    return res.json({ message: 'Social media order updated successfully! ✓', order: updatedOrder });
+  } catch (err) {
+    console.error('Update social order error:', err);
+    return res.status(500).json({ error: 'Failed to update social media order.' });
+  }
+});
+
 /* ── PATCH /api/social-orders/:id/status — Update status (admin only) ── */
 router.patch('/:id/status', requireAdmin, async (req, res) => {
   try {

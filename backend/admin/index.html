@@ -663,7 +663,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <div class="modal-overlay" id="social-order-modal">
   <div class="modal" style="max-width:600px">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>Add Social Media Order</h3>
+      <h3 id="social-order-modal-title"><i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>Add Social Media Order</h3>
       <button class="btn btn-outline btn-sm" onclick="closeModal('social-order-modal')">✕</button>
     </div>
     <div class="modal-body">
@@ -2319,6 +2319,7 @@ function viewSocialOrder(id) {
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Total</span><span style="color:var(--gold)">PKR ${(o.total||0).toLocaleString()}</span></div>
     <div style="display:flex;gap:6px;margin-top:16px;">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('social-detail-modal'); openSocialOrderModal('${o.id}')"><i class="fa-solid fa-pen"></i> Edit Order</button>
       <button class="btn btn-outline btn-sm" onclick="closeModal('social-detail-modal'); generateInvoice('${o.id}')"><i class="fa-solid fa-file-invoice"></i> Generate Invoice</button>
       <button class="btn btn-outline btn-sm" onclick="closeModal('social-detail-modal'); viewInvoicesForOrder('${o.id}')"><i class="fa-solid fa-history"></i> Invoice History</button>
     </div>
@@ -2328,21 +2329,38 @@ function viewSocialOrder(id) {
 
 /* ── Add Social Order Modal ── */
 let _socItemCount = 0;
+let _editingSocialOrderId = null;
 
-async function openSocialOrderModal() {
+async function openSocialOrderModal(orderId = null) {
+  _editingSocialOrderId = orderId;
   _socItemCount = 0;
   _socSearchMatches = {};
   _socAppliedCoupon = null;
-  document.getElementById('soc-cname').value   = '';
-  document.getElementById('soc-phone').value   = '';
-  document.getElementById('soc-city').value    = '';
-  document.getElementById('soc-source').value  = 'facebook';
-  document.getElementById('soc-payment').value = 'cod';
-  document.getElementById('soc-status').value  = 'Pending';
-  document.getElementById('soc-notes').value   = '';
-  document.getElementById('soc-coupon-code').value = '';
+
+  const o = orderId ? allSocialOrders.find(x => x.id === orderId) : null;
+
+  document.getElementById('social-order-modal-title').innerHTML = `<i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>${o ? 'Edit Social Order ' + o.id : 'Add Social Media Order'}`;
+  document.getElementById('save-social-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${o ? 'Save Changes' : 'Create Order'}`;
+
+  document.getElementById('soc-cname').value   = o ? o.customerName || '' : '';
+  document.getElementById('soc-phone').value   = o ? o.phone || '' : '';
+  document.getElementById('soc-city').value    = o ? o.city || '' : '';
+  document.getElementById('soc-source').value  = o ? o.source || 'facebook' : 'facebook';
+  document.getElementById('soc-payment').value = o ? o.paymentMethod || 'cod' : 'cod';
+  document.getElementById('soc-status').value  = o ? o.status || 'Pending' : 'Pending';
+  document.getElementById('soc-notes').value   = o ? o.notes || '' : '';
+  document.getElementById('soc-advance-paid').value = o ? o.advanceAmount || '' : '';
+  document.getElementById('soc-coupon-code').value = (o && o.coupon) ? o.coupon.code : '';
   document.getElementById('soc-coupon-msg').style.display = 'none';
   document.getElementById('soc-items-container').innerHTML = '';
+
+  if (o && o.coupon) {
+    _socAppliedCoupon = o.coupon;
+    document.getElementById('soc-coupon-msg').style.display = 'block';
+    document.getElementById('soc-coupon-msg').style.color = 'var(--green)';
+    document.getElementById('soc-coupon-msg').textContent = `✓ "${o.coupon.code}" applied.`;
+  }
+
   /* Make sure the product catalog is loaded — the Products tab may
      never have been opened this session, so allProducts could be empty. */
   if (!allProducts.length) {
@@ -2356,32 +2374,45 @@ async function openSocialOrderModal() {
       });
     } catch { /* search box will just show "no products found" until retried */ }
   }
+
+  if (o && o.items && o.items.length > 0) {
+    o.items.forEach(item => addSocialItem(item));
+  } else {
+    addSocialItem(); /* start with one empty row */
+  }
+
   recalcSocialTotal();
-  addSocialItem(); /* start with one empty row */
   openModal('social-order-modal');
 }
 
 /* ── Each item row holds a hidden productId + price + purchasePrice,
    populated only once the admin picks a product from the search
    dropdown. Qty is the only manually-typed number. ── */
-function addSocialItem() {
+function addSocialItem(prefill = null) {
   const idx = _socItemCount++;
   const row = document.createElement('div');
   row.className = 'soc-item-row';
+  const pid = prefill ? prefill.productId : '';
+  const name = prefill ? prefill.name : '';
+  const qty = prefill ? prefill.qty : 1;
+  const cost = prefill ? prefill.purchasePrice : 0;
+  const sale = prefill ? prefill.price : 0;
+  const total = qty * sale;
+
   row.id = `soc-item-row-${idx}`;
   row.innerHTML = `
-    <div class="soc-product-search-wrap">
-      <input type="hidden" id="si-pid-${idx}" value=""/>
-      <input placeholder="Search product…" id="si-search-${idx}"
+    <div class="soc-product-search-wrap" style="flex: 2;">
+      <input type="hidden" id="si-pid-${idx}" value="${pid}"/>
+      <input placeholder="Search product…" id="si-search-${idx}" value="${esc(name)}"
              oninput="handleSocItemSearch(${idx})"
              onfocus="handleSocItemSearch(${idx})"
              autocomplete="off"/>
       <div class="soc-product-dropdown" id="si-dropdown-${idx}" style="display:none"></div>
     </div>
-    <input type="number" placeholder="Qty" min="0.01" step="any" id="si-qty-${idx}" value="1" oninput="recalcSocialTotal()" title="Quantity"/>
-    <input type="number" placeholder="Cost" id="si-cost-${idx}" value="0" oninput="recalcSocialTotal()" title="Unit Purchase Price"/>
-    <input type="number" placeholder="Sale" id="si-price-${idx}" value="0" oninput="recalcSocialTotal()" title="Unit Sale Price"/>
-    <div class="soc-price-display" id="si-row-total-${idx}">PKR 0</div>
+    <input type="number" placeholder="Qty" min="0.01" step="any" id="si-qty-${idx}" value="${qty}" oninput="recalcSocialTotal()" title="Quantity"/>
+    <input type="number" placeholder="Cost" id="si-cost-${idx}" value="${cost}" oninput="recalcSocialTotal()" title="Unit Purchase Price"/>
+    <input type="number" placeholder="Sale" id="si-price-${idx}" value="${sale}" oninput="recalcSocialTotal()" title="Unit Sale Price"/>
+    <div class="soc-price-display" id="si-row-total-${idx}">PKR ${total.toLocaleString()}</div>
     <button class="soc-item-remove" onclick="removeSocialItem(${idx})" title="Remove">✕</button>
   `;
   document.getElementById('soc-items-container').appendChild(row);
@@ -2594,17 +2625,21 @@ async function saveSocialOrder() {
   btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
 
   try {
-    const res  = await apiFetch('/social-orders', {
-      method: 'POST',
-      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes, couponCode }),
+    const isEdit = !!_editingSocialOrderId;
+    const url = isEdit ? `/social-orders/${_editingSocialOrderId}` : '/social-orders';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const res  = await apiFetch(url, {
+      method: method,
+      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid }),
     });
     const data = await res.json();
     if (res.ok) {
-      toast(`✓ Social order created — ${data.orderRef}`, 'success');
+      toast(isEdit ? `✓ Social order updated` : `✓ Social order created — ${data.orderRef || ''}`, 'success');
       closeModal('social-order-modal');
       loadSocialOrders();
       loadStats();
-    } else toast(data.error || 'Failed to create order.', 'error');
+    } else toast(data.error || 'Failed to save order.', 'error');
   } catch { toast('Network error.', 'error'); }
 
   btn.innerHTML = orig; btn.disabled = false;
