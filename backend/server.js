@@ -143,6 +143,7 @@ app.use('/api/reviews',       reviewRoutes);
 app.use('/api/resellers',     resellerRoutes);
 app.use('/api/settings',      settingsRoutes);
 app.use('/api/invoices',      invoiceRoutes);
+app.use('/api/spendings',     spendingsRoutes);
 
 /* ── Abandoned Checkout Tracking ──
    Persisted to Firestore (collection: "abandoned") when Firebase is

@@ -1819,7 +1819,11 @@ function showPage(name) {
 
 /* ═══════════════════ DASHBOARD ═══════════════════ */
 async function loadDashboard() {
-  await Promise.all([loadStats(), loadRecentOrders(), loadVisitors(), loadAbandoned()]);
+  /* Run these concurrently without waiting for all to finish before rendering each */
+  loadStats();
+  loadRecentOrders();
+  loadVisitors();
+  loadAbandoned();
   if (currentUser?.role === 'super_admin') {
     loadLifetimeEarnings();
     loadDailyStatements();
@@ -1914,15 +1918,20 @@ async function loadRecentOrders() {
     const data = await res.json();
     const tbody = document.getElementById('recent-orders-body');
     if (!data.orders?.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders yet</p></div></td></tr>`; return; }
-    tbody.innerHTML = data.orders.map(o => `
-      <tr>
-        <td><code style="color:var(--gold)">${o.id}</code></td>
+    tbody.innerHTML = data.orders.map(o => {
+      const isSocial = o.isSocial || o.id.startsWith('so-');
+      const badge = isSocial ? '<span class="badge" style="background:var(--blue);color:#fff;margin-left:8px;font-size:0.7rem">Social</span>' : '';
+      const clickFn = isSocial ? `viewSocialOrder('${o.id}')` : `viewOrder('${o.id}')`;
+      return `
+      <tr style="cursor:pointer" onclick="${clickFn}">
+        <td><code style="color:var(--gold)">${o.id}</code>${badge}</td>
         <td>${o.delivery?.fname || o.customerName || '—'} ${o.delivery?.lname || ''}</td>
         <td>PKR ${(o.total || 0).toLocaleString()}</td>
         <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
         <td><span class="badge badge-${o.status?.toLowerCase()}">${o.status}</span></td>
         <td>${fmtDate(o.createdAt)}</td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   } catch {}
 }
 

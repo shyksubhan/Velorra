@@ -257,11 +257,25 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
 router.get('/recent-orders', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
+    let combined = [];
+
     if (isFirebaseAvailable()) {
-      const snap = await getDB().collection('orders').orderBy('createdAt', 'desc').limit(limit).get();
-      return res.json({ orders: snap.docs.map(d => ({ id: d.id, ...d.data() })) });
+      const db = getDB();
+      const [ordersSnap, socialSnap] = await Promise.all([
+        db.collection('orders').orderBy('createdAt', 'desc').limit(limit).get(),
+        db.collection('social_orders').orderBy('createdAt', 'desc').limit(limit).get()
+      ]);
+      const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const socials = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
+      combined = [...orders, ...socials];
+    } else {
+      const orders = store.orders.slice(0, limit);
+      const socials = store.socialOrders.slice(0, limit).map(o => ({ ...o, isSocial: true }));
+      combined = [...orders, ...socials];
     }
-    return res.json({ orders: store.orders.slice(0, limit) });
+
+    combined.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return res.json({ orders: combined.slice(0, limit) });
   } catch (err) {
     return res.json({ orders: store.orders.slice(0, 10) });
   }
