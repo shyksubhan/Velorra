@@ -46,6 +46,12 @@ async function initSuperAdmin() {
         const saved = doc.data();
         if (saved.passwordHash) u.passwordHash = saved.passwordHash;
         if (saved.tokenVersion) u.tokenVersion  = saved.tokenVersion;
+        if (saved.fname) u.fname = saved.fname;
+        if (saved.lname) u.lname = saved.lname;
+        if (saved.username) {
+          u.username = saved.username;
+          u.email = saved.username;
+        }
       }
     } catch (err) {
       console.error('Could not load persisted super admin record:', err.message);
