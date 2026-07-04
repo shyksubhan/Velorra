@@ -1616,6 +1616,9 @@ function logout() {
   showLogin();
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML = 'Sign In <i class="fa-solid fa-arrow-right"></i>';
+  btn.disabled  = false;
 }
 
 function clearSession() {

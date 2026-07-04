@@ -111,12 +111,19 @@ router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
 
     if (isFirebaseAvailable()) {
       await getDB().collection('products').doc(slug).set(productData);
-    } else {
-      const existingIdx = store.products.findIndex(p => p.id === slug);
-      if (existingIdx >= 0) store.products[existingIdx] = productData;
-      else store.products.push(productData);
-      store.emit('product_added', { name: productData.name });
     }
+    const existingIdx = store.products.findIndex(p => p.id === slug);
+    if (existingIdx >= 0) store.products[existingIdx] = productData;
+    else store.products.push(productData);
+    store.emit('product_added', { name: productData.name });
+
+    store.logActivity({
+      staffId:   req.user.id,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Added Product',
+      details:   `${productData.name} (ID: ${slug})`,
+      role:      req.user.role
+    });
 
     return res.status(201).json({ message: 'Product created successfully.', product: productData });
   } catch (err) {
@@ -156,16 +163,29 @@ router.put('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
 /* ── DELETE /api/products/:id (super_admin + admin only) ── */
 router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
+    let productName = 'Unknown';
     if (isFirebaseAvailable()) {
       const db = getDB();
       const ref = db.collection('products').doc(req.params.id);
-      if (!(await ref.get()).exists) return res.status(404).json({ error: 'Product not found.' });
+      const doc = await ref.get();
+      if (!doc.exists) return res.status(404).json({ error: 'Product not found.' });
+      productName = doc.data().name;
       await ref.delete();
     } else {
       const idx = store.products.findIndex(p => p.id === req.params.id);
       if (idx < 0) return res.status(404).json({ error: 'Product not found.' });
+      productName = store.products[idx].name;
       store.products.splice(idx, 1);
     }
+    
+    store.logActivity({
+      staffId:   req.user.id,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Deleted Product',
+      details:   `Product: ${productName} (ID: ${req.params.id})`,
+      role:      req.user.role
+    });
+
     return res.json({ message: 'Product deleted.' });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to delete product.' });

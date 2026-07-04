@@ -212,6 +212,14 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
       store.orders.unshift(order);
     }
 
+    store.logActivity({
+      staffId:   req.user.id || req.user.uid,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Recovered Abandoned Order',
+      details:   `${orderRef} for ${delivery.fname}`,
+      role:      req.user.role
+    });
+
     /* Emit SSE so admin panel updates live */
     store.emit('new_order', {
       id:            orderRef,
@@ -326,16 +334,14 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
       store.orders[idx].updatedAt = new Date().toISOString();
     }
 
-    /* ── Log activity for non-super_admin staff ── */
-    if (req.user?.role !== 'super_admin') {
-      store.logActivity({
-        staffId:   req.user.uid,
-        staffName: req.user.email || 'Unknown',
-        staffRole: req.user.role,
-        action:    'order_status_change',
-        details:   { orderId: req.params.id, newStatus: status },
-      });
-    }
+    /* ── Log activity for ALL staff (including super admins tracking each other) ── */
+    store.logActivity({
+      staffId:   req.user.id || req.user.uid,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Updated Order Status',
+      details:   `${req.params.id} -> ${status}`,
+      role:      req.user.role
+    });
 
     store.emit('order_status_changed', { id: req.params.id, status });
     return res.json({ message: `Order updated to "${status}".`, status });
@@ -373,11 +379,11 @@ router.patch('/:id/advance', requireAdmin, async (req, res) => {
     }
 
     store.logActivity({
-      staffId: req.user?.uid,
-      staffName: req.user?.email || 'Unknown',
-      staffRole: req.user?.role,
-      action: 'order_advance_update',
-      details: { orderId: req.params.id, advanceAmount }
+      staffId:   req.user.id || req.user.uid,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Updated Advance Payment',
+      details:   `${req.params.id} -> ${advanceAmount} (${advanceStatus})`,
+      role:      req.user.role
     });
 
     store.emit('order_advance_changed', { id: req.params.id });

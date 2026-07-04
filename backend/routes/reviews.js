@@ -140,7 +140,16 @@ router.patch('/:id/approve', requireAdmin, async (req, res) => {
       if (idx < 0) return res.status(404).json({ error: 'Review not found.' });
       store.reviews[idx].approved = !!approved;
     }
-    return res.json({ message: approved ? 'Review approved and now visible.' : 'Review hidden.' });
+
+    store.logActivity({
+      staffId:   req.user.id,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    !!approved ? 'Approved Review' : 'Declined Review',
+      details:   `Review ID: ${req.params.id}`,
+      role:      req.user.role
+    });
+
+    return res.json({ message: `Review ${approved ? 'approved' : 'declined'}.` });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update review.' });
   }

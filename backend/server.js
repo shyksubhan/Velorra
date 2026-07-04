@@ -323,6 +323,15 @@ app.delete('/api/abandoned/:id', async (req, res) => {
       const idx = store.abandoned.findIndex(a => a.id === req.params.id);
       if (idx !== -1) store.abandoned.splice(idx, 1);
     }
+    
+    store.logActivity({
+      staffId:   decoded.id || decoded.uid,
+      staffName: decoded.fname ? (decoded.fname + (decoded.lname ? ' ' + decoded.lname : '')) : (decoded.email || 'Admin'),
+      action:    'Rejected Abandoned Order',
+      details:   req.params.id,
+      role:      decoded.role
+    });
+
     res.json({ ok: true });
   } catch (err) {
     console.error('Abandoned delete error:', err);

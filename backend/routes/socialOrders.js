@@ -110,6 +110,14 @@ router.post('/', requireAdmin, async (req, res) => {
       await store.recordCouponUse(couponMeta.code, isFirebaseAvailable, getDB).catch(e => console.error('recordCouponUse failed:', e.message));
     }
 
+    store.logActivity({
+      staffId:   req.user.id,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Added Social Order',
+      details:   `${orderRef} for ${customerName.trim()} via ${source}`,
+      role:      req.user.role
+    });
+
     /* Emit SSE notification to admin */
     store.emit('new_social_order', {
       id:     orderRef,

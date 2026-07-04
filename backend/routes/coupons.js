@@ -57,6 +57,14 @@ router.post('/', requireRole('super_admin'), async (req, res) => {
       store.coupons.unshift(coupon);
     }
 
+    store.logActivity({
+      staffId:   req.user.id,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Generated Coupon',
+      details:   `${coupon.code} (${coupon.type} - ${coupon.value})`,
+      role:      req.user.role
+    });
+
     return res.status(201).json({ message: `Coupon "${coupon.code}" created.`, coupon });
   } catch (err) {
     console.error('Create coupon error:', err);

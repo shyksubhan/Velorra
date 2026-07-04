@@ -81,9 +81,13 @@ async function getAllAdminUsers() {
   try {
     const snap = await getDB().collection('adminUsers').orderBy('createdAt', 'asc').get();
     const fbUsers = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-    /* Merge: always keep super admin from store, add Firebase users */
-    const superAdmin = store.adminUsers.find(u => u.role === 'super_admin');
-    const merged = [superAdmin, ...fbUsers.filter(u => u.role !== 'super_admin')];
+    /* Include all Firebase users, but ensure default super_admin is present */
+    const hasDefault = fbUsers.some(u => u.id === 'super-admin-1');
+    const merged = [...fbUsers];
+    if (!hasDefault) {
+      const defaultSuper = store.adminUsers.find(u => u.id === 'super-admin-1');
+      if (defaultSuper) merged.unshift(defaultSuper);
+    }
     /* Update in-memory cache */
     store.adminUsers = merged;
     return merged;
