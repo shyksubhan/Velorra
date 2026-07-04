@@ -466,26 +466,42 @@ app.use((err, req, res, next) => {
 });
 
 /* ── Start ── */
-/* ── On startup: load persisted abandoned records from file into memory ── */
-try {
-  const fs   = require('fs');
-  const path = require('path');
-  const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
-  if (fs.existsSync(AB_FILE)) {
-    const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
-    store.abandoned = saved;
-    console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
-  }
-} catch (e) { console.warn('Could not load abandoned.json:', e.message); }
+(async () => {
+  /* ── On startup: load persisted abandoned records from file into memory ── */
+  try {
+    const fs   = require('fs');
+    const path = require('path');
+    const AB_FILE = path.join(__dirname, 'data', 'abandoned.json');
+    if (fs.existsSync(AB_FILE)) {
+      const saved = JSON.parse(fs.readFileSync(AB_FILE, 'utf8'));
+      store.abandoned = saved;
+      console.log(`✅ Loaded ${saved.length} abandoned records from file.`);
+    }
+  } catch (e) { console.warn('Could not load abandoned.json:', e.message); }
 
-app.listen(PORT, () => {
-  console.log('\n╔════════════════════════════════════════════════╗');
-  console.log('║       VELORRA BACKEND SERVER v2.0              ║');
-  console.log('╠════════════════════════════════════════════════╣');
-  console.log(`║  Website:  http://localhost:${PORT}               ║`);
-  console.log(`║  Admin:    http://localhost:${PORT}/admin          ║`);
-  console.log(`║  API:      http://localhost:${PORT}/api/health     ║`);
-  console.log('╚════════════════════════════════════════════════╝\n');
-});
+  /* ── Load Global Settings (like Site Launch Date) from Firebase ── */
+  try {
+    const db = getDB();
+    if (db) {
+      const doc = await db.collection('settings').doc('global').get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.siteLaunchDate) store.setSiteLaunchDate(data.siteLaunchDate);
+        if (data.company) store.settings = { ...store.settings, company: data.company };
+        console.log(`✅ Loaded global settings from Firestore.`);
+      }
+    }
+  } catch (e) { console.warn('Could not load global settings from Firestore:', e.message); }
+
+  app.listen(PORT, () => {
+    console.log('\n╔════════════════════════════════════════════════╗');
+    console.log('║       VELORRA BACKEND SERVER v2.0              ║');
+    console.log('╠════════════════════════════════════════════════╣');
+    console.log(`║  Website:  http://localhost:${PORT}               ║`);
+    console.log(`║  Admin:    http://localhost:${PORT}/admin          ║`);
+    console.log(`║  API:      http://localhost:${PORT}/api/health     ║`);
+    console.log('╚════════════════════════════════════════════════╝\n');
+  });
+})();
 
 module.exports = app;
