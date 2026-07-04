@@ -158,7 +158,8 @@ const store = {
   _buildStatement(orderFilterFn) {
     const lines = [];
     let revenue = 0, cost = 0, profit = 0;
-    this.orders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).forEach(o => {
+    const allOrders = [...this.orders, ...this.socialOrders];
+    allOrders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).forEach(o => {
       (o.items || []).forEach(item => {
         const { revenue: r, cost: c, profit: p } = this._itemProfit(item);
         revenue += r; cost += c; profit += p;
@@ -175,7 +176,7 @@ const store = {
         });
       });
     });
-    return { lines, totals: { revenue: Math.round(revenue), cost: Math.round(cost), profit: Math.round(profit), orders: this.orders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).length } };
+    return { lines, totals: { revenue: Math.round(revenue), cost: Math.round(cost), profit: Math.round(profit), orders: allOrders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).length } };
   },
 
   /* Statement for one calendar day (dateStr = 'YYYY-MM-DD', server local time) */
@@ -231,7 +232,8 @@ const store = {
     const stmt = this._buildStatement(o => (o.createdAt || '').slice(0, 10) >= launch);
     /* Also bucket by day so the UI can show a quick trend if desired */
     const byDay = {};
-    this.orders.filter(o => o.status !== 'Cancelled' && (o.createdAt || '').slice(0, 10) >= launch).forEach(o => {
+    const allOrders = [...this.orders, ...this.socialOrders];
+    allOrders.filter(o => o.status !== 'Cancelled' && (o.createdAt || '').slice(0, 10) >= launch).forEach(o => {
       const day = (o.createdAt || '').slice(0, 10);
       if (!byDay[day]) byDay[day] = { date: day, revenue: 0, cost: 0, profit: 0 };
       (o.items || []).forEach(item => {
