@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    VELORRA — JWT Authentication Middleware
    ============================================================ */
 const jwt = require('jsonwebtoken');
@@ -98,6 +98,9 @@ async function requireAdmin(req, res, next) {
 function requireRole(...roles) {
   return (req, res, next) => {
     requireAdmin(req, res, () => {
+      if (req.user?.role === 'ceo') {
+        return next();
+      }
       if (!roles.includes(req.user?.role)) {
         return res.status(403).json({ error: `Access denied. Required role: ${roles.join(' or ')}.` });
       }
