@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
    Mirrors the dashboard's client-side hiding, but enforced server-side so
    the figures never leave the server for admin/supervisor tokens. ── */
 function maskRevenue(payload, role) {
-  if (role === 'super_admin') return payload;
+  if (role === 'super_admin' || role === 'ceo') return payload;
   const { totalRevenue, todayRevenue, monthRevenue, todayProfit, ...rest } = payload;
   return rest;
 }
@@ -158,7 +158,7 @@ router.get('/recent-orders', requireRole('super_admin', 'admin'), async (req, re
 
 
 /* ── GET /api/admin/export/:type — Export data (super_admin ONLY — admin & supervisor blocked) ── */
-router.get('/export/:type', requireRole('super_admin'), async (req, res) => {
+router.get('/export/:type', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     const { type } = req.params;
     let data = [];
@@ -192,10 +192,13 @@ router.get('/export/:type', requireRole('super_admin'), async (req, res) => {
 });
 
 /* ── GET /api/admin/activity-logs — All staff activity (super_admin only) ── */
-router.get('/activity-logs', requireRole('super_admin'), async (req, res) => {
+router.get('/activity-logs', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     const { staffId, limit: lim } = req.query;
     let logs = store.activityLogs;
+    if (req.user.role === 'super_admin') {
+      logs = logs.filter(l => l.role !== 'ceo');
+    }
     if (staffId) logs = logs.filter(l => l.staffId === staffId);
     if (lim) logs = logs.slice(0, parseInt(lim));
     return res.json({ logs, total: logs.length });
@@ -205,7 +208,7 @@ router.get('/activity-logs', requireRole('super_admin'), async (req, res) => {
 });
 
 /* ── GET /api/admin/staff-summary — Per-staff performance (super_admin only) ── */
-router.get('/staff-summary', requireRole('super_admin'), (req, res) => {
+router.get('/staff-summary', requireRole('ceo', 'super_admin'), (req, res) => {
   try {
     return res.json({ staff: store.staffSummary() });
   } catch (err) {
@@ -216,7 +219,7 @@ router.get('/staff-summary', requireRole('super_admin'), (req, res) => {
 /* ── GET /api/admin/profit-summary — Lifetime profit/earnings (super_admin ONLY) ──
    Lifetime view never gets reset/filtered by date — it's the full history of
    every sale ever recorded in this server's lifetime. ── */
-router.get('/profit-summary', requireRole('super_admin'), async (req, res) => {
+router.get('/profit-summary', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     return res.json(store.lifetimeEarnings());
   } catch (err) {
@@ -227,7 +230,7 @@ router.get('/profit-summary', requireRole('super_admin'), async (req, res) => {
 
 /* ── GET /api/admin/daily-statement?date=YYYY-MM-DD — One day's statement (super_admin ONLY) ──
    Defaults to today (server local date) when no date is given. ── */
-router.get('/daily-statement', requireRole('super_admin'), async (req, res) => {
+router.get('/daily-statement', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     return res.json(store.dailyStatement(req.query.date));
   } catch (err) {
@@ -239,7 +242,7 @@ router.get('/daily-statement', requireRole('super_admin'), async (req, res) => {
 /* ── GET /api/admin/daily-statements/history?days=30 — Last N days of statements (super_admin ONLY) ──
    Capped at 30 days — older days should be pulled from previously
    downloaded Excel files (lifetime totals remain in /profit-summary). ── */
-router.get('/daily-statements/history', requireRole('super_admin'), async (req, res) => {
+router.get('/daily-statements/history', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     const days = Math.min(parseInt(req.query.days) || 30, 30);
     return res.json({ statements: store.dailyStatementHistory(days) });
@@ -253,7 +256,7 @@ router.get('/daily-statements/history', requireRole('super_admin'), async (req, 
    Unlike the 30-day daily history, this always starts from siteLaunchDate,
    however long ago that was — it is never capped.
    Optional ?month=YYYY-MM to fetch a SINGLE month's detailed statement. ── */
-router.get('/monthly-statements', requireRole('super_admin'), async (req, res) => {
+router.get('/monthly-statements', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     /* Single-month detailed view (for per-month export) */
     if (req.query.month) {
@@ -268,7 +271,7 @@ router.get('/monthly-statements', requireRole('super_admin'), async (req, res) =
 });
 
 /* ── GET /api/admin/daily-statements?month=YYYY-MM — All days of a specific month ── */
-router.get('/daily-statements', requireRole('super_admin'), async (req, res) => {
+router.get('/daily-statements', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     const { month } = req.query;
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
@@ -288,14 +291,14 @@ router.get('/daily-statements', requireRole('super_admin'), async (req, res) => 
 });
 
 /* ── GET /api/admin/site-launch-date — Read the configured launch date (super_admin ONLY) ── */
-router.get('/site-launch-date', requireRole('super_admin'), (req, res) => {
+router.get('/site-launch-date', requireRole('ceo', 'super_admin'), (req, res) => {
   return res.json({ siteLaunchDate: store.siteLaunchDate });
 });
 
 /* ── PUT /api/admin/site-launch-date — Set/correct the launch date (super_admin ONLY) ──
    All daily/monthly/lifetime statements key off this date, so super_admin
    can set it once to match the real go-live day of the store. ── */
-router.put('/site-launch-date', requireRole('super_admin'), async (req, res) => {
+router.put('/site-launch-date', requireRole('ceo', 'super_admin'), async (req, res) => {
   try {
     const { date } = req.body;
     if (!date) return res.status(400).json({ error: 'A date is required.' });

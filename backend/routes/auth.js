@@ -238,13 +238,12 @@ router.patch('/change-password', requireAuth, async (req, res) => {
        admin never re-hit /login, this would still be comparing against the
        stale .env baseline password instead of the last password the admin
        actually set. */
-    if (req.user.isAdmin && req.user.role === 'super_admin') {
+    if (req.user.isAdmin && ['ceo', 'super_admin'].includes(req.user.role)) {
       await initSuperAdmin();
     }
 
     if (req.user.isAdmin) {
-      if (req.user.role !== 'super_admin') {
-        return res.status(403).json({ error: 'Only the Super Admin can change their own password here. Ask your Super Admin to reset it for you from Users & Roles.' });
+      if (!['ceo', 'super_admin'].includes(req.user.role)) { return res.status(403).json({ error: 'Only the CEO or Super Admin can change their own password here.' });
       }
       const adminUser = store.adminUsers.find(u => u.id === 'super-admin-1');
       if (!adminUser) return res.status(401).json({ error: 'Your account no longer exists. Please sign in again.' });
@@ -331,7 +330,7 @@ router.patch('/change-password', requireAuth, async (req, res) => {
    ============================================================ */
 router.get('/admin-users', requireAdmin, async (req, res) => {
   try {
-    if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can view admin users.' });
+    if (!['ceo', 'super_admin'].includes(req.user.role)) return res.status(403).json({ error: 'Only CEO or super admins can view admin users.' });
     const users = (await getAllAdminUsers()).map(u => ({
       id:        u.id,
       fname:     u.fname,
@@ -353,10 +352,10 @@ router.get('/admin-users', requireAdmin, async (req, res) => {
    ============================================================ */
 router.post('/admin-users', requireAdmin, async (req, res) => {
   try {
-    if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can create admin users.' });
+    if (!['ceo', 'super_admin'].includes(req.user.role)) return res.status(403).json({ error: 'Only CEO or super admins can create admin users.' });
     const { fname, lname, username, password, role } = req.body;
     if (!fname || !username || !password) return res.status(400).json({ error: 'First name, username, and password are required.' });
-    if (!VALID_ROLES.includes(role)) return res.status(400).json({ error: 'Role must be "admin" or "supervisor".' });
+    if (!['super_admin', 'admin', 'supervisor'].includes(role)) return res.status(400).json({ error: 'Invalid role.' }); if (role === 'super_admin' && req.user.role !== 'ceo') return res.status(403).json({ error: 'Only CEO can create a super admin.' });
 
     const normalUsername = username.trim().toLowerCase();
     const existing = await findAdminUserByUsername(normalUsername);
@@ -448,7 +447,7 @@ router.patch('/profile', requireAdmin, async (req, res) => {
    ============================================================ */
 router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
   try {
-    if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can update admin users.' });
+    if (!['ceo', 'super_admin'].includes(req.user.role)) return res.status(403).json({ error: 'Only CEO or super admins can update admin users.' });
     const { role, active, password } = req.body;
     const targetId = req.params.id;
 
@@ -456,7 +455,7 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
     // Super admin cannot modify another super admin's password or role
-    if (user.role === 'super_admin' && targetId !== req.user.uid) {
+    if ((user.role === 'ceo') || (user.role === 'super_admin' && req.user.role !== 'ceo' && targetId !== req.user.uid)) {
       return res.status(403).json({ error: 'Cannot modify another super admin.' });
     }
 
@@ -492,14 +491,12 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
    ============================================================ */
 router.delete('/admin-users/:id', requireAdmin, async (req, res) => {
   try {
-    if (req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only super admins can delete admin users.' });
+    if (!['ceo', 'super_admin'].includes(req.user.role)) return res.status(403).json({ error: 'Only CEO or super admins can delete admin users.' });
     
     const user = store.adminUsers.find(u => u.id === req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
-    if (user.role === 'super_admin') {
-      return res.status(403).json({ error: 'Cannot delete a super admin.' });
-    }
+    if (user.role === 'ceo' || (user.role === 'super_admin' && req.user.role !== 'ceo')) { return res.status(403).json({ error: 'Cannot delete this user.' }); }
 
     if (isFirebaseAvailable()) {
       try { await getDB().collection('adminUsers').doc(req.params.id).delete(); } catch {}

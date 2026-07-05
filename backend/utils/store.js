@@ -41,7 +41,7 @@ const store = {
       username:    null,     /* filled from process.env.ADMIN_USERNAME at runtime */
       email:       null,     /* filled from process.env.ADMIN_USERNAME at runtime */
       passwordHash: null,    /* filled from process.env.ADMIN_PASSWORD at runtime */
-      role:        'super_admin',
+      role:        'ceo',
       fname:       'Super',
       lname:       'Admin',
       active:      true,

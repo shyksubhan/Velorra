@@ -1830,7 +1830,7 @@ async function loadDashboard() {
   loadRecentOrders();
   loadVisitors();
   loadAbandoned();
-  if (currentUser?.role === 'super_admin') {
+  if (['ceo', 'super_admin'].includes(currentUser?.role)) {
     loadLifetimeEarnings();
     loadDailyStatements();
     loadMonthlyStatements();
@@ -3926,7 +3926,7 @@ function esc(s) {
 
 /* ═══════════════════ USERS & ROLES ═══════════════════ */
 async function loadRoles() {
-  if (currentUser?.role !== 'super_admin') {
+  if (!['ceo', 'super_admin'].includes(currentUser?.role)) {
     document.getElementById('roles-restricted').style.display = 'flex';
     document.getElementById('roles-table-wrap').style.display = 'none';
     return;
@@ -4188,7 +4188,7 @@ async function loadSystemInfo() {
       Server Time: ${new Date(data.timestamp).toLocaleString()}
     `;
   } catch {}
-  if (currentUser?.role === 'super_admin') loadLaunchDate();
+  if (['ceo', 'super_admin'].includes(currentUser?.role)) loadLaunchDate();
 }
 
 /* ═══════════════════ SITE LAUNCH DATE (super_admin only) ═══════════════════ */
@@ -4318,7 +4318,7 @@ function fmtDate(iso) {
 }
 
 function formatRole(role) {
-  return { super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff' }[role] || role;
+  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff' }[role] || role;
 }
 
 function today() {
