@@ -503,15 +503,17 @@ app.use((err, req, res, next) => {
       }
 
       /* Load all orders into memory for store.js statement calculations */
-      const [ordersSnap, socialSnap, spendingsSnap] = await Promise.all([
+      const [ordersSnap, socialSnap, spendingsSnap, invoicesSnap] = await Promise.all([
         db.collection('orders').get(),
         db.collection('social_orders').get(),
-        db.collection('spendings').get()
+        db.collection('spendings').get(),
+        db.collection('invoices').get()
       ]);
       store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       store.socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
       store.spendings = spendingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log(`✅ Loaded ${store.orders.length} orders, ${store.socialOrders.length} social orders, ${store.spendings.length} spendings from Firestore.`);
+      store.invoices = invoicesSnap.docs.map(d => d.data());
+      console.log(`✅ Loaded ${store.orders.length} orders, ${store.socialOrders.length} social orders, ${store.spendings.length} spendings, ${store.invoices.length} invoices from Firestore.`);
     }
   } catch (e) { console.warn('Could not load data from Firestore:', e.message); }
 
