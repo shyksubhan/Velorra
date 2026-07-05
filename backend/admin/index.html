@@ -708,6 +708,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <label>Order Status</label>
           <select id="soc-status">
             <option value="Pending">Pending</option>
+            <option value="Confirmed">Confirmed</option>
             <option value="Processing">Processing</option>
             <option value="Shipped">Shipped</option>
             <option value="Delivered">Delivered</option>
@@ -1811,9 +1812,10 @@ function showPage(name) {
     document.getElementById('prof-fname').value = currentUser.fname || '';
     document.getElementById('prof-lname').value = currentUser.lname || '';
     document.getElementById('prof-username').value = currentUser.username || '';
+    loadCompanySettings();
+    loadSystemInfo();
   }
   if (name === 'spendings') loadSpendings();
-  if (name === 'settings')  loadSystemInfo();
   if (name === 'visitors')  loadVisitors();
   if (name === 'abandoned')     loadAbandoned();
   if (name === 'social-orders') loadSocialOrders();
@@ -2351,7 +2353,7 @@ function renderSocialOrders(orders) {
       <td style="color:var(--blue);font-weight:600">PKR ${Number(o.advanceAmount || 0).toLocaleString()}</td>
       <td>
         <select class="status-select" onchange="updateSocialOrderStatus('${o.id}', this.value)">
-          ${['Pending','Processing','Shipped','Delivered','Cancelled'].map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
+          ${['Pending','Confirmed','Processing','Shipped','Delivered','Cancelled'].map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
         </select>
       </td>
       <td>${fmtDate(o.createdAt)}</td>
@@ -2900,7 +2902,7 @@ function renderOrders(orders) {
       <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
       <td>
         <select class="status-select" onchange="updateOrderStatus('${o.id}', this.value)">
-          ${['Pending','Processing','Shipped','Delivered','Cancelled'].map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
+          ${['Pending','Confirmed','Processing','Shipped','Delivered','Cancelled'].map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
         </select>
       </td>
       <td>${fmtDate(o.createdAt)}</td>
@@ -4784,6 +4786,60 @@ async function approveReview(id, approve) {
     if (res.ok) { toast(approve ? 'Review approved — now visible on homepage ✓' : 'Review hidden.', 'success'); loadReviews(); }
     else toast('Failed to update review.', 'error');
   } catch { toast('Connection error.', 'error'); }
+}
+
+async function loadCompanySettings() {
+  try {
+    const res = await apiFetch('/settings');
+    const data = await res.json();
+    if(data.settings && data.settings.company) {
+      const c = data.settings.company;
+      document.getElementById('cs-name').value = c.name || '';
+      document.getElementById('cs-logo').value = c.logoUrl || '';
+      document.getElementById('cs-phone').value = c.phone || '';
+      document.getElementById('cs-email').value = c.email || '';
+      document.getElementById('cs-website').value = c.website || '';
+      document.getElementById('cs-invoiceTrigger').value = c.invoiceTrigger || 'manual';
+      document.getElementById('cs-address').value = c.address || '';
+    }
+  } catch(e) { console.error('Failed to load settings', e); }
+}
+
+async function saveCompanySettings() {
+  const btn = document.querySelector('#company-settings-section button');
+  btn.textContent = 'Saving...';
+  try {
+    const payload = {
+      settings: {
+        company: {
+          name: document.getElementById('cs-name').value,
+          logoUrl: document.getElementById('cs-logo').value,
+          phone: document.getElementById('cs-phone').value,
+          email: document.getElementById('cs-email').value,
+          website: document.getElementById('cs-website').value,
+          invoiceTrigger: document.getElementById('cs-invoiceTrigger').value,
+          address: document.getElementById('cs-address').value
+        }
+      }
+    };
+    const res = await apiFetch('/settings', { method: 'PUT', body: JSON.stringify(payload) });
+    const data = await res.json();
+    const msg = document.getElementById('company-msg');
+    msg.style.display = 'block';
+    if(res.ok) {
+      msg.className = 'alert alert-success';
+      msg.textContent = data.message || 'Company Settings Saved!';
+    } else {
+      msg.className = 'alert alert-danger';
+      msg.textContent = data.error || 'Failed to save settings.';
+    }
+  } catch(e) {
+    const msg = document.getElementById('company-msg');
+    msg.style.display = 'block';
+    msg.className = 'alert alert-danger';
+    msg.textContent = 'Network error while saving settings.';
+  }
+  btn.textContent = 'Save Company Settings';
 }
 </script>
 
