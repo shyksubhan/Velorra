@@ -1899,10 +1899,37 @@ function renderDashStats(data) {
   document.getElementById('s-msgs').textContent        = data.unreadMessages ?? 0;
   document.getElementById('s-users').textContent       = data.users?.total ?? 0;
 
-  if (document.getElementById('s-invoices')) document.getElementById('s-invoices').textContent = data.totalInvoices || 0;
-  if (document.getElementById('s-cod-orders')) document.getElementById('s-cod-orders').textContent = data.totalCodOrders || 0;
-  if (document.getElementById('s-advance')) document.getElementById('s-advance').textContent = 'PKR ' + (data.totalAdvanceReceived || 0).toLocaleString();
-  if (document.getElementById('s-outstanding-cod')) document.getElementById('s-outstanding-cod').textContent = 'PKR ' + (data.outstandingCodBalance || 0).toLocaleString();
+  /* Invoices */
+  if (document.getElementById('s-invoices')) {
+    let inv = data.totalInvoices || 0;
+    if (f === 'website') inv = data.webInvoicesCount || 0;
+    else if (f === 'social') inv = data.socInvoicesCount || 0;
+    document.getElementById('s-invoices').textContent = inv;
+  }
+
+  /* COD Orders */
+  if (document.getElementById('s-cod-orders')) {
+    let cod = data.totalCodOrders || 0;
+    if (f === 'website') cod = data.webCodOrders || 0;
+    else if (f === 'social') cod = data.socCodOrders || 0;
+    document.getElementById('s-cod-orders').textContent = cod;
+  }
+
+  /* Advance Received */
+  if (document.getElementById('s-advance')) {
+    let adv = data.totalAdvanceReceived || 0;
+    if (f === 'website') adv = data.webAdvanceReceived || 0;
+    else if (f === 'social') adv = data.socAdvanceReceived || 0;
+    document.getElementById('s-advance').textContent = 'PKR ' + adv.toLocaleString();
+  }
+
+  /* Outstanding COD */
+  if (document.getElementById('s-outstanding-cod')) {
+    let out = data.outstandingCodBalance || 0;
+    if (f === 'website') out = data.webOutstandingCod || 0;
+    else if (f === 'social') out = data.socOutstandingCod || 0;
+    document.getElementById('s-outstanding-cod').textContent = 'PKR ' + out.toLocaleString();
+  }
 
   /* Pending badge — always from website orders */
   const pending = data.orders?.statuses?.Pending || 0;

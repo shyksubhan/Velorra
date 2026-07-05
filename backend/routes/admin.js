@@ -125,13 +125,26 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.todayProfit = base.todayCombinedProfit - base.todaySocialProfit;
     base.totalProfit = base.totalCombinedProfit - base.totalSocialProfit;
 
-    /* Invoice Analytics Demo */
+    /* Invoices Breakdown */
     base.totalInvoices = store.invoices.length;
-    const allActiveDemo = [...orders, ...sOrders];
-    const cods = allActiveDemo.filter(o => o.status !== 'Cancelled' && o.paymentMethod === 'cod');
-    base.totalCodOrders = cods.length;
-    base.totalAdvanceReceived = cods.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
-    base.outstandingCodBalance = cods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
+    base.webInvoicesCount = store.invoices.filter(i => orders.some(o => o.id === i.orderId)).length;
+    base.socInvoicesCount = store.invoices.filter(i => sOrders.some(o => o.id === i.orderId)).length;
+
+    /* COD Breakdown */
+    const webCods = orders.filter(o => o.status !== 'Cancelled' && o.paymentMethod === 'cod');
+    const socCods = sOrders.filter(o => o.status !== 'Cancelled' && o.paymentMethod === 'cod');
+
+    base.webCodOrders = webCods.length;
+    base.socCodOrders = socCods.length;
+    base.totalCodOrders = base.webCodOrders + base.socCodOrders;
+
+    base.webAdvanceReceived = webCods.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
+    base.socAdvanceReceived = socCods.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0);
+    base.totalAdvanceReceived = base.webAdvanceReceived + base.socAdvanceReceived;
+
+    base.webOutstandingCod = webCods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
+    base.socOutstandingCod = socCods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
+    base.outstandingCodBalance = base.webOutstandingCod + base.socOutstandingCod;
     base.totalSpendings = store.spendings.reduce((s, x) => s + (Number(x.amount) || 0), 0);
 
     /* Add extra badge counts */
