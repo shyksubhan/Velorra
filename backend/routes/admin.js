@@ -120,7 +120,10 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.monthCombinedRevenue = base.monthRevenue + base.monthSocialRevenue;
     base.combinedRevenue      = base.totalRevenue + base.socialRevenue;
     base.todayCombinedProfit  = base.todayProfit  + base.todaySocialProfit;
-    base.totalCombinedProfit  = (store.lifetimeEarnings().totals.profit || 0) + base.totalSocialProfit;
+    base.totalCombinedProfit  = (store.lifetimeEarnings().totals.profit || 0);
+    base.todayCombinedProfit  = store.dailyStatement().totals.profit || 0;
+    base.todayProfit = base.todayCombinedProfit - base.todaySocialProfit;
+    base.totalProfit = base.totalCombinedProfit - base.totalSocialProfit;
 
     /* Invoice Analytics Demo */
     base.totalInvoices = store.invoices.length;
