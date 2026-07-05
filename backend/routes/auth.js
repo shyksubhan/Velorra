@@ -202,9 +202,20 @@ router.get('/me', requireAuth, async (req, res) => {
   try {
     if (req.user.isAdmin) {
       if (req.user.uid === 'super-admin-1') await initSuperAdmin();
-      const u = req.user.uid === 'super-admin-1'
+      let u = req.user.uid === 'super-admin-1'
         ? store.adminUsers.find(u => u.id === 'super-admin-1')
         : store.findAdminUserById(req.user.uid);
+      if (!u && isFirebaseAvailable()) {
+        try {
+          const doc = await getDB().collection('adminUsers').doc(req.user.uid).get();
+          if (doc.exists) {
+            u = { ...doc.data(), id: doc.id };
+            store.adminUsers.push(u); /* Cache it so it's there next time */
+          }
+        } catch (err) {
+          console.error('Failed to fetch admin user from FB in /me', err);
+        }
+      }
       if (!u) return res.status(401).json({ error: 'Your account no longer exists. Please sign in again.' });
       if (u.active === false) return res.status(401).json({ error: 'Your account has been deactivated.' });
       return res.json({ id: u.id, fname: u.fname, lname: u.lname, email: u.username, isAdmin: true, role: u.role });
@@ -245,8 +256,13 @@ router.patch('/change-password', requireAuth, async (req, res) => {
     if (req.user.isAdmin) {
       if (!['ceo', 'super_admin'].includes(req.user.role)) { return res.status(403).json({ error: 'Only the CEO or Super Admin can change their own password here.' });
       }
-      const adminUser = store.adminUsers.find(u => u.id === 'super-admin-1');
+      let adminUser = store.findAdminUserById(req.user.uid);
+      if (!adminUser && isFirebaseAvailable()) {
+        const doc = await getDB().collection('adminUsers').doc(req.user.uid).get();
+        if (doc.exists) adminUser = { ...doc.data(), id: doc.id };
+      }
       if (!adminUser) return res.status(401).json({ error: 'Your account no longer exists. Please sign in again.' });
+
       const match = adminUser.passwordHash
         ? await bcrypt.compare(currentPassword, adminUser.passwordHash)
         : currentPassword === process.env.ADMIN_PASSWORD;
@@ -256,7 +272,9 @@ router.patch('/change-password', requireAuth, async (req, res) => {
       const newHash = await bcrypt.hash(newPassword, 12);
       adminUser.passwordHash = newHash;
       adminUser.tokenVersion = (adminUser.tokenVersion || 0) + 1; /* invalidate all existing sessions */
-      process.env.ADMIN_PASSWORD = newPassword;
+      if (req.user.uid === 'super-admin-1') {
+        process.env.ADMIN_PASSWORD = newPassword;
+      }
 
       /* ── Persist to Firestore so the change survives server restarts/redeploys ──
          IMPORTANT: if this write fails, we must NOT tell the user it succeeded —
@@ -265,23 +283,14 @@ router.patch('/change-password', requireAuth, async (req, res) => {
       let firestorePersisted = false;
       if (isFirebaseAvailable()) {
         try {
-          await getDB().collection('adminUsers').doc('super-admin-1').set({
-            id:           'super-admin-1',
-            username:     adminUser.username,
-            email:        adminUser.email,
+          await getDB().collection('adminUsers').doc(req.user.uid).update({
             passwordHash: newHash,
-            role:         'super_admin',
-            fname:        adminUser.fname,
-            lname:        adminUser.lname,
-            active:       true,
             tokenVersion: adminUser.tokenVersion,
-            updatedAt:    new Date().toISOString(),
-          }, { merge: true });
+            updatedAt: new Date().toISOString()
+          });
           firestorePersisted = true;
-        } catch (err) {
-          console.error('Failed to persist super admin password to Firestore:', err.message);
-          /* Roll back so login + Firestore stay consistent instead of silently
-             drifting apart until the next restart wipes the in-memory change. */
+        } catch (fbErr) {
+          /* Rollback in-memory and abort */
           adminUser.passwordHash = previousHash;
           adminUser.tokenVersion = (adminUser.tokenVersion || 1) - 1;
           process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD; /* unchanged baseline */
@@ -331,7 +340,7 @@ router.patch('/change-password', requireAuth, async (req, res) => {
 router.get('/admin-users', requireAdmin, async (req, res) => {
   try {
     if (!['ceo', 'super_admin'].includes(req.user.role)) return res.status(403).json({ error: 'Only CEO or super admins can view admin users.' });
-    const users = (await getAllAdminUsers()).map(u => ({
+    let users = (await getAllAdminUsers()).map(u => ({
       id:        u.id,
       fname:     u.fname,
       lname:     u.lname,
@@ -341,6 +350,9 @@ router.get('/admin-users', requireAdmin, async (req, res) => {
       createdAt: u.createdAt,
       lastLogin: u.lastLogin,
     }));
+    if (req.user.role === 'super_admin') {
+      users = users.filter(u => u.role !== 'ceo');
+    }
     return res.json({ users });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to fetch admin users.' });

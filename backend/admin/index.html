@@ -584,8 +584,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 
   <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px">
-    Coupons created here can be used by customers at checkout and by staff when creating Social Media Orders.
-    Only Super Admin can create or edit coupons.
   </p>
 
   <div class="table-wrap">
@@ -1440,7 +1438,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
 <!-- ════════════════════════════ JAVASCRIPT ═════════════════════ -->
 <script>
-const API = 'https://velorra-vvp3.onrender.com/api';
+const API = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://localhost:3001/api' : 'https://velorra-vvp3.onrender.com/api';
 let adminToken  = localStorage.getItem('velorra_admin_token') || null;
 let currentUser = null;
 let notifications = [];
@@ -1555,8 +1553,8 @@ function onLoginSuccess() {
 }
 
 function applyRolePermissions(role) {
-  /* Super Admin — sees everything */
-  if (role === 'super_admin') {
+  /* Super Admin & CEO — sees everything */
+  if (['ceo', 'super_admin'].includes(role)) {
     document.getElementById('activity-btn').style.display = 'inline-flex';
     document.getElementById('nav-spendings').style.display = 'flex';
     document.getElementById('card-spendings').style.display = 'flex';
@@ -1578,6 +1576,8 @@ function applyRolePermissions(role) {
     /* Hide daily profit stat card */
     const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
     if (profitCard) profitCard.style.display = 'none';
+    const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
+    if (totalProfitCard) totalProfitCard.style.display = 'none';
     /* Hide Excel export buttons */
     document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
     /* Hide cost/purchase-price column in products table — only super admin sees margins */
@@ -1603,6 +1603,8 @@ function applyRolePermissions(role) {
     if (revenueCard) revenueCard.style.display = 'none';
     const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
     if (profitCard) profitCard.style.display = 'none';
+    const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
+    if (totalProfitCard) totalProfitCard.style.display = 'none';
     document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
     document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
     document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
@@ -1728,8 +1730,10 @@ function connectSSE() {
   };
 
   sseSource.onerror = () => {
-    /* Reconnect after 5s if SSE drops */
-    setTimeout(() => { if (adminToken) connectSSE(); }, 5000);
+    /* EventSource reconnects automatically, no manual intervention needed unless closed */
+    if (sseSource.readyState === EventSource.CLOSED) {
+      setTimeout(() => { if (adminToken) connectSSE(); }, 5000);
+    }
   };
 }
 
@@ -1916,6 +1920,27 @@ function renderDashStats(data) {
   const unreadBadge = document.getElementById('unread-badge');
   unreadBadge.textContent = unread;
   unreadBadge.style.display = unread ? 'inline-block' : 'none';
+
+  /* Reviews badge */
+  const revBadge = document.getElementById('reviews-badge');
+  if (revBadge && data.pendingReviews !== undefined) {
+    revBadge.textContent = data.pendingReviews;
+    revBadge.style.display = data.pendingReviews ? 'inline-block' : 'none';
+  }
+
+  /* Resellers badge */
+  const resBadge = document.getElementById('resellers-badge');
+  if (resBadge && data.unreadResellers !== undefined) {
+    resBadge.textContent = data.unreadResellers;
+    resBadge.style.display = data.unreadResellers ? 'inline-block' : 'none';
+  }
+
+  /* Abandoned badge */
+  const abanBadge = document.getElementById('abandoned-badge');
+  if (abanBadge && data.abandonedCheckouts !== undefined) {
+    abanBadge.textContent = data.abandonedCheckouts;
+    abanBadge.style.display = data.abandonedCheckouts ? 'inline-block' : 'none';
+  }
 }
 
 async function loadRecentOrders() {
@@ -3895,7 +3920,15 @@ async function updateResellerStatus(id, status) {
 }
 
 async function deleteReseller(id) {
-  if (!confirm('Delete this reseller request?')) return;
+  const confirmed = await showConfirmModal({
+    icon: '🗑️',
+    title: 'Delete Reseller Request',
+    message: 'Are you sure you want to delete this reseller request? This cannot be undone.',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    confirmColor: 'var(--red)'
+  });
+  if (!confirmed) return;
   try {
     const res = await apiFetch(`/resellers/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error();

@@ -134,11 +134,36 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.outstandingCodBalance = cods.reduce((sum, o) => sum + Math.max(0, (o.total || 0) - (Number(o.advanceAmount) || 0)), 0);
     base.totalSpendings = store.spendings.reduce((s, x) => s + (Number(x.amount) || 0), 0);
 
-    return res.json(maskRevenue({ ...base, demoMode: false }, req.user.role));
+    /* Add extra badge counts */
+    if (isFirebaseAvailable()) {
+      const db = getDB();
+      try {
+        const [reviewsSnap, resellersSnap, abandonedSnap, msgsSnap, prodsSnap, subsSnap, usersSnap] = await Promise.all([
+          db.collection('reviews').where('approved', '==', false).count().get(),
+          db.collection('resellers').where('read', '==', false).count().get(),
+          db.collection('abandoned').count().get(),
+          db.collection('contact_messages').where('read', '==', false).count().get(),
+          db.collection('products').count().get(),
+          db.collection('subscribers').count().get(),
+          db.collection('users').count().get()
+        ]);
+        base.pendingReviews = reviewsSnap.data().count;
+        base.unreadResellers = resellersSnap.data().count;
+        base.abandonedCheckouts = abandonedSnap.data().count;
+        base.unreadMessages = msgsSnap.data().count;
+        base.products = { total: prodsSnap.data().count };
+        base.subscribers = { total: subsSnap.data().count };
+        base.users = { total: usersSnap.data().count };
+      } catch (err) {
+        console.error('Failed to fetch extra counts for stats:', err);
+      }
+    }
+
+    return res.json(maskRevenue({ ...base, demoMode: false }, req.user?.role));
 
   } catch (err) {
     console.error('Stats error:', err);
-    return res.json(maskRevenue({ ...store.stats(), demoMode: true }, req.user.role));
+    return res.json(maskRevenue({ ...store.stats(), demoMode: true }, req.user?.role));
   }
 });
 
@@ -152,7 +177,8 @@ router.get('/recent-orders', requireRole('super_admin', 'admin'), async (req, re
     let combined = [...orders, ...socials];
 
     combined.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-    return res.json({ orders: combined.slice(0, limit) });
+    const recent = combined.slice(0, limit);
+    return res.json({ orders: recent.map(o => maskRevenue(o, req.user?.role)) });
   } catch (err) {
     console.error('Recent orders error:', err);
     return res.status(500).json({ error: 'Failed to fetch recent orders' });
