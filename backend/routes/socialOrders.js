@@ -10,7 +10,7 @@ const { requireAdmin } = require('../middleware/auth');
 const store            = require('../utils/store');
 
 const router  = express.Router();
-const STATUSES = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+const STATUSES = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 const SOURCES  = ['facebook', 'instagram', 'whatsapp', 'tiktok', 'other'];
 
 function isFirebaseAvailable() {

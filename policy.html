@@ -291,9 +291,9 @@
           <a href="${window.VELORRA_CONFIG?.social?.whatsapp || '#'}" target="_blank" class="btn-primary" style="display:inline-block;margin-top:14px;padding:12px 28px;">Chat on WhatsApp ↗</a></div></div>`;
         return;
       }
-      const statusColors = { Pending:'#c9a84c', Processing:'#5b9bd5', Shipped:'#7ec8a4', Delivered:'#5cb85c', Cancelled:'#d96a6a' };
-      const statusIcons  = { Pending:'⏳', Processing:'⚙️', Shipped:'🚚', Delivered:'✅', Cancelled:'❌' };
-      const steps = ['Pending','Processing','Shipped','Delivered'];
+      const statusColors = { Pending:'#c9a84c', Confirmed:'#8e44ad', Processing:'#5b9bd5', Shipped:'#7ec8a4', Delivered:'#5cb85c', Cancelled:'#d96a6a' };
+      const statusIcons  = { Pending:'⏳', Confirmed:'👍', Processing:'⚙️', Shipped:'🚚', Delivered:'✅', Cancelled:'❌' };
+      const steps = ['Pending','Confirmed','Processing','Shipped','Delivered'];
       const stepIdx = steps.indexOf(order.status);
       const stepsHTML = order.status === 'Cancelled' ? '' : `
         <div style="display:flex;gap:0;margin:20px 0 8px;align-items:center;">
