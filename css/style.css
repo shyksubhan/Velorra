@@ -1120,7 +1120,9 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   opacity: 1;
 }
 .premium-cat-card .cat-img-info {
-  padding: 25px 10px 10px;
+  position: static;
+  display: block;
+  padding: 20px 5px 5px;
   text-align: center;
   z-index: 2;
 }
@@ -1132,19 +1134,31 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   margin: 0;
   line-height: 1.2;
   letter-spacing: 0.05em;
+  text-shadow: none;
 }
 
 @media (max-width: 900px) {
   .premium-cat-card {
-    width: calc(50% - 15px);
+    width: calc(33.333% - 14px);
+    min-width: 200px;
+  }
+  .premium-cat-grid {
+    gap: 20px;
   }
 }
 @media (max-width: 600px) {
   .premium-cat-grid {
-    gap: 20px;
+    gap: 12px;
+    align-items: flex-start;
   }
   .premium-cat-card {
-    width: 100%;
-    max-width: 280px;
+    width: calc(33.333% - 8px);
+    min-width: 90px;
+  }
+  .premium-cat-card .cat-name {
+    font-size: 1rem;
+  }
+  .premium-cat-card .cat-img-info {
+    padding: 12px 2px 2px;
   }
 }
