@@ -1072,29 +1072,31 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 }
 .premium-cat-card {
   position: relative;
-  overflow: hidden;
-  border-radius: 50%; /* Circle Shape */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  aspect-ratio: 1 / 1;
   width: calc(33.333% - 20px);
   max-width: 320px;
   min-width: 260px;
   display: block;
-  border: 1px solid var(--border-soft);
-  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
-  padding: 0;
-  background: var(--bg-deep);
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.4s ease;
 }
 .premium-cat-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 60px rgba(184,136,58,0.2);
-  border-color: var(--gold);
 }
 .premium-cat-card .cat-img-wrap {
-  position: absolute;
-  inset: 0;
+  position: relative;
   overflow: hidden;
   border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-deep);
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+  margin: 0 auto;
+}
+.premium-cat-card:hover .cat-img-wrap {
+  box-shadow: 0 24px 60px rgba(184,136,58,0.2);
+  border-color: var(--gold);
 }
 .premium-cat-card .cat-img-wrap img {
   width: 100%;
@@ -1109,14 +1111,16 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 .premium-cat-card .cat-img-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.2) 100%);
   transition: opacity 0.4s;
   border-radius: 50%;
+  opacity: 0;
+}
+.premium-cat-card:hover .cat-img-overlay {
+  opacity: 1;
 }
 .premium-cat-card .cat-img-info {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 25px 20px;
+  padding: 25px 10px 10px;
   text-align: center;
   z-index: 2;
 }
@@ -1124,17 +1128,14 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text);
   margin: 0;
   line-height: 1.2;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   letter-spacing: 0.05em;
-  padding-bottom: 20px; /* Add some padding so it doesn't stick to the bottom edge of the circle */
 }
 
 @media (max-width: 900px) {
   .premium-cat-card {
-    border-radius: 50%;
     width: calc(50% - 15px);
   }
 }
@@ -1145,6 +1146,5 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   .premium-cat-card {
     width: 100%;
     max-width: 280px;
-    aspect-ratio: 1 / 1;
   }
 }

@@ -68,7 +68,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
 
     // Company Details (under logo)
     doc.fontSize(8).fillColor(C_MUTED).font('Helvetica');
-    const fWeb = company.website || 'golnisa.store';
+    const fWeb = company.website || 'golnisa.com';
     const fEmail = company.email || 'golnisaqueries@gmail.com';
     const fPhone = company.phone || '+92 331 4978295';
     const fInsta = company.instagram || '@golnisajewelry_';
