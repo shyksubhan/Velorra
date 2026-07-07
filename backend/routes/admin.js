@@ -86,7 +86,39 @@ router.get('/list-categories', requireRole('super_admin', 'admin'), async (req, 
   }
 });
 
+
+
+/* ── GET /api/admin/pinned — Public route to get pinned collections ── */
+router.get('/pinned', (req, res) => {
+  try {
+    const pinnedPath = path.join(__dirname, '..', 'data', 'pinned.json');
+    if (!fs.existsSync(pinnedPath)) {
+      return res.json({ pinned: [] });
+    }
+    const data = JSON.parse(fs.readFileSync(pinnedPath, 'utf8'));
+    return res.json({ pinned: data });
+  } catch (err) {
+    return res.json({ pinned: [] });
+  }
+});
+
+/* ── POST /api/admin/pinned — Save pinned collections (admin only) ── */
+router.post('/pinned', requireRole('super_admin', 'admin', 'ceo'), (req, res) => {
+  try {
+    const { pinned } = req.body;
+    if (!Array.isArray(pinned)) return res.status(400).json({ error: 'Expected array of pinned collections' });
+    
+    const pinnedPath = path.join(__dirname, '..', 'data', 'pinned.json');
+    fs.writeFileSync(pinnedPath, JSON.stringify(pinned, null, 2));
+    
+    return res.json({ message: 'Pinned collections updated', pinned });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to update pinned collections' });
+  }
+});
+
 /* ── GET /api/admin/stats — REAL stats from shared store (super_admin + admin only) ── */
+
 router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const base    = store.stats();

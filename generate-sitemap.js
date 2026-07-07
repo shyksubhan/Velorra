@@ -8,7 +8,7 @@ const https = require('https');
 const fs    = require('fs');
 const path  = require('path');
 
-const DOMAIN  = 'https://velorrajewelry.store';
+const DOMAIN  = 'https://velorra.store';
 const API_URL = 'https://velorra-vvp3.onrender.com/api/products';
 const TODAY   = new Date().toISOString().slice(0, 10);
 

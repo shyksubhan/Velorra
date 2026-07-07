@@ -18,12 +18,12 @@
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://velorrajewelry.store/#organization",
+        "@id": "https://velorra.store/#organization",
         "name": "Velorra",
-        "url": "https://velorrajewelry.store",
+        "url": "https://velorra.store",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://velorrajewelry.store/images/logo.svg"
+          "url": "https://velorra.store/images/logo.svg"
         },
         "description": "Pakistan's premier online store for hair accessories and jewelry. Scrunchies, pins, hair clips, necklaces, earrings, bracelets and more.",
         "address": {
@@ -44,22 +44,22 @@
       },
       {
         "@type": "WebSite",
-        "@id": "https://velorrajewelry.store/#website",
-        "url": "https://velorrajewelry.store",
+        "@id": "https://velorra.store/#website",
+        "url": "https://velorra.store",
         "name": "Velorra",
-        "publisher": { "@id": "https://velorrajewelry.store/#organization" },
+        "publisher": { "@id": "https://velorra.store/#organization" },
         "potentialAction": {
           "@type": "SearchAction",
-          "target": { "@type": "EntryPoint", "urlTemplate": "https://velorrajewelry.store/shop?q={search_term_string}" },
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://velorra.store/shop?q={search_term_string}" },
           "query-input": "required name=search_term_string"
         }
       },
       {
         "@type": "Store",
-        "@id": "https://velorrajewelry.store/#store",
+        "@id": "https://velorra.store/#store",
         "name": "Velorra",
-        "url": "https://velorrajewelry.store",
-        "image": "https://velorrajewelry.store/images/categories/necklace.jpg",
+        "url": "https://velorra.store",
+        "image": "https://velorra.store/images/categories/necklace.jpg",
         "priceRange": "PKR 80 - PKR 999",
         "currenciesAccepted": "PKR",
         "paymentAccepted": "Cash, Bank Transfer",
@@ -82,16 +82,16 @@
   <!-- Custom Cursor -->
 <!-- NAV -->
   <nav>
-    <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra <em style="color:#b8883a;font-style:normal;">Jewelry</em></a>
+    <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra</a>
     <ul class="nav-links">
       <li><a href="/">Home</a></li>
       <li class="nav-dropdown">
         <a href="shop">Shop <i class="fa-solid fa-chevron-down" style="font-size:0.7em;margin-left:4px;"></i></a>
         <ul class="dropdown-menu">
           <li><a href="shop">All Collections</a></li>
-          <li><a href="collections?main=jewelry">Jewelry</a></li>
-          <li><a href="collections?main=hair-accessories">Hair Accessories</a></li>
-          <li><a href="collections?main=clothing">Clothing</a></li>
+          <li><a href="jewelry.html">Jewelry</a></li>
+          <li><a href="hair-accessories.html">Hair Accessories</a></li>
+          <li><a href="clothing.html">Clothing</a></li>
         </ul>
       </li>
       <li><a href="about">Our Story</a></li>
@@ -170,7 +170,7 @@
       <div class="gold-rule"></div>
       <div class="cat-grid">
 
-        <a href="collections?main=jewelry" class="cat-card cat-img-card">
+        <a href="jewelry.html" class="cat-card cat-img-card">
           <div class="cat-img-wrap">
             <img src="images/categories/necklace.jpg" alt="Jewelry Online Pakistan — Velorra" loading="lazy"/>
             <div class="cat-img-overlay"></div>
@@ -181,7 +181,7 @@
           </div>
         </a>
 
-        <a href="collections?main=hair-accessories" class="cat-card cat-img-card">
+        <a href="hair-accessories.html" class="cat-card cat-img-card">
           <div class="cat-img-wrap">
             <img src="images/categories/scrunchies.jpg" alt="Hair Accessories Online Pakistan — Velorra" loading="lazy"/>
             <div class="cat-img-overlay"></div>
@@ -192,7 +192,7 @@
           </div>
         </a>
 
-        <a href="collections?main=clothing" class="cat-card cat-img-card">
+        <a href="clothing.html" class="cat-card cat-img-card">
           <div class="cat-img-wrap" style="background:#eae3d8;">
             <!-- No Image yet -->
             <div class="cat-img-overlay"></div>
@@ -207,20 +207,45 @@
     </div>
   </section>
   <!-- FEATURED PRODUCTS -->
-  <section id="featured">
-    <div class="container">
-      <div class="section-header reveal">
-        <div>
-          <p class="section-label">Handpicked For You</p>
-          <h2 class="section-title">Featured <em>Pieces</em></h2>
-        </div>
-        <a href="shop" class="view-all">View All →</a>
-      </div>
-      <div class="products-grid">
-        <p style="grid-column:1/-1;text-align:center;padding:40px 0;opacity:0.5;">Loading products…</p>
-      </div>
+  
+<div id="pinned-collections-wrapper"></div>
+
+<!-- Featured Jewelry -->
+<section id="featured-jewelry" style="padding:60px 0; background:var(--bg);">
+  <div class="container">
+    <div class="section-header" style="text-align:left; margin-bottom:20px;">
+      <h2 style="font-size:2rem;">Featured <em style="color: var(--gold);">Jewelry</em></h2>
     </div>
-  </section>
+    <div class="horizontal-scroll-grid" id="featured-jewelry-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.5;">Loading products...</div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Hair Accessories -->
+<section id="featured-hair" style="padding:0 0 60px 0; background:var(--bg);">
+  <div class="container">
+    <div class="section-header" style="text-align:left; margin-bottom:20px;">
+      <h2 style="font-size:2rem;">Featured <em style="color: var(--gold);">Hair Accessories</em></h2>
+    </div>
+    <div class="horizontal-scroll-grid" id="featured-hair-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.5;">Loading products...</div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Clothing -->
+<section id="featured-clothing" style="padding:0 0 60px 0; background:var(--bg);">
+  <div class="container">
+    <div class="section-header" style="text-align:left; margin-bottom:20px;">
+      <h2 style="font-size:2rem;">Featured <em style="color: var(--gold);">Clothing</em></h2>
+    </div>
+    <div class="horizontal-scroll-grid" id="featured-clothing-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.5;">Loading products...</div>
+    </div>
+  </div>
+</section>
+
   <!-- BRAND STORY -->
   <section id="story">
     <div class="container">
@@ -275,7 +300,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra <em style="color:#b8883a;font-style:normal;">Jewelry</em></a>
+          <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra</a>
           <p>Pakistan's premier destination for fine jewelry and hair accessories. Crafted with elegance for the modern woman.</p>
           <div class="footer-social" id="footer-social-links">
             <!-- filled by JS from config -->

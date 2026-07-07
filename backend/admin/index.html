@@ -796,19 +796,27 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <option value="hair-bands">Hair Bands</option>
         <option value="pins">Pins</option>
         <option value="ponies">Ponies</option>
+        
         <option value="fancy">Fancy Accessories</option>
         <option value="bracelets">Bracelets</option>
         <option value="rings">Rings</option>
         <option value="earrings">Earrings</option>
         <option value="necklace">Necklace</option>
         <option value="gift-items">Gift Items</option>
+        <option value="fancy-wear">Fancy Wear</option>
+        <option value="casual">Casual</option>
+        <option value="party-wear">Party Wear</option>
+        <option value="summer-collection">Summer Collection</option>
+        <option value="winter-collection">Winter Collection</option>
+        <option value="daily-pret">Daily Pret Ready to Wear</option>
+
       </select>
       <select class="filter-sel" id="product-sort-order" onchange="filterProductsTable()" title="Sort by time added">
         <option value="newest">Newest First</option>
         <option value="oldest">Oldest First</option>
       </select>
       <button class="btn btn-outline" onclick="exportProductsExcel()" title="Export to Excel"><i class="fa-solid fa-file-excel"></i> Export</button>
-      <button class="btn btn-gold" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add Product</button>
+      <button class="btn btn-outline" onclick="openPinnedModal()"><i class="fa-solid fa-thumbtack"></i> Pinned Collections</button>\n      <button class="btn btn-gold" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add Product</button>
     </div>
   </div>
   <div id="products-body" class="product-admin-grid"></div>
@@ -3069,7 +3077,100 @@ function viewInvoicesForOrder(orderId) {
   renderInvoices(filtered);
 }
 
+
+/* ═══════════════════ PINNED COLLECTIONS ═══════════════════ */
+let adminPinnedCollections = [];
+
+async function openPinnedModal() {
+  document.getElementById('modal-pinned').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  try {
+    const res = await apiFetch('/admin/pinned');
+    if (res.ok && res.data && res.data.pinned) {
+      adminPinnedCollections = res.data.pinned;
+    } else {
+      adminPinnedCollections = [];
+    }
+  } catch (err) {
+    adminPinnedCollections = [];
+  }
+  renderPinnedList();
+}
+
+function closePinnedModal() {
+  document.getElementById('modal-pinned').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function renderPinnedList() {
+  const tbody = document.getElementById('pinned-list-body');
+  if (adminPinnedCollections.length === 0) {
+    tbody.innerHTML = '<tr><td style="color:var(--muted);text-align:center;">No pinned collections.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = adminPinnedCollections.map((p, i) => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td style="text-align:right;">
+        <button class="btn btn-outline btn-sm" onclick="movePinned(${i}, -1)" ${i===0?'disabled':''}><i class="fa-solid fa-arrow-up"></i></button>
+        <button class="btn btn-outline btn-sm" onclick="movePinned(${i}, 1)" ${i===adminPinnedCollections.length-1?'disabled':''}><i class="fa-solid fa-arrow-down"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="removePinned(${i})"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function addPinnedCollection() {
+  const sel = document.getElementById('pinned-sel');
+  const id = sel.value;
+  if (!id) return;
+  const name = sel.options[sel.selectedIndex].text;
+  if (adminPinnedCollections.find(p => p.id === id)) {
+    toast('Already pinned', 'info');
+    return;
+  }
+  adminPinnedCollections.push({ id, name });
+  renderPinnedList();
+  sel.value = '';
+}
+
+function removePinned(index) {
+  adminPinnedCollections.splice(index, 1);
+  renderPinnedList();
+}
+
+function movePinned(index, dir) {
+  const target = index + dir;
+  if (target < 0 || target >= adminPinnedCollections.length) return;
+  const temp = adminPinnedCollections[index];
+  adminPinnedCollections[index] = adminPinnedCollections[target];
+  adminPinnedCollections[target] = temp;
+  renderPinnedList();
+}
+
+async function savePinnedCollections() {
+  const btn = document.querySelector('#modal-pinned .btn-primary');
+  const orig = btn.innerText;
+  btn.innerText = 'Saving...';
+  try {
+    const res = await apiFetch('/admin/pinned', {
+      method: 'POST',
+      body: { pinned: adminPinnedCollections }
+    });
+    if (res.ok) {
+      toast('Pinned collections saved successfully', 'success');
+      closePinnedModal();
+    } else {
+      toast(res.data?.error || 'Failed to save', 'error');
+    }
+  } catch (err) {
+    toast('Error saving pinned collections', 'error');
+  }
+  btn.innerText = orig;
+}
+
 /* ═══════════════════ PRODUCTS ═══════════════════ */
+
 function exportProductsExcel() {
   if (!allProducts.length) { toast('No products to export.', 'error'); return; }
   if (!window.XLSX) { toast('XLSX library not available', 'error'); return; }

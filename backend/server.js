@@ -38,8 +38,8 @@ app.use(cors({
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'https://velorra-vvp3.onrender.com',
-    'https://velorrajewelry.store',
-    'https://www.velorrajewelry.store',
+    'https://velorra.store',
+    'https://www.velorra.store',
     'null',   /* file:// protocol */
   ],
   credentials: true,
@@ -405,12 +405,12 @@ app.get('/sitemap.xml', async (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
 
   const staticUrls = [
-    { loc: 'https://velorrajewelry.store/',         priority: '1.0', changefreq: 'weekly'  },
-    { loc: 'https://velorrajewelry.store/shop',     priority: '0.9', changefreq: 'daily'   },
-    { loc: 'https://velorrajewelry.store/about',    priority: '0.7', changefreq: 'monthly' },
-    { loc: 'https://velorrajewelry.store/contact',  priority: '0.6', changefreq: 'monthly' },
-    { loc: 'https://velorrajewelry.store/policy',   priority: '0.5', changefreq: 'monthly' },
-    { loc: 'https://velorrajewelry.store/reseller', priority: '0.6', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/',         priority: '1.0', changefreq: 'weekly'  },
+    { loc: 'https://velorra.store/shop',     priority: '0.9', changefreq: 'daily'   },
+    { loc: 'https://velorra.store/about',    priority: '0.7', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/contact',  priority: '0.6', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/policy',   priority: '0.5', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/reseller', priority: '0.6', changefreq: 'monthly' },
   ];
 
   const categories = [
@@ -418,7 +418,7 @@ app.get('/sitemap.xml', async (req, res) => {
     'bracelets','rings','earrings','necklace','gift-items'
   ];
   const catUrls = categories.map(c => ({
-    loc: `https://velorrajewelry.store/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
+    loc: `https://velorra.store/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
   }));
 
   /* Fetch live products from Firestore */
@@ -434,7 +434,7 @@ app.get('/sitemap.xml', async (req, res) => {
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         const id   = slug || d.id;
         return {
-          loc: `https://velorrajewelry.store/product?id=${encodeURIComponent(id)}&name=${encodeURIComponent(id)}`,
+          loc: `https://velorra.store/product?id=${encodeURIComponent(id)}&name=${encodeURIComponent(id)}`,
           priority: '0.7',
           changefreq: 'weekly',
           lastmod: data.createdAt ? new Date(data.createdAt).toISOString().slice(0,10) : today
