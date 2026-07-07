@@ -1061,3 +1061,86 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   }
   .cat-row-3 .cat-card { width: 100%; }
 }
+\n
+/* Premium Centered Category Cards */
+.premium-cat-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+.premium-cat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 120px 120px 10px 10px; /* Elegant Arch Shape */
+  aspect-ratio: 3/4;
+  width: calc(33.333% - 20px);
+  max-width: 340px;
+  min-width: 280px;
+  display: block;
+  border: 1px solid var(--border-soft);
+  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+  padding: 0;
+  background: var(--bg-deep);
+}
+.premium-cat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 60px rgba(184,136,58,0.2);
+  border-color: var(--gold);
+}
+.premium-cat-card .cat-img-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.premium-cat-card .cat-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.8s cubic-bezier(0.25,1,0.25,1);
+}
+.premium-cat-card:hover .cat-img-wrap img {
+  transform: scale(1.08);
+}
+.premium-cat-card .cat-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
+  transition: opacity 0.4s;
+}
+.premium-cat-card .cat-img-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 25px 20px;
+  text-align: center;
+  z-index: 2;
+}
+.premium-cat-card .cat-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 900px) {
+  .premium-cat-card {
+    border-radius: 80px 80px 8px 8px;
+    width: calc(50% - 15px);
+  }
+}
+@media (max-width: 600px) {
+  .premium-cat-grid {
+    gap: 20px;
+  }
+  .premium-cat-card {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 4/5;
+  }
+}
