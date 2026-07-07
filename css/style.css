@@ -1073,12 +1073,12 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 .premium-cat-card {
   position: relative;
   overflow: hidden;
-  border-radius: 120px 120px 10px 10px; /* Elegant Arch Shape */
+  border-radius: 50%; /* Circle Shape */
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  aspect-ratio: 3/4;
+  aspect-ratio: 1 / 1;
   width: calc(33.333% - 20px);
-  max-width: 340px;
-  min-width: 280px;
+  max-width: 320px;
+  min-width: 260px;
   display: block;
   border: 1px solid var(--border-soft);
   transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
@@ -1094,6 +1094,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   position: absolute;
   inset: 0;
   overflow: hidden;
+  border-radius: 50%;
 }
 .premium-cat-card .cat-img-wrap img {
   width: 100%;
@@ -1110,6 +1111,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   inset: 0;
   background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
   transition: opacity 0.4s;
+  border-radius: 50%;
 }
 .premium-cat-card .cat-img-info {
   position: absolute;
@@ -1127,11 +1129,12 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   letter-spacing: 0.05em;
+  padding-bottom: 20px; /* Add some padding so it doesn't stick to the bottom edge of the circle */
 }
 
 @media (max-width: 900px) {
   .premium-cat-card {
-    border-radius: 80px 80px 8px 8px;
+    border-radius: 50%;
     width: calc(50% - 15px);
   }
 }
@@ -1141,7 +1144,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   }
   .premium-cat-card {
     width: 100%;
-    max-width: 320px;
-    aspect-ratio: 4/5;
+    max-width: 280px;
+    aspect-ratio: 1 / 1;
   }
 }

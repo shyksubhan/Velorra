@@ -65,7 +65,10 @@ function golnisaProductCardHTML(p) {
         <p class="product-cat">${velorCatLabel(subcat || cat)}</p>
         <h3 class="product-name"><a href="product.html?id=${p.id}">${p.name}</a></h3>
         <div class="product-price">PKR ${Number(p.price).toLocaleString()} ${oldPrice}</div>
-        <button class="btn-primary product-add" onclick="cart.add('${p.id}','${safeName}',${p.price},'${mainImage||''}','${variant}')">Add to Bag</button>
+        <div class="product-action-row" style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn-primary product-add" style="flex:1;font-size:0.8rem;padding:8px;" onclick="addToCart('${safeName}', ${p.price}, '${emoji}', '${variant}')">Add to Bag</button>
+          <button class="btn-outline product-buy" style="flex:1;font-size:0.8rem;padding:8px;" onclick="buyNow('${safeName}', ${p.price}, '${emoji}', '${variant}')">Buy it Now</button>
+        </div>
       </div>
     </div>
   `;

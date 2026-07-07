@@ -174,19 +174,15 @@ window.updateShopHero = function(cat) {
   if (!titleEl || !descEl) return;
 
   const data = {
-    'all': { title: 'Hair Accessories <em style="color: var(--gold);">&amp;</em> Jewelry', desc: "Discover Pakistan's finest online selection of premium scrunchies, elegant clips, and beautifully crafted jewelry pieces for every occasion." },
+    'all': { title: 'Hair <em style="color: var(--gold);">Accessories</em>', desc: "Discover Pakistan's finest online selection of premium scrunchies, elegant clips, and hair bands." },
     'scrunchies': { title: 'Premium Scrunchies <em style="color: var(--gold);">Collection</em>', desc: 'Shop soft, luxurious silk and satin scrunchies designed to protect your hair while keeping you stylish. Available for Cash on Delivery in Pakistan.' },
     'clips': { title: 'Elegant Hair Clips <em style="color: var(--gold);">Collection</em>', desc: 'Find your perfect style with our collection of elegant and durable hair clips. From minimalist metals to intricate designs, perfect for everyday wear or special events.' },
     'hair-bands': { title: 'Stylish Hair Bands <em style="color: var(--gold);">Collection</em>', desc: 'Explore comfortable and chic hair bands that add the perfect finishing touch to any outfit. Order online today in Pakistan.' },
     'pins': { title: 'Decorative Hair Pins <em style="color: var(--gold);">Collection</em>', desc: 'Add a touch of sparkle to your hairstyles with our premium decorative hair pins and slides.' },
     'ponies': { title: 'Everyday Ponies <em style="color: var(--gold);">Collection</em>', desc: 'Secure your hair with our durable, snag-free ponytail holders in beautiful colors and styles.' },
     'fancy': { title: 'Fancy Accessories <em style="color: var(--gold);">Collection</em>', desc: 'Get ready for weddings and parties with our exclusive bridal and formal hair accessories.' },
-    'bracelets': { title: 'Beautiful Bracelets <em style="color: var(--gold);">Collection</em>', desc: 'Adorn your wrists with beautifully crafted bracelets and bangles. Premium jewelry delivered to your doorstep in Pakistan.' },
-    'rings': { title: 'Fashion Rings <em style="color: var(--gold);">Collection</em>', desc: 'Discover trendy and classic fashion rings for women. The perfect accessory to complete your look.' },
-    'earrings': { title: 'Statement Earrings <em style="color: var(--gold);">Collection</em>', desc: 'Elevate your style with our collection of statement earrings, studs, and hoops for every occasion.' },
-    'necklace': { title: 'Elegant Necklaces <em style="color: var(--gold);">Collection</em>', desc: 'Shop gorgeous necklaces, chains, and pendants. Layer them up or wear them solo for a chic look.' },
     'gift-items': { title: 'Perfect Gift Items <em style="color: var(--gold);">Collection</em>', desc: 'Find the perfect jewelry and accessory gift sets for your loved ones. Beautifully packaged and ready to gift.' },
-    'sale': { title: 'Sale <em style="color: var(--gold);">Collection</em>', desc: 'Shop our discounted hair accessories and jewelry. Limited time offers on premium items!' }
+    'sale': { title: 'Sale <em style="color: var(--gold);">Collection</em>', desc: 'Shop our discounted hair accessories. Limited time offers on premium items!' }
   };
 
   const info = data[cat] || data['all'];
@@ -194,9 +190,9 @@ window.updateShopHero = function(cat) {
   descEl.innerHTML = info.desc;
   
   if (cat === 'all') {
-    window.history.replaceState(null, '', 'shop');
+    window.history.replaceState(null, '', 'hair-accessories.html');
   } else {
-    window.history.replaceState(null, '', 'shop?cat=' + cat);
+    window.history.replaceState(null, '', 'hair-accessories.html?cat=' + cat);
   }
 };
 
