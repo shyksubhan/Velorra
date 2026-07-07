@@ -1197,7 +1197,50 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
-<!-- Product Modal -->
+
+<!-- PINNED COLLECTIONS MODAL -->
+<div class="modal" id="modal-pinned">
+  <div class="modal-content" style="max-width:500px;">
+    <div class="modal-header">
+      <h2>Pinned Collections</h2>
+      <button class="modal-close" onclick="closePinnedModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:15px;color:var(--muted);font-size:0.9rem;">Pinned collections appear as horizontal scrolling rows on the homepage before the featured sections.</p>
+      
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <select id="pinned-sel" class="form-control" style="flex:1;">
+          <option value="">-- Select Collection --</option>
+          <option value="scrunchies">Scrunchies</option>
+          <option value="clips">Hair Clips</option>
+          <option value="hair-bands">Hair Bands</option>
+          <option value="bracelets">Bracelets</option>
+          <option value="rings">Rings</option>
+          <option value="earrings">Earrings</option>
+          <option value="necklace">Necklace</option>
+          <option value="fancy-wear">Fancy Wear</option>
+          <option value="casual">Casual</option>
+          <option value="party-wear">Party Wear</option>
+          <option value="summer-collection">Summer Collection</option>
+          <option value="winter-collection">Winter Collection</option>
+          <option value="daily-pret">Daily Pret Ready to Wear</option>
+          <option value="sale">Sale</option>
+        </select>
+        <button class="btn btn-outline" onclick="addPinnedCollection()">Add</button>
+      </div>
+
+      <table class="table">
+        <tbody id="pinned-list-body">
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePinnedModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePinnedCollections()">Save Settings</button>
+    </div>
+  </div>
+</div>
+\n<!-- Product Modal -->
 <div class="modal-overlay" id="product-modal">
   <div class="modal">
     <div class="modal-header">
