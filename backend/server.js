@@ -1,5 +1,5 @@
 /* ============================================================
-   GOLNISÀ — Express Backend Server v2
+   VELORRA — Express Backend Server v2
    ============================================================ */
 require('dotenv').config();
 
@@ -37,11 +37,11 @@ app.use(cors({
     'http://127.0.0.1:3001',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
-    'https://golnisa-vvp3.onrender.com',
-    'https://golnisa.store',
-    'https://www.golnisa.store',
-    'https://golnisajewelry.store',
-    'https://www.golnisajewelry.store',
+    'https://velorra-vvp3.onrender.com',
+    'https://velorra.store',
+    'https://www.velorra.store',
+    'https://velorrajewelry.store',
+    'https://www.velorrajewelry.store',
     'https://golnisa.com',
     'https://www.golnisa.com',
     'null',   /* file:// protocol */
@@ -382,7 +382,7 @@ app.get('/api/health', (req, res) => {
   try { firebaseStatus = getDB() ? 'connected' : 'demo'; } catch { firebaseStatus = 'demo'; }
   res.json({
     status:    'ok',
-    service:   'Golnisà Backend',
+    service:   'Velorra Backend',
     version:   '2.0.0',
     firebase:  firebaseStatus,
     demoMode:  firebaseStatus === 'demo',
@@ -409,12 +409,12 @@ app.get('/sitemap.xml', async (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
 
   const staticUrls = [
-    { loc: 'https://golnisa.store/',         priority: '1.0', changefreq: 'weekly'  },
-    { loc: 'https://golnisa.store/shop',     priority: '0.9', changefreq: 'daily'   },
-    { loc: 'https://golnisa.store/about',    priority: '0.7', changefreq: 'monthly' },
-    { loc: 'https://golnisa.store/contact',  priority: '0.6', changefreq: 'monthly' },
-    { loc: 'https://golnisa.store/policy',   priority: '0.5', changefreq: 'monthly' },
-    { loc: 'https://golnisa.store/reseller', priority: '0.6', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/',         priority: '1.0', changefreq: 'weekly'  },
+    { loc: 'https://velorra.store/shop',     priority: '0.9', changefreq: 'daily'   },
+    { loc: 'https://velorra.store/about',    priority: '0.7', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/contact',  priority: '0.6', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/policy',   priority: '0.5', changefreq: 'monthly' },
+    { loc: 'https://velorra.store/reseller', priority: '0.6', changefreq: 'monthly' },
   ];
 
   const categories = [
@@ -422,7 +422,7 @@ app.get('/sitemap.xml', async (req, res) => {
     'bracelets','rings','earrings','necklace','gift-items'
   ];
   const catUrls = categories.map(c => ({
-    loc: `https://golnisa.store/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
+    loc: `https://velorra.store/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
   }));
 
   /* Fetch live products from Firestore */
@@ -438,7 +438,7 @@ app.get('/sitemap.xml', async (req, res) => {
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         const id   = slug || d.id;
         return {
-          loc: `https://golnisa.store/product?id=${encodeURIComponent(id)}&name=${encodeURIComponent(id)}`,
+          loc: `https://velorra.store/product?id=${encodeURIComponent(id)}&name=${encodeURIComponent(id)}`,
           priority: '0.7',
           changefreq: 'weekly',
           lastmod: data.createdAt ? new Date(data.createdAt).toISOString().slice(0,10) : today
@@ -545,7 +545,7 @@ app.use((err, req, res, next) => {
 
   app.listen(PORT, () => {
     console.log('\n╔════════════════════════════════════════════════╗');
-    console.log('║       GOLNISÀ BACKEND SERVER v2.0              ║');
+    console.log('║       VELORRA BACKEND SERVER v2.0              ║');
     console.log('╠════════════════════════════════════════════════╣');
     console.log(`║  Website:  http://localhost:${PORT}               ║`);
     console.log(`║  Admin:    http://localhost:${PORT}/admin          ║`);
