@@ -40,6 +40,8 @@ app.use(cors({
     'https://velorra-vvp3.onrender.com',
     'https://velorra.store',
     'https://www.velorra.store',
+    'https://velorrajewelry.store',
+    'https://www.velorrajewelry.store',
     'null',   /* file:// protocol */
   ],
   credentials: true,
