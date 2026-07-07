@@ -155,7 +155,7 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
           </div>` : ''}
           <p style="color:#9a8070;font-size:.72rem;margin-top:32px;">
             You're receiving this because you subscribed to Golnisà.<br/>
-            <a href="https://golnisa-vvp3.onrender.com/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}" 
+            <a href="https://golnisa.com/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}" 
                style="color:#b8883a;">Unsubscribe</a>
           </p>
         </body></html>`,

@@ -130,7 +130,7 @@ router.get('/unsubscribe', async (req, res) => {
       <h2 style="color:#b8883a;">Golnisà</h2>
       <p style="margin-top:24px;">You have been successfully unsubscribed.</p>
       <p style="color:#9a8070;font-size:.85rem;">You will no longer receive promotional emails from us.</p>
-      <a href="https://golnisa-vvp3.onrender.com" style="display:inline-block;margin-top:32px;padding:12px 32px;background:#b8883a;color:#fff;text-decoration:none;font-size:.8rem;letter-spacing:.15em;">VISIT STORE</a>
+      <a href="https://golnisa.com" style="display:inline-block;margin-top:32px;padding:12px 32px;background:#b8883a;color:#fff;text-decoration:none;font-size:.8rem;letter-spacing:.15em;">VISIT STORE</a>
     </body></html>`);
   } catch (err) {
     return res.status(500).send('Error processing unsubscribe. Please contact us directly.');

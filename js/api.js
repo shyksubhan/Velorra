@@ -3,7 +3,7 @@
    Used by all frontend pages to talk to the backend.
    ============================================================ */
 
-const GOLNISÀ_API = 'https://golnisa-vvp3.onrender.com/api';
+const GOLNISÀ_API = 'https://golnisa.com/api';
 
 /* ── Get stored JWT token ── */
 function getToken() {

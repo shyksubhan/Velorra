@@ -282,12 +282,12 @@
     try {
       let order = null;
       if (ref) {
-        const res  = await fetch(`https://golnisa-vvp3.onrender.com/api/orders/track/${encodeURIComponent(ref)}`);
+        const res  = await fetch(`https://golnisa.com/api/orders/track/${encodeURIComponent(ref)}`);
         const data = await res.json();
         if (res.ok) order = data.order;
       }
       if (!order && email) {
-        const res  = await fetch(`https://golnisa-vvp3.onrender.com/api/orders/user/${encodeURIComponent(email)}`);
+        const res  = await fetch(`https://golnisa.com/api/orders/user/${encodeURIComponent(email)}`);
         const data = await res.json();
         if (res.ok && data.orders?.length) order = data.orders[0];
       }

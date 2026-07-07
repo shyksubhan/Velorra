@@ -1453,7 +1453,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
 <!-- ════════════════════════════ JAVASCRIPT ═════════════════════ -->
 <script>
-const API = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://localhost:3001/api' : 'https://golnisa-vvp3.onrender.com/api';
+const API = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://localhost:3001/api' : 'https://golnisa.com/api';
 let adminToken  = localStorage.getItem('golnisa_admin_token') || null;
 let currentUser = null;
 let notifications = [];
@@ -4412,7 +4412,7 @@ function renderAbandoned(list) {
       ? '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">✅ Resolved</span>'
       : '<span style="background:rgba(249,115,22,0.15);color:#f97316;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">🛒 Abandoned</span>';
     const waLink = d.phone
-      ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}?text=Hi+${encodeURIComponent(d.fname||'')}%2C+you+left+something+in+your+cart+at+Golnisà+Jewelry%21+Complete+your+order+here%3A+https%3A%2F%2Fgolnisa-vvp3.onrender.com%2Fcheckout.html" target="_blank" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:#25d366;border-color:rgba(37,211,102,0.4)"><i class="fa-brands fa-whatsapp"></i> Recover</a>`
+      ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}?text=Hi+${encodeURIComponent(d.fname||'')}%2C+you+left+something+in+your+cart+at+Golnisà+Jewelry%21+Complete+your+order+here%3A+https%3A%2F%2Fgolnisa.com%2Fcheckout.html" target="_blank" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:#25d366;border-color:rgba(37,211,102,0.4)"><i class="fa-brands fa-whatsapp"></i> Recover</a>`
       : '';
     return `<tr>
       <td>${i + 1}</td>
