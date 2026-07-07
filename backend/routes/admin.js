@@ -2,6 +2,7 @@
    VELORRA — Admin Routes (uses shared store for real stats)
    ============================================================ */
 const express = require('express');
+const fs      = require('fs');
 const path    = require('path');
 const { getDB }       = require('../utils/firebase');
 const { requireAdmin, requireRole } = require('../middleware/auth');
