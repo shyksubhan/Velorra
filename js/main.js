@@ -1,5 +1,5 @@
 /* ============================================================
-   VELORRA — Main JavaScript
+   GOLNISÀ — Main JavaScript
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
   revealEls.forEach(el => observer.observe(el));
 
   /* ── Cart System ── */
-  let cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
+  let cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
 
-  const saveCart = () => localStorage.setItem('velorra_cart', JSON.stringify(cart));
+  const saveCart = () => localStorage.setItem('golnisa_cart', JSON.stringify(cart));
 
   const updateCartUI = () => {
     const count = cart.reduce((s, i) => s + i.qty, 0);
@@ -77,22 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
      customer's existing bag is stashed (not lost) so it can be
      restored if they leave checkout without completing the order. */
   window.buyNow = (name, price, emoji, variant) => {
-    const existingCart = localStorage.getItem('velorra_cart');
+    const existingCart = localStorage.getItem('golnisa_cart');
     if (existingCart && existingCart !== '[]') {
-      localStorage.setItem('velorra_cart_stashed', existingCart);
+      localStorage.setItem('golnisa_cart_stashed', existingCart);
     }
     const buyNowCart = [{ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', qty: 1 }];
-    localStorage.setItem('velorra_cart', JSON.stringify(buyNowCart));
+    localStorage.setItem('golnisa_cart', JSON.stringify(buyNowCart));
     window.location.href = 'checkout';
   };
 
   /* ── Buy It Now: restore stashed bag if the customer left checkout
      without completing the order (i.e. they're on any page other
      than checkout.html and a stash exists) ── */
-  const stashedCart = localStorage.getItem('velorra_cart_stashed');
+  const stashedCart = localStorage.getItem('golnisa_cart_stashed');
   if (stashedCart && !window.location.pathname.endsWith('checkout')) {
-    localStorage.setItem('velorra_cart', stashedCart);
-    localStorage.removeItem('velorra_cart_stashed');
+    localStorage.setItem('golnisa_cart', stashedCart);
+    localStorage.removeItem('golnisa_cart_stashed');
     cart = JSON.parse(stashedCart);
   }
 
@@ -164,14 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const result = await apiSubscribeNewsletter(email);
       if (result.ok) {
-        showToast(result.data.message || "Welcome to Velorra! 💛 You'll be the first to hear about new arrivals and offers.");
+        showToast(result.data.message || "Welcome to Golnisà! 💛 You'll be the first to hear about new arrivals and offers.");
         input.value = '';
       } else {
         showToast(result.data.error || 'Please try again.');
       }
     } catch {
       /* Backend not available — graceful fallback */
-      showToast("Welcome to Velorra! 💛 You'll be the first to hear about new arrivals and offers.");
+      showToast("Welcome to Golnisà! 💛 You'll be the first to hear about new arrivals and offers.");
       input.value = '';
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Subscribe'; }
@@ -226,19 +226,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
  /* ============================================================
-   VELORRA — WhatsApp + Social Footer Builder
+   GOLNISÀ — WhatsApp + Social Footer Builder
    (append to end of existing script.js)
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   /* ── Set WhatsApp button link from config ── */
   const waBtn = document.getElementById('whatsapp-float');
-  if (waBtn && window.VELORRA_CONFIG) {
-    waBtn.href = window.VELORRA_CONFIG.social.whatsapp;
+  if (waBtn && window.GOLNISÀ_CONFIG) {
+    waBtn.href = window.GOLNISÀ_CONFIG.social.whatsapp;
   }
   /* ── Build footer social links from config ── */
   const socialWrap = document.getElementById('footer-social-links');
-  if (socialWrap && window.VELORRA_CONFIG) {
-    const cfg = window.VELORRA_CONFIG.social;
+  if (socialWrap && window.GOLNISÀ_CONFIG) {
+    const cfg = window.GOLNISÀ_CONFIG.social;
     const links = [
       { url: cfg.instagram, icon: '<i class="fa-brands fa-instagram"></i>', label: 'Instagram' },
       { url: cfg.facebook,  icon: '<i class="fa-brands fa-facebook-f"></i>', label: 'Facebook' },
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ).join('');
   }
   /* ── Update account icon if logged in ── */
-  const user = JSON.parse(localStorage.getItem('velorra_user') || 'null');
+  const user = JSON.parse(localStorage.getItem('golnisa_user') || 'null');
   if (user) {
     document.querySelectorAll('a[href="account"]').forEach(el => {
       el.setAttribute('title', `Hi, ${user.fname}`);
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   /* ── Validate JWT token silently (don't block page) ── */
-  const token = localStorage.getItem('velorra_token');
+  const token = localStorage.getItem('golnisa_token');
   if (token && user) {
     checkBackend().then(online => {
       if (online) {
@@ -272,8 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ── Show/Hide Password Toggle ──
-   Usage: <button onclick="toggleVelorraPassword('field-id', this)"><i class="fa-regular fa-eye"></i></button> */
-window.toggleVelorraPassword = (inputId, btn) => {
+   Usage: <button onclick="toggleGolnisàPassword('field-id', this)"><i class="fa-regular fa-eye"></i></button> */
+window.toggleGolnisàPassword = (inputId, btn) => {
   const input = document.getElementById(inputId);
   if (!input) return;
   const icon = btn.querySelector('i');
@@ -284,7 +284,7 @@ window.toggleVelorraPassword = (inputId, btn) => {
 };
 /* ── Proceed to Checkout — cart check ── */
 window.proceedToCheckout = () => {
-  const cart = JSON.parse(localStorage.getItem('velorra_cart') || '[]');
+  const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
   if (!cart.length) {
     window.showToast('Your bag is empty. Add items before checking out.');
     return;

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Velorra Admin Panel</title>
+<title>Golnisà Admin Panel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
 <!-- SheetJS for Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -294,7 +294,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 <!-- ═══════════════════════════════════════════ SIDEBAR ════════ -->
 <div id="sidebar">
   <div class="sidebar-logo">
-    <img src="../../images/logo.svg" alt="Velorra" style="height:40px;width:auto;max-width:160px;display:block;margin-bottom:4px;"/>
+    <img src="../../images/logo.svg" alt="Golnisà" style="height:40px;width:auto;max-width:160px;display:block;margin-bottom:4px;"/>
     <small>Admin Panel v2.0</small>
   </div>
   <nav class="sidebar-nav">
@@ -898,7 +898,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       </div>
       <div>
         <label style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px;">Promo Code <span style="opacity:.5">(optional)</span></label>
-        <input type="text" id="promo-code" placeholder="e.g. VELORRA20"
+        <input type="text" id="promo-code" placeholder="e.g. GOLNISÀ20"
           style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 14px;font-family:inherit;font-size:.85rem;border-radius:6px;outline:none;box-sizing:border-box;text-transform:uppercase;">
       </div>
     </div>
@@ -1063,7 +1063,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div id="company-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
     
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="form-group"><label>Company Name</label><input type="text" id="cs-name" placeholder="e.g. Velorra"/></div>
+      <div class="form-group"><label>Company Name</label><input type="text" id="cs-name" placeholder="e.g. Golnisà"/></div>
       <div class="form-group"><label>Company Logo URL</label><input type="text" id="cs-logo" placeholder="https://..."/></div>
       <div class="form-group"><label>Contact Phone</label><input type="text" id="cs-phone"/></div>
       <div class="form-group"><label>Contact Email</label><input type="text" id="cs-email"/></div>
@@ -1094,7 +1094,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
   <div class="settings-section" id="launch-date-section">
     <h3><i class="fa-solid fa-flag" style="color:var(--gold);margin-right:8px"></i>Site Launch Date</h3>
-    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Monthly &amp; lifetime profit statements only count sales from this date onward. Set it to the day Velorra actually went live.</p>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Monthly &amp; lifetime profit statements only count sales from this date onward. Set it to the day Golnisà actually went live.</p>
     <div id="launch-date-msg" style="display:none;padding:10px;border-radius:7px;font-size:0.85rem;margin-bottom:14px;"></div>
     <div class="form-group" style="max-width:240px;"><label>Launch Date</label><input type="date" id="launch-date-input"/></div>
     <button class="btn btn-gold" onclick="saveLaunchDate()">Save Launch Date</button>
@@ -1453,8 +1453,8 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
 <!-- ════════════════════════════ JAVASCRIPT ═════════════════════ -->
 <script>
-const API = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://localhost:3001/api' : 'https://velorra-vvp3.onrender.com/api';
-let adminToken  = localStorage.getItem('velorra_admin_token') || null;
+const API = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://localhost:3001/api' : 'https://golnisa-vvp3.onrender.com/api';
+let adminToken  = localStorage.getItem('golnisa_admin_token') || null;
 let currentUser = null;
 let notifications = [];
 let sseSource    = null;
@@ -1538,7 +1538,7 @@ async function doLogin() {
 
     adminToken  = data.token;
     currentUser = data.user;
-    localStorage.setItem('velorra_admin_token', adminToken);
+    localStorage.setItem('golnisa_admin_token', adminToken);
 
     /* ← THE FIX: hide login screen BEFORE calling initDashboard */
     hideLogin();
@@ -1642,7 +1642,7 @@ function logout() {
 function clearSession() {
   adminToken  = null;
   currentUser = null;
-  localStorage.removeItem('velorra_admin_token');
+  localStorage.removeItem('golnisa_admin_token');
   if (sseSource) { sseSource.close(); sseSource = null; }
 }
 
@@ -2144,7 +2144,7 @@ function exportDailyStatementsExcel() {
       XLSX.utils.book_append_sheet(wb, wsLifetime, 'Lifetime Snapshot');
     }
 
-    XLSX.writeFile(wb, `VELORRA - Daily Statement - ${today()}.xlsx`);
+    XLSX.writeFile(wb, `GOLNISÀ - Daily Statement - ${today()}.xlsx`);
     toast('30-day statement exported ✓', 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
@@ -2237,7 +2237,7 @@ function exportMonthlyStatementsExcel() {
     wsLines['!cols'] = [{wch:10},{wch:14},{wch:13},{wch:24},{wch:6},{wch:18},{wch:15},{wch:14},{wch:12},{wch:13}];
     XLSX.utils.book_append_sheet(wb, wsLines, 'Itemised Sales');
 
-    XLSX.writeFile(wb, `VELORRA - Monthly Statement - ${today()}.xlsx`);
+    XLSX.writeFile(wb, `GOLNISÀ - Monthly Statement - ${today()}.xlsx`);
     toast('Monthly statement exported ✓', 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
@@ -2330,7 +2330,7 @@ async function exportSingleMonthExcel(monthStr, monthLabel) {
     wsSummary['!cols'] = [{wch:16},{wch:16},{wch:14},{wch:18},{wch:16},{wch:16}];
     XLSX.utils.book_append_sheet(wb, wsSummary, 'Month Summary');
 
-    XLSX.writeFile(wb, `VELORRA - ${monthLabel} Statement.xlsx`);
+    XLSX.writeFile(wb, `GOLNISÀ - ${monthLabel} Statement.xlsx`);
     toast(`${monthLabel} statement exported ✓`, 'success');
   } catch (err) {
     toast('Export failed: ' + err.message, 'error');
@@ -3437,7 +3437,7 @@ function exportProductsExcel() {
   });
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `Velorra_Products_${dateStr}.xlsx`);
+  XLSX.writeFile(wb, `Golnisà_Products_${dateStr}.xlsx`);
   toast('Beautiful Excel file downloaded! ✓', 'success');
 }
 
@@ -4276,12 +4276,12 @@ async function exportExcel(type) {
 
     if (type === 'subscribers') {
       rows = allSubscribers.length ? allSubscribers : (await (await apiFetch('/newsletter')).json()).subscribers || [];
-      filename  = `VELORRA - Subscribers - ${today()}.xlsx`;
+      filename  = `GOLNISÀ - Subscribers - ${today()}.xlsx`;
       sheetName = 'Subscribers';
       rows = rows.map((s, i) => ({ '#': i+1, Email: s.email, 'Subscribed At': fmtDate(s.subscribedAt), Status: 'Active' }));
     } else if (type === 'orders') {
       rows = allOrders.length ? allOrders : (await (await apiFetch('/orders')).json()).orders || [];
-      filename  = `VELORRA - Orders - ${today()}.xlsx`;
+      filename  = `GOLNISÀ - Orders - ${today()}.xlsx`;
       sheetName = 'Orders';
       rows = rows.map(o => ({
         'Order Ref':    o.id,
@@ -4299,7 +4299,7 @@ async function exportExcel(type) {
       }));
     } else if (type === 'messages') {
       rows = allMessages.length ? allMessages : (await (await apiFetch('/contact')).json()).messages || [];
-      filename  = `VELORRA - Messages - ${today()}.xlsx`;
+      filename  = `GOLNISÀ - Messages - ${today()}.xlsx`;
       sheetName = 'Messages';
       rows = rows.map(m => ({
         Name:    m.name,
@@ -4412,7 +4412,7 @@ function renderAbandoned(list) {
       ? '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">✅ Resolved</span>'
       : '<span style="background:rgba(249,115,22,0.15);color:#f97316;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">🛒 Abandoned</span>';
     const waLink = d.phone
-      ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}?text=Hi+${encodeURIComponent(d.fname||'')}%2C+you+left+something+in+your+cart+at+Velorra+Jewelry%21+Complete+your+order+here%3A+https%3A%2F%2Fvelorra-vvp3.onrender.com%2Fcheckout.html" target="_blank" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:#25d366;border-color:rgba(37,211,102,0.4)"><i class="fa-brands fa-whatsapp"></i> Recover</a>`
+      ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}?text=Hi+${encodeURIComponent(d.fname||'')}%2C+you+left+something+in+your+cart+at+Golnisà+Jewelry%21+Complete+your+order+here%3A+https%3A%2F%2Fgolnisa-vvp3.onrender.com%2Fcheckout.html" target="_blank" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:#25d366;border-color:rgba(37,211,102,0.4)"><i class="fa-brands fa-whatsapp"></i> Recover</a>`
       : '';
     return `<tr>
       <td>${i + 1}</td>
@@ -4485,10 +4485,10 @@ async function convertAbandonedToOrder(id) {
 function showConfirmModal({ icon, title, message, confirmText, cancelText, confirmColor }) {
   return new Promise(resolve => {
     /* Remove any existing */
-    document.getElementById('velorra-confirm-modal')?.remove();
+    document.getElementById('golnisa-confirm-modal')?.remove();
 
     const overlay = document.createElement('div');
-    overlay.id = 'velorra-confirm-modal';
+    overlay.id = 'golnisa-confirm-modal';
     overlay.style.cssText = `
       position:fixed;inset:0;z-index:99999;
       background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);
@@ -4551,7 +4551,7 @@ function exportAbandonedExcel() {
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Abandoned');
-  XLSX.writeFile(wb, 'velorra-abandoned-orders.xlsx');
+  XLSX.writeFile(wb, 'golnisa-abandoned-orders.xlsx');
 }
 
 function updateVisitorCount(count) {
@@ -4639,13 +4639,13 @@ function renderVisitors(visitors) {
 </script>
 
 <!-- ── Custom Confirm Modal ── -->
-<div id="velorra-confirm-overlay" style="
+<div id="golnisa-confirm-overlay" style="
   position:fixed;inset:0;z-index:9999;
   background:rgba(0,0,0,0);
   display:none;align-items:center;justify-content:center;
   backdrop-filter:blur(0px);
   transition:all .25s ease;">
-  <div id="velorra-confirm-box" style="
+  <div id="golnisa-confirm-box" style="
     background:linear-gradient(145deg,#1a1a1a,#111);
     border:1px solid rgba(184,136,58,0.3);
     border-radius:20px;
@@ -4660,21 +4660,21 @@ function renderVisitors(visitors) {
     <div style="height:3px;background:linear-gradient(90deg,transparent,#b8883a,transparent);"></div>
     <!-- Icon + Content -->
     <div style="padding:32px 32px 24px;text-align:center;">
-      <div id="velorra-confirm-icon" style="
+      <div id="golnisa-confirm-icon" style="
         width:64px;height:64px;border-radius:50%;
         background:rgba(217,106,106,0.12);
         border:1px solid rgba(217,106,106,0.25);
         display:flex;align-items:center;justify-content:center;
         margin:0 auto 20px;font-size:1.6rem;">🗑️</div>
-      <h3 id="velorra-confirm-title" style="
+      <h3 id="golnisa-confirm-title" style="
         color:#fff;font-size:1.15rem;font-weight:700;
         margin:0 0 10px;letter-spacing:0.01em;"></h3>
-      <p id="velorra-confirm-msg" style="
+      <p id="golnisa-confirm-msg" style="
         color:#888;font-size:0.875rem;line-height:1.6;margin:0;"></p>
     </div>
     <!-- Buttons -->
     <div style="padding:0 24px 24px;display:flex;gap:10px;">
-      <button id="velorra-confirm-cancel" style="
+      <button id="golnisa-confirm-cancel" style="
         flex:1;padding:13px;border-radius:10px;
         background:rgba(255,255,255,0.05);
         border:1px solid rgba(255,255,255,0.1);
@@ -4682,7 +4682,7 @@ function renderVisitors(visitors) {
         cursor:pointer;transition:all .2s;letter-spacing:0.03em;">
         Cancel
       </button>
-      <button id="velorra-confirm-ok" style="
+      <button id="golnisa-confirm-ok" style="
         flex:1;padding:13px;border-radius:10px;
         background:linear-gradient(135deg,#d96a6a,#c0392b);
         border:none;color:#fff;font-size:0.875rem;font-weight:700;
@@ -4698,27 +4698,27 @@ function renderVisitors(visitors) {
 /* ── Custom Confirm Dialog ── */
 function bktConfirm({ title = 'Are you sure?', message = 'This action cannot be undone.', confirmText = 'Delete', icon = '🗑️', danger = true } = {}) {
   return new Promise(resolve => {
-    const overlay = document.getElementById('velorra-confirm-overlay');
-    const box     = document.getElementById('velorra-confirm-box');
-    const okBtn   = document.getElementById('velorra-confirm-ok');
-    const cancelBtn = document.getElementById('velorra-confirm-cancel');
+    const overlay = document.getElementById('golnisa-confirm-overlay');
+    const box     = document.getElementById('golnisa-confirm-box');
+    const okBtn   = document.getElementById('golnisa-confirm-ok');
+    const cancelBtn = document.getElementById('golnisa-confirm-cancel');
 
-    document.getElementById('velorra-confirm-title').textContent = title;
-    document.getElementById('velorra-confirm-msg').textContent   = message;
-    document.getElementById('velorra-confirm-icon').textContent  = icon;
+    document.getElementById('golnisa-confirm-title').textContent = title;
+    document.getElementById('golnisa-confirm-msg').textContent   = message;
+    document.getElementById('golnisa-confirm-icon').textContent  = icon;
     okBtn.textContent = confirmText;
 
     /* Danger vs neutral style */
     if (danger) {
       okBtn.style.background = 'linear-gradient(135deg,#d96a6a,#c0392b)';
       okBtn.style.boxShadow  = '0 4px 20px rgba(217,106,106,0.3)';
-      document.getElementById('velorra-confirm-icon').style.background = 'rgba(217,106,106,0.12)';
-      document.getElementById('velorra-confirm-icon').style.border = '1px solid rgba(217,106,106,0.25)';
+      document.getElementById('golnisa-confirm-icon').style.background = 'rgba(217,106,106,0.12)';
+      document.getElementById('golnisa-confirm-icon').style.border = '1px solid rgba(217,106,106,0.25)';
     } else {
       okBtn.style.background = 'linear-gradient(135deg,#b8883a,#a8873c)';
       okBtn.style.boxShadow  = '0 4px 20px rgba(184,136,58,0.3)';
-      document.getElementById('velorra-confirm-icon').style.background = 'rgba(184,136,58,0.12)';
-      document.getElementById('velorra-confirm-icon').style.border = '1px solid rgba(184,136,58,0.25)';
+      document.getElementById('golnisa-confirm-icon').style.background = 'rgba(184,136,58,0.12)';
+      document.getElementById('golnisa-confirm-icon').style.border = '1px solid rgba(184,136,58,0.25)';
     }
 
     /* Show */
@@ -4821,7 +4821,7 @@ async function approveReview(id, approve) {
   try {
     const res = await fetch(`${API}/reviews/${id}/approve`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('velorra_admin_token')}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('golnisa_admin_token')}` },
       body: JSON.stringify({ approved: approve }),
     });
     if (res.ok) { toast(approve ? 'Review approved — now visible on homepage ✓' : 'Review hidden.', 'success'); loadReviews(); }

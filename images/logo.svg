@@ -1,15 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56" fill="none">
-  <!-- V diamond motif -->
-  <polyline points="8,8 22,40 36,8" fill="none" stroke="#b8883a" stroke-width="2" stroke-linejoin="round"/>
-  <circle cx="8"  cy="8"  r="2.2" fill="#b8883a"/>
-  <circle cx="36" cy="8"  r="2.2" fill="#b8883a"/>
-  <circle cx="22" cy="40" r="2.2" fill="#b8883a"/>
-  <!-- thin vertical accent -->
-  <line x1="44" y1="8" x2="44" y2="48" stroke="#b8883a" stroke-width="0.6" opacity="0.4"/>
-  <!-- Brand name -->
-  <text x="54" y="36" font-family="'Playfair Display', Georgia, serif" font-size="26" font-weight="700" letter-spacing="3" fill="#2c1f14">VELORRA</text>
-  <!-- Tagline -->
-  <text x="55" y="50" font-family="'Lato', Arial, sans-serif" font-size="9" font-weight="400" letter-spacing="6" fill="#b8883a"></text>
-  <!-- rule -->
-  <line x1="54" y1="40" x2="228" y2="40" stroke="#b8883a" stroke-width="0.6" opacity="0.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 100" fill="none">
+  <g transform="translate(6,0) scale(0.86)">
+  <polyline points="30,20 70,20 90,38 50,86 10,38 30,20" fill="none" stroke="#b8883a" stroke-width="4.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="10" y1="38" x2="90" y2="38" stroke="#b8883a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="30" y1="20" x2="50" y2="38" stroke="#b8883a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="70" y1="20" x2="50" y2="38" stroke="#b8883a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="38" x2="50" y2="86" stroke="#b8883a" stroke-width="3" stroke-linecap="round"/>
+</g>
+  <line x1="112" y1="12" x2="112" y2="88" stroke="#b8883a" stroke-width="1.4" opacity="0.5"/>
+  <text x="130" y="66" font-family="'Playfair Display'" font-size="56" font-weight="700" letter-spacing="4" fill="#2c1f14">GOLNISÀ</text>
 </svg>

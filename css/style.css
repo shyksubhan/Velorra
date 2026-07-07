@@ -1,10 +1,10 @@
 /* ============================================================
-   Velorra — Global Styles
+   Golnisà — Global Styles
    Theme: Warm Ivory × Rose Gold × Champagne
-   Fonts: Playfair Display (headings) · Raleway (body) · Lato (UI)
+   Fonts: Cormorant Garamond (headings) · Jost (body & UI)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Raleway:wght@200;300;400;500;600&family=Lato:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap');
 
 /* ── Variables ── */
 :root {
@@ -25,9 +25,9 @@
   --border:      rgba(184,136,58,0.20);
   --border-soft: rgba(184,136,58,0.10);
   --shadow:      rgba(100,60,20,0.10);
-  --font-display: 'Playfair Display', serif;
-  --font-body:    'Raleway', sans-serif;
-  --font-ui:      'Lato', sans-serif;
+  --font-display: 'Cormorant Garamond', 'Cormorant', Georgia, serif;
+  --font-body:    'Jost', 'Segoe UI', sans-serif;
+  --font-ui:      'Jost', 'Segoe UI', sans-serif;
   --nav-h:       72px;
   --transition:  0.36s cubic-bezier(0.25,0.8,0.25,1);
   /* keep legacy var names working */

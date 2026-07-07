@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product — Velorra | Hair Accessories & Jewelry Pakistan</title>
-  <meta name="description" content="Shop premium hair accessories and jewelry at Velorra Pakistan. Cash on Delivery available. Scrunchies, clips, pins, necklaces, earrings & more." />
+  <title>Product — Golnisà | Hair Accessories & Jewelry Pakistan</title>
+  <meta name="description" content="Shop premium hair accessories and jewelry at Golnisà Pakistan. Cash on Delivery available. Scrunchies, clips, pins, necklaces, earrings & more." />
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
@@ -13,7 +13,7 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra</a>
+  <a href="/" class="nav-logo nav-logo-link" style="display:inline-flex;align-items:center;text-decoration:none;"><img src="images/logo.svg" alt="Golnisà" style="height:36px;width:auto;" /></a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li class="nav-dropdown">
@@ -87,10 +87,10 @@
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <span class="nav-logo" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;color:#fff;">Velorra</span>
+        <a href="/" class="nav-logo nav-logo-link" style="display:inline-flex;align-items:center;text-decoration:none;"><img src="images/logo.svg" alt="Golnisà" style="height:36px;width:auto;" /></a>
         <p>Pakistan's premium fashion destination.</p>
         <div class="footer-social" id="footer-social-links">
-          <a href="https://www.instagram.com/velorrajewelry_/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://www.instagram.com/golnisajewelry_/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
           <a href="https://www.facebook.com/profile.php?id=61590913872614" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
           <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
@@ -113,14 +113,14 @@
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <p>&#9993; <span data-velorra="email">velorraqueries@gmail.com</span></p>
-        <p>&#128222; <span data-velorra="phone">+92 300 000 0000</span></p>
-        <p>&#128205; <span data-velorra="location">Lahore, Pakistan</span></p>
-        <p data-velorra="hours">Mon&ndash;Sat: 10am &ndash; 7pm</p>
+        <p>&#9993; <span data-golnisa="email">golnisaqueries@gmail.com</span></p>
+        <p>&#128222; <span data-golnisa="phone">+92 300 000 0000</span></p>
+        <p>&#128205; <span data-golnisa="location">Lahore, Pakistan</span></p>
+        <p data-golnisa="hours">Mon&ndash;Sat: 10am &ndash; 7pm</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 <span class="gold-text">Velorra</span>. All rights reserved.</p>
+      <p>© 2026 <span class="gold-text">Golnisà</span>. All rights reserved.</p>
       <div class="footer-pay">
         <span class="pay-badge">COD</span>
         <span class="pay-badge">Bank Deposit</span>
@@ -178,15 +178,15 @@
   }
 
 
-  document.title = `${product.name} — Velorra`;
+  document.title = `${product.name} — Golnisà`;
 
   /* ── Dynamic OG meta update ── */
   const metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) metaDesc.setAttribute('content',
-    `${product.name} — Buy online in Pakistan. PKR ${Number(product.price).toLocaleString()}. ${product.description ? product.description.slice(0,100) + '…' : 'Shop at Velorra.'}`
+    `${product.name} — Buy online in Pakistan. PKR ${Number(product.price).toLocaleString()}. ${product.description ? product.description.slice(0,100) + '…' : 'Shop at Golnisà.'}`
   );
   const ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) ogTitle.setAttribute('content', `${product.name} — Velorra Pakistan`);
+  if (ogTitle) ogTitle.setAttribute('content', `${product.name} — Golnisà Pakistan`);
   const ogDesc = document.querySelector('meta[property="og:description"]');
   if (ogDesc) ogDesc.setAttribute('content',
     `${product.name} — PKR ${Number(product.price).toLocaleString()}. ${product.description ? product.description.slice(0,120) + '…' : 'Shop hair accessories & jewelry online in Pakistan.'}`
@@ -194,7 +194,7 @@
   const ogImg = document.querySelector('meta[property="og:image"]');
   if (ogImg && product.images && product.images[0]) ogImg.setAttribute('content', product.images[0]);
   const twTitle = document.querySelector('meta[name="twitter:title"]');
-  if (twTitle) twTitle.setAttribute('content', `${product.name} — Velorra Pakistan`);
+  if (twTitle) twTitle.setAttribute('content', `${product.name} — Golnisà Pakistan`);
   const twImg = document.querySelector('meta[name="twitter:image"]');
   if (twImg && product.images && product.images[0]) twImg.setAttribute('content', product.images[0]);
 
@@ -213,12 +213,12 @@
     "@context": "https://schema.org",
     "@type": "Product",
     "name": product.name,
-    "description": product.description || `${product.name} — shop online at Velorra Pakistan.`,
+    "description": product.description || `${product.name} — shop online at Golnisà Pakistan.`,
     "image": (product.images && product.images.length) ? product.images : [`${DOMAIN}/images/categories/necklace.jpg`],
     "sku": product.id || product.name.replace(/\s+/g, '-').toLowerCase(),
     "brand": {
       "@type": "Brand",
-      "name": "Velorra"
+      "name": "Golnisà"
     },
     "category": product.category || "Jewelry",
     "url": productUrl,
@@ -231,7 +231,7 @@
       "itemCondition": "https://schema.org/NewCondition",
       "seller": {
         "@type": "Organization",
-        "name": "Velorra"
+        "name": "Golnisà"
       }
     }
   });
@@ -287,8 +287,8 @@
   const totalMediaCount = images.length + (hasVideo ? 1 : 0);
   const galleryThumbsHTML = (totalMediaCount > 1)
     ? `<div class="product-gallery-thumbs" id="pd-thumbs">
-        ${images.map((url, i) => `<div class="gallery-thumb${(i===0 && hasImages) ? ' active' : ''}" data-idx="${i}" onclick="velorraSwitchGalleryImage(${i})"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"/></div>`).join('')}
-        ${hasVideo ? `<div class="gallery-thumb${!hasImages ? ' active' : ''}" data-idx="video" onclick="velorraSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>` : ''}
+        ${images.map((url, i) => `<div class="gallery-thumb${(i===0 && hasImages) ? ' active' : ''}" data-idx="${i}" onclick="golnisaSwitchGalleryImage(${i})"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"/></div>`).join('')}
+        ${hasVideo ? `<div class="gallery-thumb${!hasImages ? ' active' : ''}" data-idx="video" onclick="golnisaSwitchGalleryImage('video')"><i class="fa-solid fa-circle-play" style="font-size:1.3rem;"></i></div>` : ''}
       </div>`
     : '';
 
@@ -326,14 +326,14 @@
     </div>`;
 
   /* Gallery image/video switching */
-  window.velorraGalleryImages = images || [];
-  window.velorraGalleryVideo = product.video || null;
-  window.velorraSwitchGalleryImage = function (idx) {
+  window.golnisaGalleryImages = images || [];
+  window.golnisaGalleryVideo = product.video || null;
+  window.golnisaSwitchGalleryImage = function (idx) {
     const main = document.getElementById('pd-gallery-main');
-    if (idx === 'video' && window.velorraGalleryVideo) {
-      main.innerHTML = `<video src="${window.velorraGalleryVideo}" controls autoplay muted style="width:100%;height:100%;object-fit:cover;"></video>`;
-    } else if (typeof idx === 'number' && window.velorraGalleryImages[idx]) {
-      main.innerHTML = `<img src="${window.velorraGalleryImages[idx]}" style="width:100%;height:100%;object-fit:cover;"/>`;
+    if (idx === 'video' && window.golnisaGalleryVideo) {
+      main.innerHTML = `<video src="${window.golnisaGalleryVideo}" controls autoplay muted style="width:100%;height:100%;object-fit:cover;"></video>`;
+    } else if (typeof idx === 'number' && window.golnisaGalleryImages[idx]) {
+      main.innerHTML = `<img src="${window.golnisaGalleryImages[idx]}" style="width:100%;height:100%;object-fit:cover;"/>`;
     }
     document.querySelectorAll('#pd-thumbs .gallery-thumb').forEach(t => t.classList.remove('active'));
     document.querySelector(`#pd-thumbs .gallery-thumb[data-idx="${idx}"]`)?.classList.add('active');
@@ -382,8 +382,8 @@
     if (related.length) {
       document.getElementById('pd-related').style.display = '';
       const grid = document.getElementById('pd-related-grid');
-      grid.innerHTML = related.map(velorraProductCardHTML).join('');
-      velorraReInitCards(grid);
+      grid.innerHTML = related.map(golnisaProductCardHTML).join('');
+      golnisaReInitCards(grid);
     }
   } catch (err) {
     console.error('Failed to load related products:', err);
@@ -391,7 +391,7 @@
 })();
 
 /* Simple named-color to CSS color mapping for the color swatches */
-function velorraColorSwatch(name) {
+function golnisaColorSwatch(name) {
   const map = {
     ivory: '#f5f0e8', blush: '#e8c4c4', gold: '#c9a84c', 'rose gold': '#e0bfb8',
     black: '#1a1a1a', 'obsidian black': '#1a1a1a', champagne: '#d9c8a8',

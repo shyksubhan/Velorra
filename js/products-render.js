@@ -1,8 +1,8 @@
 /* ============================================================
-   VELORRA — Dynamic Product Rendering
+   GOLNISÀ — Dynamic Product Rendering
    ============================================================ */
 
-const VELORRA_CAT_LABELS = {
+const GOLNISÀ_CAT_LABELS = {
   'clips':       'Hair Clips',
   'catchers':    'Hair Clips',
   'scrunchies':  'Scrunchies',
@@ -31,10 +31,10 @@ const CATEGORY_HIERARCHY = {
 
 function velorCatLabel(cat) {
   if (!cat) return '';
-  return VELORRA_CAT_LABELS[cat.toLowerCase()] || cat;
+  return GOLNISÀ_CAT_LABELS[cat.toLowerCase()] || cat;
 }
 
-function velorraProductCardHTML(p) {
+function golnisaProductCardHTML(p) {
   const badge = p.badge ? `<span class="product-badge${p.badge === 'New' ? ' new' : ''}">${p.badge}</span>` : '';
   const oldPrice = p.priceOld
     ? `<span class="product-price-old">PKR ${Number(p.priceOld).toLocaleString()}</span>`
@@ -71,11 +71,11 @@ function velorraProductCardHTML(p) {
   `;
 }
 
-function velorraEmptyState(msg) {
+function golnisaEmptyState(msg) {
   return `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;background:#fcfbf9;border-radius:12px;border:1px dashed #e5d5c5;color:var(--muted);"><i class="fa-solid fa-box-open" style="font-size:2rem;color:var(--gold);margin-bottom:16px;"></i><p>${msg}</p></div>`;
 }
 
-function velorraReInitCards(container) {
+function golnisaReInitCards(container) {
   container.querySelectorAll('.product-img-wrap').forEach(wrap => {
     const vid = wrap.querySelector('video');
     if (vid) {
@@ -85,7 +85,7 @@ function velorraReInitCards(container) {
   });
 }
 
-function velorraSetupShopFilters(products, grid, mainCat) {
+function golnisaSetupShopFilters(products, grid, mainCat) {
   const urlParams = new URLSearchParams(window.location.search);
   let initialCat = urlParams.get('cat') || 'all';
 
@@ -147,7 +147,7 @@ function velorraSetupShopFilters(products, grid, mainCat) {
   }
 }
 
-async function velorraRenderShopGrid() {
+async function golnisaRenderShopGrid() {
   const grid = document.querySelector('#shop-products-grid, .products-grid');
   if (!grid) return;
 
@@ -167,20 +167,20 @@ async function velorraRenderShopGrid() {
     }
 
     if (!products.length) {
-      grid.innerHTML = velorraEmptyState('No products available right now. Please check back soon.');
+      grid.innerHTML = golnisaEmptyState('No products available right now. Please check back soon.');
       return;
     }
-    grid.innerHTML = products.map(velorraProductCardHTML).join('');
-    velorraReInitCards(grid);
-    velorraSetupShopFilters(products, grid, mainCat);
+    grid.innerHTML = products.map(golnisaProductCardHTML).join('');
+    golnisaReInitCards(grid);
+    golnisaSetupShopFilters(products, grid, mainCat);
   } catch (err) {
     console.error('Failed to load products:', err);
-    grid.innerHTML = velorraEmptyState('Unable to load products. Please refresh the page.');
+    grid.innerHTML = golnisaEmptyState('Unable to load products. Please refresh the page.');
   }
 }
 
 /* ── Load & render featured and pinned grids (index.html homepage) ── */
-async function velorraRenderHomepageGrids() {
+async function golnisaRenderHomepageGrids() {
   const isHome = document.getElementById('featured-jewelry');
   if (!isHome) return;
 
@@ -207,14 +207,14 @@ async function velorraRenderHomepageGrids() {
               </div>
               <div class="horizontal-scroll-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
                 ${pinProducts.map(p => {
-                  let html = velorraProductCardHTML(p);
+                  let html = golnisaProductCardHTML(p);
                   return html.replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"');
                 }).join('')}
               </div>
             </div>
           `;
           pinnedContainer.appendChild(section);
-          velorraReInitCards(section);
+          golnisaReInitCards(section);
         }
       });
     }
@@ -226,24 +226,24 @@ async function velorraRenderHomepageGrids() {
     const jewGrid = document.getElementById('featured-jewelry-grid');
     if (jewGrid) {
       const jProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['jewelry'].includes(p.subcategory || p.category));
-      jewGrid.innerHTML = jProds.length ? jProds.map(p => velorraProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : velorraEmptyState('More coming soon.');
-      velorraReInitCards(jewGrid);
+      jewGrid.innerHTML = jProds.length ? jProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
+      golnisaReInitCards(jewGrid);
     }
 
     // Hair Accessories
     const hairGrid = document.getElementById('featured-hair-grid');
     if (hairGrid) {
       const hProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['hair-accessories'].includes(p.subcategory || p.category));
-      hairGrid.innerHTML = hProds.length ? hProds.map(p => velorraProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : velorraEmptyState('More coming soon.');
-      velorraReInitCards(hairGrid);
+      hairGrid.innerHTML = hProds.length ? hProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
+      golnisaReInitCards(hairGrid);
     }
 
     // Clothing
     const clothGrid = document.getElementById('featured-clothing-grid');
     if (clothGrid) {
       const cProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['clothing'].includes(p.subcategory || p.category));
-      clothGrid.innerHTML = cProds.length ? cProds.map(p => velorraProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : velorraEmptyState('More coming soon.');
-      velorraReInitCards(clothGrid);
+      clothGrid.innerHTML = cProds.length ? cProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
+      golnisaReInitCards(clothGrid);
     }
 
   } catch (err) {
@@ -253,9 +253,9 @@ async function velorraRenderHomepageGrids() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('shop-products-grid') || document.querySelector('.filter-bar')) {
-    velorraRenderShopGrid();
+    golnisaRenderShopGrid();
   }
   if (document.getElementById('featured-jewelry')) {
-    velorraRenderHomepageGrids();
+    golnisaRenderHomepageGrids();
   }
 });

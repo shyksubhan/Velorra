@@ -68,10 +68,10 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
 
     // Company Details (under logo)
     doc.fontSize(8).fillColor(C_MUTED).font('Helvetica');
-    const fWeb = company.website || 'velorra.store';
-    const fEmail = company.email || 'velorraqueries@gmail.com';
+    const fWeb = company.website || 'golnisa.store';
+    const fEmail = company.email || 'golnisaqueries@gmail.com';
     const fPhone = company.phone || '+92 331 4978295';
-    const fInsta = company.instagram || '@velorrajewelry_';
+    const fInsta = company.instagram || '@golnisajewelry_';
     const fAddr = company.address || 'Lahore, Punjab, Pakistan';
 
     doc.text(fWeb, 50, startY + 40, { link: 'https://' + fWeb.replace(/^https?:\/\//, '') });

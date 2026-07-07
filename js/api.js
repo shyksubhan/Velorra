@@ -1,13 +1,13 @@
 /* ============================================================
-   VELORRA — Shared API Helper
+   GOLNISÀ — Shared API Helper
    Used by all frontend pages to talk to the backend.
    ============================================================ */
 
-const VELORRA_API = 'https://velorra-vvp3.onrender.com/api';
+const GOLNISÀ_API = 'https://golnisa-vvp3.onrender.com/api';
 
 /* ── Get stored JWT token ── */
 function getToken() {
-  return localStorage.getItem('velorra_token');
+  return localStorage.getItem('golnisa_token');
 }
 
 /* ── Auth headers ── */
@@ -20,7 +20,7 @@ function apiHeaders(includeAuth = true) {
 
 /* ── Generic GET ── */
 async function apiGet(endpoint) {
-  const res = await fetch(`${VELORRA_API}${endpoint}`, {
+  const res = await fetch(`${GOLNISÀ_API}${endpoint}`, {
     headers: apiHeaders(),
   });
   return res.json();
@@ -33,7 +33,7 @@ async function apiGet(endpoint) {
 async function apiPost(endpoint, data, requireAuth = false) {
   let res;
   try {
-    res = await fetch(`${VELORRA_API}${endpoint}`, {
+    res = await fetch(`${GOLNISÀ_API}${endpoint}`, {
       method: 'POST',
       headers: apiHeaders(requireAuth),
       body: JSON.stringify(data),
@@ -56,7 +56,7 @@ async function apiPost(endpoint, data, requireAuth = false) {
 
 /* ── Generic PATCH ── */
 async function apiPatch(endpoint, data) {
-  const res = await fetch(`${VELORRA_API}${endpoint}`, {
+  const res = await fetch(`${GOLNISÀ_API}${endpoint}`, {
     method: 'PATCH',
     headers: apiHeaders(),
     body: JSON.stringify(data),
@@ -76,20 +76,20 @@ async function apiLogin({ email, password }) {
 
 /* ── Save auth session ── */
 function saveSession(token, user) {
-  localStorage.setItem('velorra_token', token);
-  localStorage.setItem('velorra_user', JSON.stringify(user));
+  localStorage.setItem('golnisa_token', token);
+  localStorage.setItem('golnisa_user', JSON.stringify(user));
 }
 
 /* ── Clear auth session ── */
 function clearSession() {
-  localStorage.removeItem('velorra_token');
-  localStorage.removeItem('velorra_user');
+  localStorage.removeItem('golnisa_token');
+  localStorage.removeItem('golnisa_user');
 }
 
 /* ── Get current user from localStorage ── */
 function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem('velorra_user') || 'null');
+    return JSON.parse(localStorage.getItem('golnisa_user') || 'null');
   } catch { return null; }
 }
 
@@ -121,7 +121,7 @@ async function apiSendContact({ name, email, phone, subject, message }) {
 /* ── Check if backend is reachable ── */
 async function checkBackend() {
   try {
-    const res = await fetch(`${VELORRA_API}/health`, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`${GOLNISÀ_API}/health`, { signal: AbortSignal.timeout(3000) });
     return res.ok;
   } catch {
     return false;
@@ -144,16 +144,16 @@ async function apiGetReviews() {
    ══════════════════════════════════════════════ */
 (function initVisitorTracking() {
   /* Generate a unique session ID for this browser tab */
-  let sessionId = sessionStorage.getItem('velorra_sid');
+  let sessionId = sessionStorage.getItem('golnisa_sid');
   if (!sessionId) {
     sessionId = 'v-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
-    sessionStorage.setItem('velorra_sid', sessionId);
+    sessionStorage.setItem('golnisa_sid', sessionId);
   }
 
   const page = window.location.pathname.replace(/.*\//, '/') || '/';
 
   function ping() {
-    fetch(`${VELORRA_API}/visitors/ping`, {
+    fetch(`${GOLNISÀ_API}/visitors/ping`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, page }),
@@ -170,7 +170,7 @@ async function apiGetReviews() {
   window.addEventListener('beforeunload', () => {
     clearInterval(interval);
     navigator.sendBeacon(
-      `${VELORRA_API}/visitors/leave`,
+      `${GOLNISÀ_API}/visitors/leave`,
       JSON.stringify({ sessionId })
     );
   });

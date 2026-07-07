@@ -1,5 +1,5 @@
 /* ============================================================
-   VELORRA — Payments Routes
+   GOLNISÀ — Payments Routes
    Supports: COD, Card (Stripe test mode), Bank Transfer
    ============================================================ */
 const express = require('express');
