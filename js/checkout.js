@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!note) return;
     if (payMethod !== 'bank_deposit') { note.style.display = 'none'; return; }
     const num = window.VELORRA_CONFIG?.whatsapp?.number;
-    const msg = encodeURIComponent(`Hi! I just placed order ${orderRef} on Velorra Jewelry and paid via Bank Deposit. Here is my payment screenshot:`);
+    const msg = encodeURIComponent(`Hi! I just placed order ${orderRef} on Velorra and paid via Bank Deposit. Here is my payment screenshot:`);
     note.innerHTML = `
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">
         Please send a screenshot of your payment to our WhatsApp so we can confirm and ship your order.
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const waBtn = document.getElementById('bank-whatsapp-btn');
   if (waBtn && window.VELORRA_CONFIG) {
     const num = window.VELORRA_CONFIG.whatsapp.number;
-    const msg = encodeURIComponent('Hi! I just placed an order on Velorra Jewelry and paid via Bank Deposit. Here is my payment screenshot:');
+    const msg = encodeURIComponent('Hi! I just placed an order on Velorra and paid via Bank Deposit. Here is my payment screenshot:');
     waBtn.href = `https://wa.me/${num}?text=${msg}`;
   }
   /* ── Checkout 3D background (particles) ── */

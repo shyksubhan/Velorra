@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Account — Velorra Jewelry</title>
+  <title>My Account — Velorra</title>
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="css/style.css"/>
@@ -50,12 +50,12 @@
           <button type="submit" class="btn-primary" style="width:100%;text-align:center;padding:16px">Sign In</button>
         </form>
         <p style="text-align:center;margin-top:20px;font-size:.78rem;color:var(--muted)">
-          New to Velorra Jewelry? <a href="#" onclick="switchTab('signup')" style="color:var(--gold)">Create an account</a>
+          New to Velorra? <a href="#" onclick="switchTab('signup')" style="color:var(--gold)">Create an account</a>
         </p>
       </div>
       <!-- SIGN UP -->
       <div class="account-panel hidden" id="panel-signup">
-        <h1 class="ck-panel-title" style="text-align:center">Join <em>Velorra Jewelry</em></h1>
+        <h1 class="ck-panel-title" style="text-align:center">Join <em>Velorra</em></h1>
         <div class="gold-rule" style="margin:16px auto 28px"></div>
         <form id="signup-form" class="ck-form">
           <div class="ck-row-2">
@@ -96,7 +96,7 @@
           </div>
           <label style="display:flex;gap:10px;align-items:flex-start;font-size:.75rem;color:var(--muted);margin-bottom:20px;cursor:pointer">
             <input type="checkbox" required style="margin-top:3px;accent-color:var(--gold)"/>
-            I agree to Velorra Jewelry's <a href="policy?page=terms" style="color:var(--gold);margin-left:4px">Terms & Privacy Policy</a>
+            I agree to Velorra's <a href="policy?page=terms" style="color:var(--gold);margin-left:4px">Terms & Privacy Policy</a>
           </label>
           <button type="submit" class="btn-primary" style="width:100%;text-align:center;padding:16px">Create Account</button>
         </form>
@@ -371,7 +371,7 @@
           if (result.ok) {
             saveSession(result.data.token, result.data.user);
             clearSigninError();
-            showToast('Welcome back to Velorra Jewelry ✓');
+            showToast('Welcome back to Velorra ✓');
             setTimeout(() => location.reload(), 900);
           } else {
             showSigninError(result.data.error || 'Sign in failed.');
@@ -384,7 +384,7 @@
           else if (stored.password !== password) { showSigninError('Incorrect password. Please try again.'); }
           else {
             clearSigninError();
-            showToast('Welcome back to Velorra Jewelry ✓');
+            showToast('Welcome back to Velorra ✓');
             setTimeout(() => location.reload(), 900);
           }
           if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }

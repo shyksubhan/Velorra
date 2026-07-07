@@ -9,7 +9,7 @@
   <!-- Brand name -->
   <text x="54" y="36" font-family="'Playfair Display', Georgia, serif" font-size="26" font-weight="700" letter-spacing="3" fill="#2c1f14">VELORRA</text>
   <!-- Tagline -->
-  <text x="55" y="50" font-family="'Lato', Arial, sans-serif" font-size="9" font-weight="400" letter-spacing="6" fill="#b8883a">JEWELRY</text>
+  <text x="55" y="50" font-family="'Lato', Arial, sans-serif" font-size="9" font-weight="400" letter-spacing="6" fill="#b8883a"></text>
   <!-- rule -->
   <line x1="54" y1="40" x2="228" y2="40" stroke="#b8883a" stroke-width="0.6" opacity="0.5"/>
 </svg>

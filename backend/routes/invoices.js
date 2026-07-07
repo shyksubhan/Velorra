@@ -48,7 +48,7 @@ router.post('/generate', requireAdmin, async (req, res) => {
     const pdfFileName = `${invId}.pdf`;
     const pdfPath = path.join(INVOICES_DIR, pdfFileName);
 
-    const company = store.settings?.company || { name: 'Velorra Jewelry', address: '', phone: '', email: '', website: '' };
+    const company = store.settings?.company || { name: 'Velorra', address: '', phone: '', email: '', website: '' };
     const { buildPdf } = require('../utils/pdfGenerator');
     await buildPdf(pdfPath, invId, order, order, company);
 
@@ -144,7 +144,7 @@ router.get('/:id/download', async (req, res) => {
     }
     if (!liveOrder) liveOrder = (isSocial ? store.socialOrders : store.orders).find(o => o.id === inv.orderId);
 
-    const company = store.settings?.company || { name: 'Velorra Jewelry', address: '', phone: '', email: '', website: '' };
+    const company = store.settings?.company || { name: 'Velorra', address: '', phone: '', email: '', website: '' };
     const { buildPdf } = require('../utils/pdfGenerator');
     await buildPdf(pdfPath, invId, inv.snapshot || inv, liveOrder || inv.snapshot || inv, company);
 
@@ -187,7 +187,7 @@ router.post('/:id/email', requireAdmin, async (req, res) => {
     if (!liveOrder) liveOrder = (isSocial ? store.socialOrders : store.orders).find(o => o.id === inv.orderId);
 
     // Regenerate PDF before emailing
-    const company = store.settings?.company || { name: 'Velorra Jewelry', address: '', phone: '', email: '', website: '' };
+    const company = store.settings?.company || { name: 'Velorra', address: '', phone: '', email: '', website: '' };
     const { buildPdf } = require('../utils/pdfGenerator');
     await buildPdf(pdfPath, invId, inv.snapshot || inv, liveOrder || inv.snapshot || inv, company);
 

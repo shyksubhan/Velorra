@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Velorra Jewelry — Hair Accessories & Jewelry Online Pakistan | COD Available</title>
+  <title>Velorra — Hair Accessories & Jewelry Online Pakistan | COD Available</title>
   <meta name="description" content="Shop Pakistan's finest hair accessories & jewelry online at Velorra. Scrunchies, hair clips, pins, necklaces, earrings, rings & bracelets. Cash on Delivery across Pakistan." />
   <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
   <link rel="stylesheet" href="css/style.css" />
@@ -19,7 +19,7 @@
       {
         "@type": "Organization",
         "@id": "https://velorrajewelry.store/#organization",
-        "name": "Velorra Jewelry",
+        "name": "Velorra",
         "url": "https://velorrajewelry.store",
         "logo": {
           "@type": "ImageObject",
@@ -46,7 +46,7 @@
         "@type": "WebSite",
         "@id": "https://velorrajewelry.store/#website",
         "url": "https://velorrajewelry.store",
-        "name": "Velorra Jewelry",
+        "name": "Velorra",
         "publisher": { "@id": "https://velorrajewelry.store/#organization" },
         "potentialAction": {
           "@type": "SearchAction",
@@ -57,7 +57,7 @@
       {
         "@type": "Store",
         "@id": "https://velorrajewelry.store/#store",
-        "name": "Velorra Jewelry",
+        "name": "Velorra",
         "url": "https://velorrajewelry.store",
         "image": "https://velorrajewelry.store/images/categories/necklace.jpg",
         "priceRange": "PKR 80 - PKR 999",
@@ -85,7 +85,15 @@
     <a href="/" class="nav-logo nav-logo-link" style="font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;text-decoration:none;">Velorra <em style="color:#b8883a;font-style:normal;">Jewelry</em></a>
     <ul class="nav-links">
       <li><a href="/">Home</a></li>
-      <li><a href="shop">Shop</a></li>
+      <li class="nav-dropdown">
+        <a href="shop">Shop <i class="fa-solid fa-chevron-down" style="font-size:0.7em;margin-left:4px;"></i></a>
+        <ul class="dropdown-menu">
+          <li><a href="shop">All Collections</a></li>
+          <li><a href="collections?main=jewelry">Jewelry</a></li>
+          <li><a href="collections?main=hair-accessories">Hair Accessories</a></li>
+          <li><a href="collections?main=clothing">Clothing</a></li>
+        </ul>
+      </li>
       <li><a href="about">Our Story</a></li>
       <li><a href="contact">Contact</a></li>
     </ul>
@@ -162,131 +170,38 @@
       <div class="gold-rule"></div>
       <div class="cat-grid">
 
-        <!-- Row 1 -->
-        <a href="shop?cat=scrunchies" class="cat-card cat-img-card">
+        <a href="collections?main=jewelry" class="cat-card cat-img-card">
           <div class="cat-img-wrap">
-            <img src="images/categories/scrunchies.jpg" alt="Buy Scrunchies Online Pakistan — Velorra Jewelry" loading="lazy"/>
+            <img src="images/categories/necklace.jpg" alt="Jewelry Online Pakistan — Velorra" loading="lazy"/>
             <div class="cat-img-overlay"></div>
           </div>
           <div class="cat-img-info">
-            <p class="cat-name">Scrunchies</p>
-            <span class="cat-cta-pill">Shop Now</span>
+            <p class="cat-name">Jewelry</p>
+            <span class="cat-cta-pill">View Collections</span>
           </div>
         </a>
 
-        <a href="shop?cat=clips" class="cat-card cat-img-card">
+        <a href="collections?main=hair-accessories" class="cat-card cat-img-card">
           <div class="cat-img-wrap">
-            <img src="images/categories/catchers.jpg" alt="Hair Clips for Women Online Pakistan — Velorra Jewelry" loading="lazy"/>
+            <img src="images/categories/scrunchies.jpg" alt="Hair Accessories Online Pakistan — Velorra" loading="lazy"/>
             <div class="cat-img-overlay"></div>
           </div>
           <div class="cat-img-info">
-            <p class="cat-name">Hair Clips</p>
-            <span class="cat-cta-pill">Shop Now</span>
+            <p class="cat-name">Hair Accessories</p>
+            <span class="cat-cta-pill">View Collections</span>
           </div>
         </a>
 
-        <a href="shop?cat=hair-bands" class="cat-card cat-img-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/hair-bands.jpg" alt="Hair Bands Online Pakistan — Velorra Jewelry" loading="lazy"/>
+        <a href="collections?main=clothing" class="cat-card cat-img-card">
+          <div class="cat-img-wrap" style="background:#eae3d8;">
+            <!-- No Image yet -->
             <div class="cat-img-overlay"></div>
           </div>
           <div class="cat-img-info">
-            <p class="cat-name">Hair Bands</p>
-            <span class="cat-cta-pill">Shop Now</span>
+            <p class="cat-name">Clothing</p>
+            <span class="cat-cta-pill">View Collections</span>
           </div>
         </a>
-
-        <a href="shop?cat=pins" class="cat-card cat-img-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/pins.jpg" alt="Hair Pins for Women Online Pakistan — Velorra Jewelry" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Pins</p>
-            <span class="cat-cta-pill">Shop Now</span>
-          </div>
-        </a>
-
-        <!-- Row 2 -->
-        <a href="shop?cat=ponies" class="cat-card cat-img-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/ponies.jpg" alt="Ponytail Hair Ties Online Pakistan — Velorra Jewelry" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Ponies</p>
-            <span class="cat-cta-pill">Shop Now</span>
-          </div>
-        </a>
-
-        <a href="shop?cat=fancy" class="cat-card cat-img-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/fancy.jpg" alt="Fancy Hair Accessories Online Pakistan — Velorra Jewelry" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Fancy Accessories</p>
-            <span class="cat-cta-pill">Shop Now</span>
-          </div>
-        </a>
-
-        <a href="shop?cat=bracelets" class="cat-card cat-img-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/bracelets.jpg" alt="Bracelets for Women Online Pakistan — Velorra Jewelry" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Bracelets</p>
-            <span class="cat-cta-pill">Shop Now</span>
-          </div>
-        </a>
-
-        <a href="shop?cat=rings" class="cat-card cat-img-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/rings.jpg" alt="Rings for Women Online Pakistan — Velorra Jewelry" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Rings</p>
-            <span class="cat-cta-pill">Shop Now</span>
-          </div>
-        </a>
-
-        <!-- Row 3: 3 centered -->
-        <div class="cat-row-3">
-          <a href="shop?cat=earrings" class="cat-card cat-img-card">
-            <div class="cat-img-wrap">
-              <img src="images/categories/earrings.jpg" alt="Earrings Online Pakistan — Velorra Jewelry" loading="lazy"/>
-              <div class="cat-img-overlay"></div>
-            </div>
-            <div class="cat-img-info">
-              <p class="cat-name">Earrings</p>
-              <span class="cat-cta-pill">Shop Now</span>
-            </div>
-          </a>
-
-          <a href="shop?cat=necklace" class="cat-card cat-img-card">
-            <div class="cat-img-wrap">
-              <img src="images/categories/necklace.jpg" alt="Necklaces Online Pakistan — Velorra Jewelry" loading="lazy"/>
-              <div class="cat-img-overlay"></div>
-            </div>
-            <div class="cat-img-info">
-              <p class="cat-name">Necklace</p>
-              <span class="cat-cta-pill">Shop Now</span>
-            </div>
-          </a>
-
-          <a href="shop?cat=gift-items" class="cat-card cat-img-card">
-            <div class="cat-img-wrap">
-              <img src="images/categories/gift-items.jpg" alt="Gift Items for Women Online Pakistan — Velorra Jewelry" loading="lazy"/>
-              <div class="cat-img-overlay"></div>
-            </div>
-            <div class="cat-img-info">
-              <p class="cat-name">Gift Items</p>
-              <span class="cat-cta-pill">Shop Now</span>
-            </div>
-          </a>
-        </div>
 
       </div>
     </div>
@@ -311,14 +226,14 @@
     <div class="container">
       <div class="story-grid">
         <div class="story-visual reveal">
-          <img src="https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=700&q=85&fit=crop" alt="Velorra Jewelry — Handcrafted Hair Accessories and Jewelry for Women in Pakistan" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
+          <img src="https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=700&q=85&fit=crop" alt="Velorra — Handcrafted Hair Accessories and Jewelry for Women in Pakistan" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
           <div class="story-accent"></div>
         </div>
         <div class="story-text reveal reveal-delay-2">
-          <p class="section-label">The Velorra Jewelry Story</p>
+          <p class="section-label">The Velorra Story</p>
           <h2 class="section-title">Born From a Passion<br>for <em>Beauty</em></h2>
           <div class="gold-rule"></div>
-          <p>Velorra Jewelry was founded on a simple belief — that every woman deserves accessories that are <strong>as beautiful as she is</strong>. Every scrunchie, every pin, every clip is curated with intention, so you don't just style your hair — you express your soul.</p>
+          <p>Velorra was founded on a simple belief — that every woman deserves accessories that are <strong>as beautiful as she is</strong>. Every scrunchie, every pin, every clip is curated with intention, so you don't just style your hair — you express your soul.</p>
           <p>From the streets of Lahore to wardrobes across Pakistan, we bring you hair accessories that <strong>transcend trends</strong> and celebrate timeless femininity with every look.</p>
           <a href="about" class="btn-outline" style="display:inline-block;margin-top:8px">Discover Our Story</a>
           <div class="story-stats">
@@ -334,38 +249,10 @@
   <section id="testimonials">
     <div class="container">
       <p class="section-label" style="text-align:center">What Our Clients Say</p>
-      <h2 class="section-title" style="text-align:center;margin-bottom:48px">Voices of <em>Velorra Jewelry</em></h2>
+      <h2 class="section-title" style="text-align:center;margin-bottom:48px">Voices of <em>Velorra</em></h2>
       <div class="testimonial-slider" id="reviews-container">
         <p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem">Loading reviews…</p>
       </div>
-    </div>
-  </section>
-  <!-- RESELLER CTA -->
-  <section id="reseller-cta" style="background:linear-gradient(135deg,#2c1f14 0%,#1a1208 100%);padding:80px 0;position:relative;overflow:hidden;">
-    <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1631700611307-37dbcb89ef7e?w=1400&q=50&fit=crop') center/cover no-repeat;opacity:0.06;pointer-events:none;"></div>
-    <div class="container" style="position:relative;text-align:center;">
-      <p class="section-label" style="color:#b8883a;letter-spacing:3px;font-size:0.75rem;text-transform:uppercase;margin-bottom:14px;">Business Opportunity</p>
-      <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;margin-bottom:16px;">Want to Become a <em style="color:#b8883a;font-style:normal;">Reseller?</em></h2>
-      <p style="color:rgba(255,255,255,0.65);max-width:560px;margin:0 auto 36px;font-size:1rem;line-height:1.8;">
-        Hamare paas wholesale prices par directly China se imported jewelry available hai. Shahalam Market Lahore mein hamare wholesale store se lein aur apna business grow karein!
-      </p>
-      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:40px;">
-        <div style="background:rgba(184,136,58,0.12);border:1px solid rgba(184,136,58,0.3);border-radius:10px;padding:14px 20px;color:#fff;font-size:0.85rem;display:flex;align-items:center;gap:8px;">
-          <i class="fa-solid fa-tag" style="color:#b8883a;"></i> Wholesale Prices
-        </div>
-        <div style="background:rgba(184,136,58,0.12);border:1px solid rgba(184,136,58,0.3);border-radius:10px;padding:14px 20px;color:#fff;font-size:0.85rem;display:flex;align-items:center;gap:8px;">
-          <i class="fa-solid fa-plane" style="color:#b8883a;"></i> Direct China Import
-        </div>
-        <div style="background:rgba(184,136,58,0.12);border:1px solid rgba(184,136,58,0.3);border-radius:10px;padding:14px 20px;color:#fff;font-size:0.85rem;display:flex;align-items:center;gap:8px;">
-          <i class="fa-solid fa-store" style="color:#b8883a;"></i> Shahalam Market Lahore
-        </div>
-        <div style="background:rgba(184,136,58,0.12);border:1px solid rgba(184,136,58,0.3);border-radius:10px;padding:14px 20px;color:#fff;font-size:0.85rem;display:flex;align-items:center;gap:8px;">
-          <i class="fa-solid fa-handshake" style="color:#b8883a;"></i> No Min. Order for Walk-ins
-        </div>
-      </div>
-      <a href="reseller" class="btn-primary" style="display:inline-block;padding:16px 40px;font-size:1rem;text-decoration:none;">
-        <i class="fa-solid fa-store" style="margin-right:8px;"></i>Become a Reseller
-      </a>
     </div>
   </section>
   <!-- NEWSLETTER -->
@@ -374,7 +261,7 @@
     <div class="container" style="position:relative;z-index:1;">
       <div class="newsletter-inner reveal">
         <p class="section-label">Stay In The Loop</p>
-        <h2 class="section-title">Join the <em>Velorra Jewelry</em> Circle</h2>
+        <h2 class="section-title">Join the <em>Velorra</em> Circle</h2>
         <p>Subscribe for exclusive previews and early access to new arrivals — be the first to know about new drops.</p>
         <form class="newsletter-form">
           <input type="email" placeholder="Your email address" required />
@@ -418,19 +305,18 @@
             <li><a href="policy?page=returns">Returns Policy</a></li>
             <li><a href="policy?page=faqs">FAQs</a></li>
             <li><a href="policy?page=track">Track Order</a></li>
-            <li><a href="reseller">Reseller Program</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Get In Touch</h4>
-          <p>&#9993; <span data-velorra="email">velorrajewelry@gmail.com</span></p>
+          <p>&#9993; <span data-velorra="email">velorraqueries@gmail.com</span></p>
           <p>&#128222; <span data-velorra="phone">+92 300 000 0000</span></p>
           <p>&#128205; <span data-velorra="location">Lahore, Pakistan</span></p>
           <p data-velorra="hours">Mon–Sat: 10am – 7pm</p>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2026 <span class="gold-text">Velorra Jewelry</span>. All rights reserved.</p>
+        <p>© 2026 <span class="gold-text">Velorra</span>. All rights reserved.</p>
         <div class="footer-pay">
           <span class="pay-badge">COD</span>
           <span class="pay-badge">Bank Deposit</span>

@@ -21,7 +21,6 @@ const adminRoutes        = require('./routes/admin');
 const paymentsRoutes     = require('./routes/payments');
 const uploadRoutes       = require('./routes/upload');
 const reviewRoutes       = require('./routes/reviews');
-const resellerRoutes     = require('./routes/resellers');
 const socialOrderRoutes  = require('./routes/socialOrders');
 const couponRoutes       = require('./routes/coupons');
 const settingsRoutes     = require('./routes/settings');
@@ -140,7 +139,6 @@ app.use('/api/newsletter',    newsletterRoutes);
 app.use('/api/payments',      paymentsRoutes);
 app.use('/api/upload',        uploadRoutes);
 app.use('/api/reviews',       reviewRoutes);
-app.use('/api/resellers',     resellerRoutes);
 app.use('/api/settings',      settingsRoutes);
 app.use('/api/invoices',      invoiceRoutes);
 app.use('/api/spendings',     spendingsRoutes);
@@ -380,7 +378,7 @@ app.get('/api/health', (req, res) => {
   try { firebaseStatus = getDB() ? 'connected' : 'demo'; } catch { firebaseStatus = 'demo'; }
   res.json({
     status:    'ok',
-    service:   'Velorra Jewelry Backend',
+    service:   'Velorra Backend',
     version:   '2.0.0',
     firebase:  firebaseStatus,
     demoMode:  firebaseStatus === 'demo',

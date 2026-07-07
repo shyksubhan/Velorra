@@ -69,7 +69,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     // Company Details (under logo)
     doc.fontSize(8).fillColor(C_MUTED).font('Helvetica');
     const fWeb = company.website || 'velorrajewelry.store';
-    const fEmail = company.email || 'velorrajewelry@gmail.com';
+    const fEmail = company.email || 'velorraqueries@gmail.com';
     const fPhone = company.phone || '+92 331 4978295';
     const fInsta = company.instagram || '@velorrajewelry_';
     const fAddr = company.address || 'Lahore, Punjab, Pakistan';

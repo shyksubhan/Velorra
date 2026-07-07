@@ -11,11 +11,10 @@ const VELORRA_SEARCH_INDEX = [
   { type: 'product', id: 'velvet-noir-lip-kit',        title: 'Velvet Noir Lip Kit',        keywords: 'cosmetics lips lipstick velvet noir beauty PKR 3500 VLR-005', url: 'product?id=velvet-noir-lip-kit',      badge: 'PKR 3,500' },
   { type: 'product', id: 'champagne-leather-tote',     title: 'Champagne Leather Tote',     keywords: 'women bags handbag tote champagne leather PKR 18000 VLR-006 sale', url: 'product?id=champagne-leather-tote', badge: 'PKR 18,000' },
   /* Categories */
-  { type: 'category', title: 'Women\'s Collection',             keywords: 'women dresses tops fashion female ladies', url: 'shop?cat=women',     badge: 'Category' },
-  { type: 'category', title: 'Men\'s Collection',               keywords: 'men suits formal shirts male',             url: 'shop?cat=men',       badge: 'Category' },
-  { type: 'category', title: 'Jewellery & Accessories',         keywords: 'jewellery jewelry necklace ring earring hair accessories bracelet', url: 'shop?cat=jewellery', badge: 'Category' },
-  { type: 'category', title: 'Watches',                         keywords: 'watches timepiece wristwatch unisex',      url: 'shop?cat=watches',   badge: 'Category' },
-  { type: 'category', title: 'Cosmetics',                       keywords: 'cosmetics makeup beauty lips foundation', url: 'shop?cat=cosmetics', badge: 'Category' },
+  { type: 'category', title: 'All Collections',                 keywords: 'all shop products catalog', url: 'shop',     badge: 'Category' },
+  { type: 'category', title: 'Jewelry',                         keywords: 'jewelry rings bracelets necklaces earrings', url: 'collections?main=jewelry', badge: 'Category' },
+  { type: 'category', title: 'Hair Accessories',                keywords: 'hair accessories scrunchies clips bands pins ponies', url: 'collections?main=hair-accessories', badge: 'Category' },
+  { type: 'category', title: 'Clothing',                        keywords: 'clothing apparel casual fancy party wear', url: 'collections?main=clothing', badge: 'Category' },
   { type: 'category', title: 'Sale Items',                      keywords: 'sale discount offer reduced price',        url: 'shop?cat=sale',      badge: 'Sale' },
   /* Pages */
   { type: 'page', title: 'Our Story',        keywords: 'about velorra story brand lahore founded history',   url: 'about',                    badge: 'Page' },

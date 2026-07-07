@@ -8,7 +8,7 @@ const VELORRA_CONFIG = {
      Example: Pakistan 0300-1234567 → '923001234567'          */
   whatsapp: {
     number:  '923314978295',          // ← REPLACE with your number
-    message: 'Hi! I found you on Velorra Jewelry and I have a question.',
+    message: 'Hi! I found you on Velorra and I have a question.',
   },
   /* ── Social Media ──
      Replace these URLs with your actual profile links         */
@@ -20,7 +20,7 @@ const VELORRA_CONFIG = {
   },
   /* ── Contact ── */
   contact: {
-    email:    'velorrajewelry@gmail.com',
+    email:    'velorraqueries@gmail.com',
     phone:    '+92 331 4978295',
     location: 'Lahore, Punjab, Pakistan',
     hours:    'Monday – Saturday',
@@ -44,7 +44,7 @@ window.VELORRA_CONFIG = VELORRA_CONFIG;
 
    Usage in HTML:
      <span data-velorra="email"></span>
-     <a href="#" data-velorra="email">velorrajewelry@gmail.com</a>   (href auto becomes mailto:)
+     <a href="#" data-velorra="email">velorraqueries@gmail.com</a>   (href auto becomes mailto:)
      <span data-velorra="phone"></span>
      <a href="#" data-velorra="phone">+92 300 000 0000</a>     (href auto becomes tel:)
      <span data-velorra="location"></span>

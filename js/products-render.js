@@ -20,7 +20,20 @@ const VELORRA_CAT_LABELS = {
   'earrings':    'Earrings',
   'necklace':    'Necklace',
   'gift-items':  'Gift Items',
+  'fancy-wear':  'Fancy Wear',
+  'casual':      'Casual',
+  'party-wear':  'Party Wear',
+  'summer-collection': 'Summer Collection',
+  'winter-collection': 'Winter Collection',
+  'daily-pret':  'Daily Pret Ready to Wear'
 };
+
+const CATEGORY_HIERARCHY = {
+  'jewelry': ['bracelets', 'rings', 'earrings', 'necklace'],
+  'hair-accessories': ['scrunchies', 'clips', 'hair-bands', 'pins', 'ponies', 'fancy', 'gift-items'],
+  'clothing': ['fancy-wear', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret']
+};
+
 function velorCatLabel(cat) {
   if (!cat) return '';
   return VELORRA_CAT_LABELS[cat.toLowerCase()] || cat;

@@ -7,7 +7,7 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM = 'Velorra Jewelry <orders@velorrajewelry.store>';
+const FROM = 'Velorra <orders@velorrajewelry.store>';
 const TO   = process.env.EMAIL_TO;
 
 /* ── Order Confirmation Email (to customer) ── */
@@ -23,7 +23,7 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
   await resend.emails.send({
     from: FROM,
     to,
-    subject: `Order Confirmed — ${orderRef} | Velorra Jewelry`,
+    subject: `Order Confirmed — ${orderRef} | Velorra`,
     html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;color:#ccc;">
       <h1 style="color:#c9a84c;">VELORRA <span style="color:#fff;">Jewelry</span></h1>
       <h2 style="color:#fff;">Order Confirmed ✓</h2>
@@ -41,7 +41,7 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
         <p style="margin:2px 0;">IBAN: PK45ALFH0960001009896691</p>
         <p style="margin:10px 0 0;color:#aaa;">After placing your order, please send a screenshot of the payment to our WhatsApp.</p>
       </div>` : ''}
-      <p style="color:#555;font-size:.8rem;">Questions? Email velorrajewelry@gmail.com</p>
+      <p style="color:#555;font-size:.8rem;">Questions? Email velorraqueries@gmail.com</p>
     </body></html>`,
   });
 }
@@ -96,12 +96,12 @@ async function sendNewsletterWelcome(email) {
   await resend.emails.send({
     from: FROM,
     to: email,
-    subject: '💛 Welcome to Velorra Jewelry',
+    subject: '💛 Welcome to Velorra',
     html: `<body style="margin:0;padding:40px;background:#0a0a0a;font-family:Georgia,serif;text-align:center;color:#ccc;">
       <h1 style="color:#c9a84c;">VELORRA <span style="color:#fff;">Jewelry</span></h1>
       <h2 style="color:#fff;">Welcome to the Circle 💛</h2>
-      <p style="color:#888;">You're now part of Velorra Jewelry's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
-      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? velorrajewelry@gmail.com</p>
+      <p style="color:#888;">You're now part of Velorra's exclusive circle. You'll be the first to know about new arrivals, fresh collections, and special offers.</p>
+      <p style="color:#888;font-size:.85rem;margin-top:24px;">Questions? velorraqueries@gmail.com</p>
     </body>`,
   });
 }
@@ -114,7 +114,7 @@ async function sendReplyEmail({ to, customerName, originalMessage, replyText }) 
   await resend.emails.send({
     from: FROM,
     to,
-    subject: `Re: Your message to Velorra Jewelry`,
+    subject: `Re: Your message to Velorra`,
     html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#faf7f2;font-family:Georgia,serif;color:#2c1f14;">
       <h2 style="color:#b8883a;">Velorra <span style="color:#2c1f14;">Jewelry</span></h2>
       <p>Dear ${customerName || 'Valued Customer'},</p>
@@ -125,7 +125,7 @@ async function sendReplyEmail({ to, customerName, originalMessage, replyText }) 
         ${originalMessage}
       </blockquote>
       <p style="color:#9a8070;font-size:.78rem;margin-top:24px;">
-        Velorra Jewelry — hello@velorrajewelry.com
+        Velorra — velorraqueries@gmail.com
       </p>
     </body></html>`,
   });
@@ -154,7 +154,7 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
             <p style="font-family:monospace;font-size:1.6rem;color:#b8883a;font-weight:700;letter-spacing:.2em;margin:0;">${promoCode}</p>
           </div>` : ''}
           <p style="color:#9a8070;font-size:.72rem;margin-top:32px;">
-            You're receiving this because you subscribed to Velorra Jewelry.<br/>
+            You're receiving this because you subscribed to Velorra.<br/>
             <a href="https://velorra-vvp3.onrender.com/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}" 
                style="color:#b8883a;">Unsubscribe</a>
           </p>
