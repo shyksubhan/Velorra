@@ -1199,11 +1199,11 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
 
 <!-- PINNED COLLECTIONS MODAL -->
-<div class="modal" id="modal-pinned">
-  <div class="modal-content" style="max-width:500px;">
+<div class="modal-overlay" id="modal-pinned">
+  <div class="modal" style="max-width:520px;">
     <div class="modal-header">
       <h2>Pinned Collections</h2>
-      <button class="modal-close" onclick="closePinnedModal()">&#10005;</button>
+      <button class="btn btn-outline btn-sm" onclick="closePinnedModal()">✕</button>
     </div>
     <div class="modal-body">
       <p style="margin-bottom:15px;color:var(--muted);font-size:0.9rem;">Pinned collections appear as horizontal scrolling rows on the homepage before the featured sections.</p>
@@ -3126,7 +3126,7 @@ function viewInvoicesForOrder(orderId) {
 let adminPinnedCollections = [];
 
 async function openPinnedModal() {
-  document.getElementById('modal-pinned').classList.add('active');
+  document.getElementById('modal-pinned').classList.add('open');
   document.body.style.overflow = 'hidden';
   try {
     const res = await apiFetch('/admin/pinned');
@@ -3142,7 +3142,7 @@ async function openPinnedModal() {
 }
 
 function closePinnedModal() {
-  document.getElementById('modal-pinned').classList.remove('active');
+  document.getElementById('modal-pinned').classList.remove('open');
   document.body.style.overflow = '';
 }
 

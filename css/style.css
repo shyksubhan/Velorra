@@ -1074,6 +1074,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   position: relative;
   overflow: hidden;
   border-radius: 120px 120px 10px 10px; /* Elegant Arch Shape */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   aspect-ratio: 3/4;
   width: calc(33.333% - 20px);
   max-width: 340px;
