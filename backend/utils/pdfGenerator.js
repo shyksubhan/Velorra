@@ -237,7 +237,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
 
     doc.rect(0, 780, 600, 65).fillAndStroke(C_BLACK, C_BLACK);
     doc.fillColor(C_GOLD).fontSize(9).font('Helvetica-Bold');
-    doc.text(`Thank you for shopping with ${company.name}!`, 0, 795, { align: 'center', width: 600 });
+    doc.text(`Thank you for shopping with Golnisà!`, 0, 795, { align: 'center', width: 600 });
     doc.fillColor('#dddddd').fontSize(8).font('Helvetica');
     doc.text(`${fWeb}   |   ${fEmail}   |   ${fPhone}`, 0, 810, { align: 'center', width: 600 });
 

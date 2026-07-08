@@ -24,9 +24,9 @@ const store = {
   spendings:    [],   /* tracked expenses/investments */
   settings: {
     company: {
-      name: 'Velorra',
+      name: 'Golnisà',
       address: '',
-      phone: '',
+      phone: '+92 331 4978295',
       email: '',
       website: '',
       socials: ''
