@@ -123,7 +123,11 @@ router.post('/pinned', requireRole('super_admin', 'admin', 'ceo'), async (req, r
     store.pinned = pinned;
 
     if (isFirebaseAvailable()) {
-      await getDB().collection('settings').doc('pinned').set({ collections: pinned });
+      try {
+        await getDB().collection('settings').doc('pinned').set({ collections: pinned });
+      } catch (fbErr) {
+        console.warn('Firebase pinned update failed:', fbErr.message);
+      }
     }
     
     try {
