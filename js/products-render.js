@@ -160,12 +160,12 @@ async function golnisaRenderShopGrid() {
     const data = await apiGet('/products');
     let products = data.products || [];
     
-    // If a main category is specified, pre-filter the products list
     if (mainCat && CATEGORY_HIERARCHY[mainCat]) {
       const allowed = CATEGORY_HIERARCHY[mainCat];
       products = products.filter(p => {
-        const c = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
-        return allowed.includes(c) || allowed.includes(p.category);
+        const cat = p.category === 'catchers' ? 'clips' : p.category;
+        const subcat = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
+        return allowed.includes(subcat) || allowed.includes(cat);
       });
     }
 
