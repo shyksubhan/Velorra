@@ -517,29 +517,7 @@ app.use((err, req, res, next) => {
       store.invoices = invoicesSnap.docs.map(d => d.data());
       console.log(`✅ Loaded ${store.orders.length} orders, ${store.socialOrders.length} social orders, ${store.spendings.length} spendings, ${store.invoices.length} invoices from Firestore.`);
 
-      /* MIGRATION: Give Muhammad Subhan the CEO role and delete secondary super admins */
-      try {
-        const adminSnap = await db.collection('adminUsers').get();
-        const batch = db.batch();
-        let migrated = false;
-        adminSnap.docs.forEach(doc => {
-          const data = doc.data();
-          if (data.fname === 'Muhammad' && data.lname === 'Subhan' && data.role !== 'ceo') {
-            batch.update(doc.ref, { role: 'ceo' });
-            migrated = true;
-          }
-          if (data.role === 'super_admin' && doc.id !== 'super-admin-1') {
-            batch.delete(doc.ref);
-            migrated = true;
-          }
-        });
-        if (migrated) {
-          await batch.commit();
-          console.log(`✅ Roles migrated: Muhammad Subhan promoted to CEO, secondary super admins deleted.`);
-        }
-      } catch (err) {
-        console.warn('Migration failed:', err.message);
-      }
+      /* Migration already completed — block removed to prevent accidental user deletion on restart */
     }
   } catch (e) { console.warn('Could not load data from Firestore:', e.message); }
 
