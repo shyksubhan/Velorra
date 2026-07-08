@@ -1659,10 +1659,10 @@ function applyRolePermissions(role) {
           display: none !important;
       }
       /* Prevent toggling toggles visually */
-      input[type="checkbox"].toggle-checkbox {
+      #main-app input[type="checkbox"].toggle-checkbox {
           pointer-events: none;
       }
-      select {
+      #main-app select {
           pointer-events: none;
           background-color: #f5f5f5;
       }
@@ -1674,6 +1674,9 @@ function applyRolePermissions(role) {
 }
 
 function logout() {
+  /* Remove investor read-only styles before going back to login */
+  const investorStyle = document.getElementById('investor-styles');
+  if (investorStyle) investorStyle.remove();
   clearSession();
   showLogin();
   document.getElementById('login-username').value = '';
