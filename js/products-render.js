@@ -223,12 +223,12 @@ async function golnisaRenderHomepageGrids() {
                 <h2 style="font-size:1.6rem;margin:0;">${pin.name}</h2>
                 <a href="${catUrl}" style="font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);text-decoration:none;font-family:var(--font-ui);">View All →</a>
               </div>
-            </div>
-            <div class="pinned-scroll-track" id="${rowId}" style="display:flex;overflow-x:auto;gap:12px;padding:0 max(24px, calc((100vw - 1200px)/2)) 20px;scroll-snap-type:x mandatory;cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;">
-              ${pinProducts.map(p => {
-                let html = golnisaProductCardHTML(p);
-                return html.replace('class="product-card"', 'class="product-card pin-card" style="flex:0 0 220px;min-width:220px;scroll-snap-align:start;"');
-              }).join('')}
+              <div class="pinned-scroll-track" id="${rowId}" style="display:flex;overflow-x:auto;gap:12px;padding-bottom:20px;scroll-snap-type:x mandatory;cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;">
+                ${pinProducts.map(p => {
+                  let html = golnisaProductCardHTML(p);
+                  return html.replace('class="product-card"', 'class="product-card pin-card" style="flex:0 0 220px;min-width:220px;scroll-snap-align:start;"');
+                }).join('')}
+              </div>
             </div>
           `;
           pinnedContainer.appendChild(section);
