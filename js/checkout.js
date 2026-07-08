@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     itemsEl.innerHTML = cart.map(item => `
       <div class="ck-item">
-        <span class="ck-item-emoji">${item.emoji || '🛍️'}</span>
+        <span class="ck-item-emoji" style="${item.image ? 'display:flex;align-items:center;justify-content:center;' : ''}">${item.image ? `<img src="${item.image}" alt="${item.name.replace(/"/g, '&quot;')}" style="width:36px;height:45px;object-fit:cover;border-radius:4px;">` : (item.emoji || '🛍️')}</span>
         <div class="ck-item-info">
           <span class="ck-item-name">${item.name}</span>
           <span class="ck-item-qty">Qty: ${item.qty}</span>

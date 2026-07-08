@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     itemsEl.innerHTML = cart.map((item, idx) => `
       <div class="cart-item">
-        <div class="cart-item-img">${item.emoji || '👗'}</div>
+        <div class="cart-item-img" style="${item.image ? 'padding:0;' : ''}">${item.image ? `<img src="${item.image}" alt="${item.name.replace(/"/g, '&quot;')}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">` : (item.emoji || '👗')}</div>
         <div class="cart-item-details">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-variant">${item.variant || 'Standard'}</div>
@@ -63,10 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
     saveCart(); updateCartUI();
   };
 
-  window.addToCart = (name, price, emoji, variant) => {
+  window.addToCart = (name, price, emoji, variant, image) => {
     const existing = cart.find(i => i.name === name && i.variant === variant);
     if (existing) existing.qty++;
-    else cart.push({ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', qty: 1 });
+    else cart.push({ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', image: image || null, qty: 1 });
     saveCart(); updateCartUI();
     showToast('Added to bag ✓');
     openCart();
@@ -76,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
      Goes straight to checkout with just this single item. The
      customer's existing bag is stashed (not lost) so it can be
      restored if they leave checkout without completing the order. */
-  window.buyNow = (name, price, emoji, variant) => {
+  window.buyNow = (name, price, emoji, variant, image) => {
     const existingCart = localStorage.getItem('golnisa_cart');
     if (existingCart && existingCart !== '[]') {
       localStorage.setItem('golnisa_cart_stashed', existingCart);
     }
-    const buyNowCart = [{ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', qty: 1 }];
+    const buyNowCart = [{ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', image: image || null, qty: 1 }];
     localStorage.setItem('golnisa_cart', JSON.stringify(buyNowCart));
     window.location.href = 'checkout';
   };

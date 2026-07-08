@@ -360,7 +360,7 @@
       const size = root.querySelector('.size-opt.active')?.dataset.size;
       const color = root.querySelector('.color-opt.active')?.dataset.color;
       const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
-      window.addToCart(product.name, Number(product.price), emoji, variant);
+      window.addToCart(product.name, Number(product.price), emoji, variant, (product.images && product.images[0]) || '');
     });
   }
 
@@ -371,7 +371,7 @@
       const size = root.querySelector('.size-opt.active')?.dataset.size;
       const color = root.querySelector('.color-opt.active')?.dataset.color;
       const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
-      window.buyNow(product.name, Number(product.price), emoji, variant);
+      window.buyNow(product.name, Number(product.price), emoji, variant, (product.images && product.images[0]) || '');
     });
   }
 
