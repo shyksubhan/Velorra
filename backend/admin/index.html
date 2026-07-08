@@ -3199,7 +3199,7 @@ async function savePinnedCollections() {
   try {
     const res = await apiFetch('/admin/pinned', {
       method: 'POST',
-      body: { pinned: adminPinnedCollections }
+      body: JSON.stringify({ pinned: adminPinnedCollections })
     });
     if (res.ok) {
       toast('Pinned collections saved successfully', 'success');
