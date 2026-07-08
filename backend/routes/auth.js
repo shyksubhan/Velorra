@@ -97,7 +97,8 @@ async function getAllAdminUsers() {
     /* Update in-memory cache */
     store.adminUsers = merged;
     return merged;
-  } catch {
+  } catch (err) {
+    console.error('Firebase error fetching admin users:', err);
     return store.adminUsers;
   }
 }
@@ -121,6 +122,7 @@ router.post('/register', async (req, res) => {
       const ref = db.collection('users').doc();
       const userData = { id: ref.id, fname: fname.trim(), lname: lname.trim(), email: normalEmail, phone: (phone || '').trim(), passwordHash, role: 'customer', isAdmin: false, createdAt: new Date().toISOString() };
       await ref.set(userData);
+      store.users.push(userData);
       const token = signToken({ uid: ref.id, email: normalEmail, isAdmin: false });
       return res.status(201).json({ message: 'Account created! Welcome to Golnisà 💧', token, user: { id: ref.id, fname: userData.fname, lname: userData.lname, email: normalEmail, phone: userData.phone } });
     }
@@ -391,6 +393,7 @@ router.post('/admin-users', requireAdmin, async (req, res) => {
       try {
         const ref = getDB().collection('adminUsers').doc(newUser.id);
         await ref.set(newUser);
+        store.adminUsers.push(newUser);
       } catch (fbErr) {
         console.error('Firebase admin user save failed, falling back to memory:', fbErr.message);
         store.adminUsers.push(newUser);
