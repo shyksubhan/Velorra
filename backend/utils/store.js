@@ -377,4 +377,56 @@ const store = {
   },
 };
 
+const fs = require('fs');
+const path = require('path');
+const STORE_FILE = path.join(__dirname, '..', 'data', 'store.json');
+
+try {
+  if (fs.existsSync(STORE_FILE)) {
+    const data = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
+    if (data.adminUsers) store.adminUsers = data.adminUsers;
+    if (data.users) store.users = data.users;
+    if (data.orders) store.orders = data.orders;
+    if (data.products && data.products.length > 0) store.products = data.products;
+    if (data.messages) store.messages = data.messages;
+    if (data.subscribers) store.subscribers = data.subscribers;
+    if (data.settings) store.settings = data.settings;
+    if (data.spendings) store.spendings = data.spendings;
+    if (data.invoices) store.invoices = data.invoices;
+    if (data.coupons) store.coupons = data.coupons;
+    if (data.socialOrders) store.socialOrders = data.socialOrders;
+    if (data.resellers) store.resellers = data.resellers;
+    if (data.activityLogs) store.activityLogs = data.activityLogs;
+    if (data.abandoned) store.abandoned = data.abandoned;
+  }
+} catch (err) {
+  console.error('Failed to load local store.json backup:', err);
+}
+
+setInterval(() => {
+  try {
+    const toSave = {
+      adminUsers: store.adminUsers,
+      users: store.users,
+      orders: store.orders,
+      products: store.products,
+      messages: store.messages,
+      subscribers: store.subscribers,
+      settings: store.settings,
+      spendings: store.spendings,
+      invoices: store.invoices,
+      coupons: store.coupons,
+      socialOrders: store.socialOrders,
+      resellers: store.resellers,
+      activityLogs: store.activityLogs,
+      abandoned: store.abandoned
+    };
+    if (!fs.existsSync(path.dirname(STORE_FILE))) {
+      fs.mkdirSync(path.dirname(STORE_FILE), { recursive: true });
+    }
+    fs.writeFileSync(STORE_FILE, JSON.stringify(toSave, null, 2));
+  } catch (err) {}
+}, 30000); // Auto-save every 30 seconds
+
 module.exports = store;
+
