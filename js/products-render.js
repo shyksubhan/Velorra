@@ -203,21 +203,51 @@ async function golnisaRenderHomepageGrids() {
           const section = document.createElement('section');
           section.className = 'collection-section';
           section.style.padding = '40px 0 0 0';
+
+          const catUrl = (() => {
+            const jewCats = ['bracelets','rings','earrings','necklace'];
+            const hairCats = ['scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items'];
+            if (jewCats.includes(pin.id)) return `jewelry.html?cat=${pin.id}`;
+            if (hairCats.includes(pin.id)) return `hair-accessories.html?cat=${pin.id}`;
+            return `shop?cat=${pin.id}`;
+          })();
+
+          const rowId = `pinrow-${pin.id}`;
           section.innerHTML = `
             <div class="container">
-              <div class="section-header" style="text-align:left; margin-bottom:20px;">
-                <h2 style="font-size:2rem;">${pin.name}</h2>
+              <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h2 style="font-size:1.6rem;margin:0;">${pin.name}</h2>
+                <a href="${catUrl}" style="font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);text-decoration:none;font-family:var(--font-ui);">View All →</a>
               </div>
-              <div class="horizontal-scroll-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
-                ${pinProducts.map(p => {
-                  let html = golnisaProductCardHTML(p);
-                  return html.replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"');
-                }).join('')}
-              </div>
+            </div>
+            <div class="pinned-scroll-track" id="${rowId}" style="display:flex;overflow-x:auto;gap:12px;padding:0 max(24px, calc((100vw - 1200px)/2)) 20px;scroll-snap-type:x mandatory;cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;">
+              ${pinProducts.map(p => {
+                let html = golnisaProductCardHTML(p);
+                return html.replace('class="product-card"', 'class="product-card pin-card" style="flex:0 0 180px;min-width:180px;scroll-snap-align:start;"');
+              }).join('')}
             </div>
           `;
           pinnedContainer.appendChild(section);
           golnisaReInitCards(section);
+
+          /* ── Mouse drag-to-scroll ── */
+          const track = section.querySelector(`#${rowId}`);
+          if (track) {
+            let isDown = false, startX, scrollLeft;
+            track.addEventListener('mousedown', e => {
+              isDown = true; track.style.cursor = 'grabbing';
+              startX = e.pageX - track.offsetLeft;
+              scrollLeft = track.scrollLeft;
+            });
+            track.addEventListener('mouseleave', () => { isDown = false; track.style.cursor = 'grab'; });
+            track.addEventListener('mouseup',    () => { isDown = false; track.style.cursor = 'grab'; });
+            track.addEventListener('mousemove',  e => {
+              if (!isDown) return;
+              e.preventDefault();
+              const x = e.pageX - track.offsetLeft;
+              track.scrollLeft = scrollLeft - (x - startX) * 1.5;
+            });
+          }
         }
       });
     }

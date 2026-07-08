@@ -511,6 +511,14 @@ section { padding: 100px 0; }
 .product-actions button.buy-now-btn { background: #2c1f14; color: #fff; }
 .product-actions button.buy-now-btn:hover { background: var(--gold); color: #fff; }
 .product-actions button.wishlist-btn { flex: 0 0 50px; background: var(--bg-deep); color: var(--gold); }
+/* ── Pinned Collection Scroll Row ── */
+.pinned-scroll-track::-webkit-scrollbar { display: none; }
+.pin-card .product-info { padding: 12px 12px 14px; }
+.pin-card .product-name { font-size: 0.78rem; }
+.pin-card .product-price { font-size: 0.78rem; margin-top: 4px; }
+.pin-card .product-price-old { font-size: 0.68rem; }
+.pin-card .product-action-row { gap: 4px; margin-top: 8px !important; }
+.pin-card .product-action-row button { font-size: 0.65rem !important; padding: 6px 4px !important; }
 .product-info { padding: 20px 20px 24px; }
 .product-name {
   font-family: var(--font-display); font-size: 1.15rem; font-weight: 400;
