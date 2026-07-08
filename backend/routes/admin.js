@@ -90,30 +90,53 @@ router.get('/list-categories', requireRole('super_admin', 'admin'), async (req, 
 
 
 /* ── GET /api/admin/pinned — Public route to get pinned collections ── */
-router.get('/pinned', (req, res) => {
+router.get('/pinned', async (req, res) => {
   try {
-    const pinnedPath = path.join(__dirname, '..', 'data', 'pinned.json');
-    if (!fs.existsSync(pinnedPath)) {
-      return res.json({ pinned: [] });
+    if (store.pinned) return res.json({ pinned: store.pinned });
+    
+    if (isFirebaseAvailable()) {
+      const doc = await getDB().collection('settings').doc('pinned').get();
+      if (doc.exists) {
+        store.pinned = doc.data().collections || [];
+        return res.json({ pinned: store.pinned });
+      }
     }
-    const data = JSON.parse(fs.readFileSync(pinnedPath, 'utf8'));
-    return res.json({ pinned: data });
+
+    const pinnedPath = path.join(__dirname, '..', 'data', 'pinned.json');
+    if (fs.existsSync(pinnedPath)) {
+      const data = JSON.parse(fs.readFileSync(pinnedPath, 'utf8'));
+      store.pinned = data;
+      return res.json({ pinned: data });
+    }
+    return res.json({ pinned: [] });
   } catch (err) {
     return res.json({ pinned: [] });
   }
 });
 
 /* ── POST /api/admin/pinned — Save pinned collections (admin only) ── */
-router.post('/pinned', requireRole('super_admin', 'admin', 'ceo'), (req, res) => {
+router.post('/pinned', requireRole('super_admin', 'admin', 'ceo'), async (req, res) => {
   try {
     const { pinned } = req.body;
     if (!Array.isArray(pinned)) return res.status(400).json({ error: 'Expected array of pinned collections' });
     
-    const pinnedPath = path.join(__dirname, '..', 'data', 'pinned.json');
-    fs.writeFileSync(pinnedPath, JSON.stringify(pinned, null, 2));
+    store.pinned = pinned;
+
+    if (isFirebaseAvailable()) {
+      await getDB().collection('settings').doc('pinned').set({ collections: pinned });
+    }
+    
+    try {
+      const pinnedPath = path.join(__dirname, '..', 'data', 'pinned.json');
+      if (!fs.existsSync(path.dirname(pinnedPath))) fs.mkdirSync(path.dirname(pinnedPath), { recursive: true });
+      fs.writeFileSync(pinnedPath, JSON.stringify(pinned, null, 2));
+    } catch (fsErr) {
+      console.warn('Could not save pinned to local fs (likely read-only environment):', fsErr.message);
+    }
     
     return res.json({ message: 'Pinned collections updated', pinned });
   } catch (err) {
+    console.error('Pinned collections update error:', err);
     return res.status(500).json({ error: 'Failed to update pinned collections' });
   }
 });
