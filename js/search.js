@@ -12,7 +12,7 @@ const VELORRA_SEARCH_INDEX = [
   { type: 'product', id: 'champagne-leather-tote',     title: 'Champagne Leather Tote',     keywords: 'women bags handbag tote champagne leather PKR 18000 VLR-006 sale', url: 'product?id=champagne-leather-tote', badge: 'PKR 18,000' },
   /* Categories */
   { type: 'category', title: 'All Collections',                 keywords: 'all shop products catalog', url: 'shop',     badge: 'Category' },
-  { type: 'category', title: 'Jewelry',                         keywords: 'jewelry rings bracelets necklaces earrings', url: 'collections?main=jewelry', badge: 'Category' },
+  { type: 'category', title: 'Jewelry',                         keywords: 'jewelry rings bracelets necklaces earrings bangles sets', url: 'collections?main=jewelry', badge: 'Category' },
   { type: 'category', title: 'Hair Accessories',                keywords: 'hair accessories scrunchies clips bands pins ponies', url: 'collections?main=hair-accessories', badge: 'Category' },
   { type: 'category', title: 'Clothing',                        keywords: 'clothing apparel casual fancy party wear', url: 'collections?main=clothing', badge: 'Category' },
   { type: 'category', title: 'Sale Items',                      keywords: 'sale discount offer reduced price',        url: 'shop?cat=sale',      badge: 'Sale' },

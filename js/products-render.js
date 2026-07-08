@@ -24,7 +24,7 @@ const GOLNISÀ_CAT_LABELS = {
 };
 
 const CATEGORY_HIERARCHY = {
-  'jewelry': ['bracelets', 'rings', 'earrings', 'necklace'],
+  'jewelry': ['bracelets', 'rings', 'earrings', 'necklace', 'bangles', 'jewelry-sets'],
   'hair-accessories': ['scrunchies', 'clips', 'hair-bands', 'pins', 'ponies', 'fancy', 'gift-items'],
   'clothing': ['fancy-wear', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret']
 };
