@@ -1211,20 +1211,32 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div style="display:flex;gap:10px;margin-bottom:20px;">
         <select id="pinned-sel" class="form-control" style="flex:1;">
           <option value="">-- Select Collection --</option>
-          <option value="scrunchies">Scrunchies</option>
-          <option value="clips">Hair Clips</option>
-          <option value="hair-bands">Hair Bands</option>
-          <option value="bracelets">Bracelets</option>
-          <option value="rings">Rings</option>
-          <option value="earrings">Earrings</option>
-          <option value="necklace">Necklace</option>
-          <option value="fancy-wear">Fancy Wear</option>
-          <option value="casual">Casual</option>
-          <option value="party-wear">Party Wear</option>
-          <option value="summer-collection">Summer Collection</option>
-          <option value="winter-collection">Winter Collection</option>
-          <option value="daily-pret">Daily Pret Ready to Wear</option>
-          <option value="sale">Sale</option>
+          <optgroup label="── Hair Accessories ──">
+            <option value="scrunchies">Scrunchies</option>
+            <option value="clips">Hair Clips</option>
+            <option value="hair-bands">Hair Bands</option>
+            <option value="pins">Pins</option>
+            <option value="ponies">Ponies</option>
+            <option value="fancy">Fancy Hair Accessories</option>
+            <option value="gift-items">Gift Items</option>
+          </optgroup>
+          <optgroup label="── Jewelry ──">
+            <option value="bracelets">Bracelets</option>
+            <option value="rings">Rings</option>
+            <option value="earrings">Earrings</option>
+            <option value="necklace">Necklace</option>
+          </optgroup>
+          <optgroup label="── Clothing ──">
+            <option value="fancy-wear">Fancy Wear</option>
+            <option value="casual">Casual</option>
+            <option value="party-wear">Party Wear</option>
+            <option value="summer-collection">Summer Collection</option>
+            <option value="winter-collection">Winter Collection</option>
+            <option value="daily-pret">Daily Pret Ready to Wear</option>
+          </optgroup>
+          <optgroup label="── Other ──">
+            <option value="sale">Sale</option>
+          </optgroup>
         </select>
         <button class="btn btn-outline" onclick="addPinnedCollection()">Add</button>
       </div>
