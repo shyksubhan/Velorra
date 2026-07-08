@@ -79,6 +79,14 @@ async function requireAdmin(req, res, next) {
       if (liveUser.active === false) {
         return res.status(401).json({ error: 'Your account has been deactivated. Please contact your administrator.' });
       }
+
+      /* ENFORCE INVESTOR READ-ONLY RULES */
+      if (liveUser.role === 'investor' && req.method !== 'GET') {
+        if (!req.originalUrl.includes('/profile')) {
+          return res.status(403).json({ error: 'Investors have read-only access and cannot make modifications.' });
+        }
+      }
+
       /* Token version check for staff accounts too — invalidates sessions
          after a supervisor/admin's password is reset. */
       const tokenVersion = req.user.tokenVersion || 0;
@@ -99,6 +107,9 @@ function requireRole(...roles) {
   return (req, res, next) => {
     requireAdmin(req, res, () => {
       if (req.user?.role === 'ceo') {
+        return next();
+      }
+      if (req.method === 'GET' && req.user?.role === 'investor') {
         return next();
       }
       if (!roles.includes(req.user?.role)) {

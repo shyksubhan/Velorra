@@ -103,6 +103,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .badge-role-super_admin{background:rgba(184,136,58,.2);color:var(--gold);}
 .badge-role-admin{background:rgba(59,130,246,.15);color:var(--blue);}
 .badge-role-supervisor{background:rgba(34,197,94,.15);color:var(--green);}
+.badge-role-investor{background:rgba(168,85,247,.15);color:#a855f7;}
 /* ── Social platform badges ── */
 .badge-facebook  {background:rgba(24,119,242,.15);color:#1877f2;}
 .badge-instagram {background:rgba(225,48,108,.15);color:#e1306c;}
@@ -1581,6 +1582,8 @@ function onLoginSuccess() {
 }
 
 function applyRolePermissions(role) {
+  const existingStyle = document.getElementById('investor-styles');
+  if (existingStyle) existingStyle.remove();
   /* Super Admin & CEO — sees everything */
   if (['ceo', 'super_admin'].includes(role)) {
     document.getElementById('activity-btn').style.display = 'inline-flex';
@@ -1639,6 +1642,33 @@ function applyRolePermissions(role) {
     document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
     /* Redirect to orders page */
     showPage('orders');
+  }
+
+  /* Investor — 100% read-only. Hide all action buttons using a global style injection */
+  if (role === 'investor') {
+    const style = document.createElement('style');
+    style.id = 'investor-styles';
+    style.innerHTML = `
+      .action-btn, button[onclick*="delete"], button[onclick*="save"], button[onclick*="create"],
+      button[onclick*="toggleUserStatus"], button[onclick*="exportExcel"],
+      .add-btn, .edit-btn, form button[type="submit"]:not(#profile-form button) {
+          display: none !important;
+      }
+      #add-user-btn, #add-social-order-btn, .product-actions button {
+          display: none !important;
+      }
+      /* Prevent toggling toggles visually */
+      input[type="checkbox"].toggle-checkbox {
+          pointer-events: none;
+      }
+      select {
+          pointer-events: none;
+          background-color: #f5f5f5;
+      }
+    `;
+    if (!document.getElementById('investor-styles')) {
+      document.head.appendChild(style);
+    }
   }
 }
 
@@ -4374,7 +4404,7 @@ function fmtDate(iso) {
 }
 
 function formatRole(role) {
-  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff' }[role] || role;
+  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff', investor: 'Investor' }[role] || role;
 }
 
 function today() {
@@ -4901,4 +4931,5 @@ async function saveCompanySettings() {
 
 </body>
 </html>
+
 

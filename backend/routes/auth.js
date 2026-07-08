@@ -369,7 +369,7 @@ router.post('/admin-users', requireAdmin, async (req, res) => {
     if (!['ceo', 'super_admin'].includes(req.user.role)) return res.status(403).json({ error: 'Only CEO or super admins can create admin users.' });
     const { fname, lname, username, password, role } = req.body;
     if (!fname || !username || !password) return res.status(400).json({ error: 'First name, username, and password are required.' });
-    if (!['super_admin', 'admin', 'supervisor'].includes(role)) return res.status(400).json({ error: 'Invalid role.' }); if (role === 'super_admin' && req.user.role !== 'ceo') return res.status(403).json({ error: 'Only CEO can create a super admin.' });
+    if (!['super_admin', 'admin', 'supervisor', 'investor'].includes(role)) return res.status(400).json({ error: 'Invalid role.' }); if (role === 'super_admin' && req.user.role !== 'ceo') return res.status(403).json({ error: 'Only CEO can create a super admin.' });
 
     const normalUsername = username.trim().toLowerCase();
     const existing = await findAdminUserByUsername(normalUsername);
