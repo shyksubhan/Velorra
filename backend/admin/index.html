@@ -1592,6 +1592,11 @@ function applyRolePermissions(role) {
     document.getElementById('card-spendings').style.display = 'flex';
     return;
   }
+  /* Investor — sees everything (read-only), including spendings */
+  if (role === 'investor') {
+    document.getElementById('nav-spendings').style.display = 'flex';
+    document.getElementById('card-spendings').style.display = 'flex';
+  }
   /* Hide Add User button for non-super admins */
   document.getElementById('add-user-btn').style.display = 'none';
 
@@ -1677,6 +1682,9 @@ function logout() {
   /* Remove investor read-only styles before going back to login */
   const investorStyle = document.getElementById('investor-styles');
   if (investorStyle) investorStyle.remove();
+  /* Clear any leftover error messages so login screen is clean */
+  const errEl = document.getElementById('login-error');
+  if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
   clearSession();
   showLogin();
   document.getElementById('login-username').value = '';
@@ -1707,6 +1715,9 @@ function apiFetch(path, options = {}) {
        current password" and should NOT log the user out. */
     if (res.status === 401 && !path.includes('/auth/change-password') && !path.includes('/auth/login')) {
       res.clone().json().then(data => {
+        /* Only force-logout + show error if there is an active session.
+           If currentUser is already null the user logged out intentionally — don't show anything. */
+        if (!currentUser) return;
         clearSession();
         showLogin();
         const err = document.getElementById('login-error');
@@ -1715,6 +1726,7 @@ function apiFetch(path, options = {}) {
           err.style.display = 'block';
         }
       }).catch(() => {
+        if (!currentUser) return;
         clearSession();
         showLogin();
       });
@@ -1889,7 +1901,7 @@ async function loadDashboard() {
   loadRecentOrders();
   loadVisitors();
   loadAbandoned();
-  if (['ceo', 'super_admin'].includes(currentUser?.role)) {
+  if (['ceo', 'super_admin', 'investor'].includes(currentUser?.role)) {
     loadLifetimeEarnings();
     loadDailyStatements();
     loadMonthlyStatements();
