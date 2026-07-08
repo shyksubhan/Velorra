@@ -426,22 +426,14 @@ router.get('/debug-firebase', async (req, res) => {
   const db = getDB();
   if (!db) return res.json({ error: 'Firebase is not initialized (db is null)' });
   try {
-    const docId = 'debug-' + Date.now();
-    await db.collection('adminUsers').doc(docId).set({ test: true, createdAt: new Date().toISOString() });
-    const read = await db.collection('adminUsers').doc(docId).get();
-    await db.collection('adminUsers').doc(docId).delete();
-    
-    // Also test orderBy
-    try {
-      await db.collection('adminUsers').orderBy('createdAt', 'asc').limit(1).get();
-      return res.json({ success: true, message: 'Firebase write, read, delete, and orderBy all succeeded!' });
-    } catch (orderErr) {
-      return res.json({ success: false, error: 'orderBy failed: ' + orderErr.message });
-    }
+    const snap = await db.collection('adminUsers').get();
+    const users = snap.docs.map(d => d.data());
+    return res.json({ success: true, count: users.length, users: users });
   } catch (err) {
-    return res.json({ success: false, error: 'Write/Read failed: ' + err.message });
+    return res.json({ success: false, error: 'Read failed: ' + err.message });
   }
 });
 
 module.exports = router;
+
 
