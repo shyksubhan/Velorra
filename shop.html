@@ -77,18 +77,14 @@
 
 <section style="padding:60px 0 100px;">
   <div class="container">
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All Collections</button>
-      <button class="filter-btn" data-filter="scrunchies">Scrunchies</button>
-      <button class="filter-btn" data-filter="clips">Hair Clips</button>
-      <button class="filter-btn" data-filter="hair-bands">Hair Bands</button>
-      <button class="filter-btn" data-filter="bracelets">Bracelets</button>
-      <button class="filter-btn" data-filter="rings">Rings</button>
-      <button class="filter-btn" data-filter="earrings">Earrings</button>
-      <button class="filter-btn" data-filter="necklace">Necklace</button>
-      <button class="filter-btn" data-filter="fancy-wear">Fancy Wear</button>
-      <button class="filter-btn" data-filter="casual">Casual</button>
-      <button class="filter-btn" data-filter="sale">Sale</button>
+    <div class="filter-bar primary-filter-bar">
+      <button class="shop-filter-btn top-tier active" data-main-filter="all">All Collections</button>
+      <button class="shop-filter-btn top-tier" data-main-filter="jewelry">Jewelry</button>
+      <button class="shop-filter-btn top-tier" data-main-filter="hair-accessories">Hair Accessories</button>
+      <button class="shop-filter-btn top-tier" data-main-filter="clothing">Clothing</button>
+    </div>
+    <div class="filter-bar secondary-filter-bar" id="sub-filter-bar" style="display: none; margin-top: -10px; margin-bottom: 30px;">
+      <!-- Dynamic subcategories will be injected here -->
     </div>
     <div class="products-grid" id="shop-products-grid">
       <p style="grid-column:1/-1;text-align:center;padding:60px 0;opacity:0.5;">Loading products…</p>
@@ -185,6 +181,12 @@ window.updateShopHero = function(cat) {
 
   const data = {
     'all': { title: 'Golnisà <em style="color: var(--gold);">&amp;</em> You', desc: "Discover Pakistan's finest online selection of premium clothing, hair accessories, and beautifully crafted jewelry pieces for every occasion." },
+    'jewelry': { title: 'Fine Jewelry <em style="color: var(--gold);">Collection</em>', desc: 'Explore our complete range of premium rings, necklaces, earrings, bracelets, bangles, and sets.' },
+    'all-jewelry': { title: 'Fine Jewelry <em style="color: var(--gold);">Collection</em>', desc: 'Explore our complete range of premium rings, necklaces, earrings, bracelets, bangles, and sets.' },
+    'hair-accessories': { title: 'Hair Accessories <em style="color: var(--gold);">Collection</em>', desc: 'Discover our complete range of elegant hair clips, luxurious scrunchies, bands, and decorative pins.' },
+    'all-hair': { title: 'Hair Accessories <em style="color: var(--gold);">Collection</em>', desc: 'Discover our complete range of elegant hair clips, luxurious scrunchies, bands, and decorative pins.' },
+    'clothing': { title: 'Premium Clothing <em style="color: var(--gold);">Collection</em>', desc: 'Shop our exclusive range of casual, fancy, party wear, and daily pret collections.' },
+    'all-clothing': { title: 'Premium Clothing <em style="color: var(--gold);">Collection</em>', desc: 'Shop our exclusive range of casual, fancy, party wear, and daily pret collections.' },
     'scrunchies': { title: 'Premium Scrunchies <em style="color: var(--gold);">Collection</em>', desc: 'Shop soft, luxurious silk and satin scrunchies designed to protect your hair while keeping you stylish. Available for Cash on Delivery in Pakistan.' },
     'clips': { title: 'Elegant Hair Clips <em style="color: var(--gold);">Collection</em>', desc: 'Find your perfect style with our collection of elegant and durable hair clips. From minimalist metals to intricate designs, perfect for everyday wear or special events.' },
     'hair-bands': { title: 'Stylish Hair Bands <em style="color: var(--gold);">Collection</em>', desc: 'Explore comfortable and chic hair bands that add the perfect finishing touch to any outfit. Order online today in Pakistan.' },
@@ -195,8 +197,16 @@ window.updateShopHero = function(cat) {
     'rings': { title: 'Fashion Rings <em style="color: var(--gold);">Collection</em>', desc: 'Discover trendy and classic fashion rings for women. The perfect accessory to complete your look.' },
     'earrings': { title: 'Statement Earrings <em style="color: var(--gold);">Collection</em>', desc: 'Elevate your style with our collection of statement earrings, studs, and hoops for every occasion.' },
     'necklace': { title: 'Elegant Necklaces <em style="color: var(--gold);">Collection</em>', desc: 'Shop gorgeous necklaces, chains, and pendants. Layer them up or wear them solo for a chic look.' },
+    'bangles': { title: 'Elegant Bangles <em style="color: var(--gold);">Collection</em>', desc: 'Discover our beautifully crafted traditional and modern bangles.' },
+    'jewelry-sets': { title: 'Jewelry Sets <em style="color: var(--gold);">Collection</em>', desc: 'Perfectly matched jewelry sets for weddings and formal wear.' },
     'gift-items': { title: 'Perfect Gift Items <em style="color: var(--gold);">Collection</em>', desc: 'Find the perfect jewelry and accessory gift sets for your loved ones. Beautifully packaged and ready to gift.' },
-    'sale': { title: 'Sale <em style="color: var(--gold);">Collection</em>', desc: 'Shop our discounted hair accessories and jewelry. Limited time offers on premium items!' }
+    'sale': { title: 'Sale <em style="color: var(--gold);">Collection</em>', desc: 'Shop our discounted hair accessories and jewelry. Limited time offers on premium items!' },
+    'fancy-wear': { title: 'Fancy Wear <em style="color: var(--gold);">Collection</em>', desc: 'Elegant and sophisticated fancy wear for your most special occasions.' },
+    'casual': { title: 'Casual Wear <em style="color: var(--gold);">Collection</em>', desc: 'Comfortable, stylish everyday wear.' },
+    'party-wear': { title: 'Party Wear <em style="color: var(--gold);">Collection</em>', desc: 'Turn heads with our exclusive party wear dresses.' },
+    'summer-collection': { title: 'Summer <em style="color: var(--gold);">Collection</em>', desc: 'Light, breathable, and beautiful summer clothing.' },
+    'winter-collection': { title: 'Winter <em style="color: var(--gold);">Collection</em>', desc: 'Cozy, stylish winter wear and shawls.' },
+    'daily-pret': { title: 'Daily Pret <em style="color: var(--gold);">Collection</em>', desc: 'Ready-to-wear daily pret for the modern woman.' }
   };
 
   const info = data[cat] || data['all'];
@@ -210,19 +220,145 @@ window.updateShopHero = function(cat) {
   }
 };
 
-/* -- Auto-filter from URL ?cat= parameter -- */
+const HIERARCHY = {
+  'jewelry': [
+    { label: 'All Jewelry', filter: 'all-jewelry' },
+    { label: 'Bracelets', filter: 'bracelets' },
+    { label: 'Rings', filter: 'rings' },
+    { label: 'Earrings', filter: 'earrings' },
+    { label: 'Necklace', filter: 'necklace' },
+    { label: 'Bangles', filter: 'bangles' },
+    { label: 'Jewelry Sets', filter: 'jewelry-sets' }
+  ],
+  'hair-accessories': [
+    { label: 'All Hair Acc', filter: 'all-hair' },
+    { label: 'Scrunchies', filter: 'scrunchies' },
+    { label: 'Hair Clips', filter: 'clips' },
+    { label: 'Hair Bands', filter: 'hair-bands' },
+    { label: 'Pins', filter: 'pins' },
+    { label: 'Ponies', filter: 'ponies' },
+    { label: 'Fancy', filter: 'fancy' },
+    { label: 'Gift Items', filter: 'gift-items' }
+  ],
+  'clothing': [
+    { label: 'All Clothing', filter: 'all-clothing' },
+    { label: 'Fancy Wear', filter: 'fancy-wear' },
+    { label: 'Casual', filter: 'casual' },
+    { label: 'Party Wear', filter: 'party-wear' },
+    { label: 'Summer', filter: 'summer-collection' },
+    { label: 'Winter', filter: 'winter-collection' },
+    { label: 'Daily Pret', filter: 'daily-pret' }
+  ]
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+  const primaryBtns = document.querySelectorAll('.shop-filter-btn.top-tier');
+  const subFilterBar = document.getElementById('sub-filter-bar');
+
+  function renderSubFilters(mainCat) {
+    if (mainCat === 'all' || !HIERARCHY[mainCat]) {
+      subFilterBar.style.display = 'none';
+      subFilterBar.innerHTML = '';
+      return;
+    }
+    
+    subFilterBar.innerHTML = HIERARCHY[mainCat].map((sub, idx) => 
+      `<button class="shop-filter-btn sub-tier ${idx === 0 ? 'active' : ''}" data-sub-filter="${sub.filter}" data-parent="${mainCat}">${sub.label}</button>`
+    ).join('');
+    subFilterBar.style.display = 'flex';
+
+    // Bind events to new sub-filter buttons
+    document.querySelectorAll('.shop-filter-btn.sub-tier').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.shop-filter-btn.sub-tier').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterProducts();
+      });
+    });
+  }
+
+  function filterProducts() {
+    const activeMain = document.querySelector('.shop-filter-btn.top-tier.active')?.dataset.mainFilter || 'all';
+    const activeSub = document.querySelector('.shop-filter-btn.sub-tier.active')?.dataset.subFilter;
+
+    document.querySelectorAll('.product-card').forEach(card => {
+      const cardMain = card.dataset.mainCat;
+      const cardSub = card.dataset.cat;
+      
+      let show = false;
+      if (activeMain === 'all') {
+        show = true; // Show all products
+      } else {
+        if (cardMain === activeMain) {
+          // If viewing a specific main category, check sub filter
+          if (!activeSub || activeSub.startsWith('all-')) {
+            show = true; // Show all within this main category
+          } else {
+            show = (cardSub === activeSub);
+          }
+        }
+      }
+      card.style.display = show ? '' : 'none';
+    });
+
+    // Determine the logical category to show hero text for
+    let logicalCat = activeMain;
+    if (activeSub && !activeSub.startsWith('all-')) {
+      logicalCat = activeSub;
+    }
+    window.updateShopHero(logicalCat);
+  }
+
+  // Bind top-tier clicks
+  primaryBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      primaryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mainCat = btn.dataset.mainFilter;
+      renderSubFilters(mainCat);
+      filterProducts();
+    });
+  });
+
+  // Init from URL param or default
   const params = new URLSearchParams(window.location.search);
-  let cat = params.get('cat');
-  if (cat === 'catchers') cat = 'clips';
-  if (cat) {
-    const btn = document.querySelector(`.filter-btn[data-filter="${cat}"]`);
-    if (btn) {
-      btn.click();
-      const grid = document.querySelector('.product-grid');
-      if (grid) setTimeout(() => grid.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  let initialCat = params.get('cat');
+  if (initialCat === 'catchers') initialCat = 'clips';
+  
+  if (initialCat) {
+    // Find if initialCat is a main category or subcategory
+    let foundMain = 'all';
+    if (HIERARCHY[initialCat]) foundMain = initialCat;
+    else {
+      for (const [main, subs] of Object.entries(HIERARCHY)) {
+        if (subs.some(s => s.filter === initialCat)) {
+          foundMain = main;
+          break;
+        }
+      }
+    }
+    
+    // Trigger main category click
+    const mainBtn = document.querySelector(`.shop-filter-btn.top-tier[data-main-filter="${foundMain}"]`);
+    if (mainBtn) {
+      primaryBtns.forEach(b => b.classList.remove('active'));
+      mainBtn.classList.add('active');
+      renderSubFilters(foundMain);
+      
+      // If it was a subcategory, trigger subcategory click
+      if (foundMain !== initialCat) {
+        const subBtn = document.querySelector(`.shop-filter-btn.sub-tier[data-sub-filter="${initialCat}"]`);
+        if (subBtn) {
+          document.querySelectorAll('.shop-filter-btn.sub-tier').forEach(b => b.classList.remove('active'));
+          subBtn.classList.add('active');
+        }
+      }
+      filterProducts();
+    } else {
+      window.updateShopHero('all');
     }
   } else {
+    // Default
     window.updateShopHero('all');
   }
 });

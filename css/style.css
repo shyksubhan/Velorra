@@ -775,12 +775,12 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   padding: 24px 0; border-bottom: 1px solid var(--border-soft);
   margin-bottom: 40px;
 }
-.filter-btn {
+.filter-btn, .shop-filter-btn {
   padding: 8px 20px; border: 1px solid var(--border-soft);
   font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--muted); transition: all var(--transition); font-family: var(--font-ui);
 }
-.filter-btn:hover, .filter-btn.active {
+.filter-btn:hover, .filter-btn.active, .shop-filter-btn:hover, .shop-filter-btn.active {
   border-color: var(--gold); color: var(--gold);
 }
 

@@ -47,6 +47,15 @@ function golnisaProductCardHTML(p) {
 
   const cat = p.category === 'catchers' ? 'clips' : p.category;
   const subcat = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
+  const resolvedCat = subcat || cat;
+
+  let mainCat = 'unknown';
+  for (const [mc, subs] of Object.entries(CATEGORY_HIERARCHY)) {
+    if (subs.includes(resolvedCat)) {
+      mainCat = mc;
+      break;
+    }
+  }
 
   const mediaHTML = mainImage
     ? `<img src="${mainImage}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"/>`
@@ -55,7 +64,7 @@ function golnisaProductCardHTML(p) {
       : `<div style="width:100%;height:100%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--gold);">${emoji}</div>`;
 
   return `
-    <div class="product-card" data-cat="${subcat || cat}">
+    <div class="product-card" data-cat="${resolvedCat}" data-main-cat="${mainCat}">
       <div class="product-img-wrap">
         ${badge}
         <a href="product.html?id=${p.id}">${mediaHTML}</a>
