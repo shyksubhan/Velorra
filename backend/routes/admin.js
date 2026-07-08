@@ -421,4 +421,27 @@ router.put('/site-launch-date', requireRole('ceo', 'super_admin'), async (req, r
   }
 });
 
+router.get('/debug-firebase', async (req, res) => {
+  const { getDB } = require('../utils/firebase');
+  const db = getDB();
+  if (!db) return res.json({ error: 'Firebase is not initialized (db is null)' });
+  try {
+    const docId = 'debug-' + Date.now();
+    await db.collection('adminUsers').doc(docId).set({ test: true, createdAt: new Date().toISOString() });
+    const read = await db.collection('adminUsers').doc(docId).get();
+    await db.collection('adminUsers').doc(docId).delete();
+    
+    // Also test orderBy
+    try {
+      await db.collection('adminUsers').orderBy('createdAt', 'asc').limit(1).get();
+      return res.json({ success: true, message: 'Firebase write, read, delete, and orderBy all succeeded!' });
+    } catch (orderErr) {
+      return res.json({ success: false, error: 'orderBy failed: ' + orderErr.message });
+    }
+  } catch (err) {
+    return res.json({ success: false, error: 'Write/Read failed: ' + err.message });
+  }
+});
+
 module.exports = router;
+

@@ -85,7 +85,7 @@ async function findAdminUserByUsername(username) {
 async function getAllAdminUsers() {
   if (!isFirebaseAvailable()) return store.adminUsers;
   try {
-    const snap = await getDB().collection('adminUsers').orderBy('createdAt', 'asc').get();
+    const snap = await getDB().collection('adminUsers').get();
     const fbUsers = snap.docs.map(d => ({ ...d.data(), id: d.id }));
     /* Include all Firebase users, but ensure default super_admin is present */
     const hasDefault = fbUsers.some(u => u.id === 'super-admin-1');
