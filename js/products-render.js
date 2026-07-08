@@ -198,7 +198,11 @@ async function golnisaRenderHomepageGrids() {
     if (pinnedContainer && pinnedData.length > 0) {
       pinnedContainer.innerHTML = '';
       pinnedData.forEach(pin => {
-        const pinProducts = allProducts.filter(p => (p.subcategory === pin.id || p.category === pin.id));
+        const pinProducts = allProducts.filter(p => {
+          const c = p.category === 'catchers' ? 'clips' : p.category;
+          const s = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
+          return (c === pin.id || s === pin.id);
+        });
         if (pinProducts.length > 0) {
           const section = document.createElement('section');
           section.className = 'collection-section';
@@ -223,7 +227,7 @@ async function golnisaRenderHomepageGrids() {
             <div class="pinned-scroll-track" id="${rowId}" style="display:flex;overflow-x:auto;gap:12px;padding:0 max(24px, calc((100vw - 1200px)/2)) 20px;scroll-snap-type:x mandatory;cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;">
               ${pinProducts.map(p => {
                 let html = golnisaProductCardHTML(p);
-                return html.replace('class="product-card"', 'class="product-card pin-card" style="flex:0 0 180px;min-width:180px;scroll-snap-align:start;"');
+                return html.replace('class="product-card"', 'class="product-card pin-card" style="flex:0 0 220px;min-width:220px;scroll-snap-align:start;"');
               }).join('')}
             </div>
           `;
