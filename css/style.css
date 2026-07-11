@@ -71,13 +71,25 @@ body > nav.scrolled, header > nav.scrolled {
   backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--border), 0 4px 24px var(--shadow);
 }
-/* Nav logo default: white (visible on dark video hero) */
+/* Nav logo default: original gold/dark colors for all pages */
 .nav-logo-link {
-  color: #fff !important;
-  filter: brightness(0) invert(1);
+  color: var(--gold) !important;
+  filter: none;
 }
 .nav-logo-link em {
   color: var(--gold) !important;
+}
+/* Homepage only: white logo/icons over video hero (before scroll) */
+body.page-home nav:not(.scrolled) .nav-logo-link {
+  color: #fff !important;
+  filter: brightness(0) invert(1);
+}
+body.page-home nav:not(.scrolled) .nav-links a {
+  color: rgba(255,255,255,0.92) !important;
+}
+body.page-home nav:not(.scrolled) .nav-icons button,
+body.page-home nav:not(.scrolled) .nav-icons a {
+  color: rgba(255,255,255,0.92) !important;
 }
 /* Scrolled nav: switch back to normal colors on light background */
 body > nav.scrolled .nav-logo-link,
@@ -223,6 +235,19 @@ header > nav.scrolled .nav-links a {
   object-position: center center;
   z-index: 0;
   background: #2a2522;
+}
+
+/* ── Phone: portrait video loads, cover fills perfectly, no gaps ── */
+@media (max-width: 600px) {
+  #hero {
+    height: 100svh;
+    min-height: unset;
+    background: #2a2522;
+  }
+  #hero-video {
+    object-fit: cover;
+    object-position: center center;
+  }
 }
 
 /* Dark overlay for text readability */
@@ -458,13 +483,7 @@ section { padding: 100px 0; }
   .cat-medallion { width: 60px; height: 60px; margin-bottom: 14px; }
   .cat-icon { width: 24px; height: 24px; }
   .products-grid { grid-template-columns: 1fr; gap: 20px; }
-  /* Video hero — phone: no scale (scale causes black bars), just cover */
-  #hero { height: 100svh; min-height: 480px; }
-  #hero-video {
-    object-fit: contain;
-    object-position: center center;
-    transform: none;
-  }
+  /* Video hero phone rules handled in 600px block above */
   .hero-title { font-size: 2.8rem; }
   .hero-eyebrow { font-size: 0.58rem; letter-spacing: 0.22em; }
   .hero-cta { margin-top: 32px; gap: 14px; }
