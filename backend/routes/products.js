@@ -88,7 +88,13 @@ router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
       return res.status(400).json({ error: 'Purchase price is required.' });
     }
 
-    const slug = makeSlug(name);
+    let baseSlug = makeSlug(name);
+    let slug = baseSlug;
+    let counter = 1;
+    while (store.products.find(p => p.id === slug)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
     const productData = {
       id:          slug,
       name:        name.trim(),
