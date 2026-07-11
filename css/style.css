@@ -84,12 +84,20 @@ body.page-home nav:not(.scrolled) .nav-logo-link {
   color: #fff !important;
   filter: brightness(0) invert(1);
 }
-body.page-home nav:not(.scrolled) .nav-links a {
+body.page-home nav:not(.scrolled) .nav-links:not(.mobile-open) a {
   color: rgba(255,255,255,0.92) !important;
 }
 body.page-home nav:not(.scrolled) .nav-icons button,
 body.page-home nav:not(.scrolled) .nav-icons a {
   color: rgba(255,255,255,0.92) !important;
+}
+/* Mobile open menu always dark text regardless of page */
+.nav-links.mobile-open a {
+  color: var(--text-mid) !important;
+  opacity: 1;
+}
+.nav-links.mobile-open a:hover {
+  color: var(--gold) !important;
 }
 /* Scrolled nav: switch back to normal colors on light background */
 body > nav.scrolled .nav-logo-link,
@@ -125,7 +133,7 @@ header > nav.scrolled .nav-links a {
   font-size: 0.68rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.92);
+  color: var(--text-mid);
   font-family: var(--font-ui);
   opacity: 0.92;
   transition: opacity var(--transition), color var(--transition);
@@ -142,7 +150,7 @@ header > nav.scrolled .nav-links a {
 .nav-links a:hover::after { transform: scaleX(1); }
 .nav-icons { display: flex; gap: 20px; align-items: center; }
 .nav-icons button, .nav-icons a {
-  color: rgba(255,255,255,0.92); opacity: 0.95;
+  color: var(--text-mid); opacity: 0.95;
   font-size: 1.15rem;
   transition: opacity var(--transition), color var(--transition);
   position: relative;
