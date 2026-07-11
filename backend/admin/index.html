@@ -3577,8 +3577,9 @@ function renderProducts(products) {
           ${p.purchasePrice != null ? `<span style="color:var(--muted);font-size:0.72rem">Cost: PKR ${p.purchasePrice.toLocaleString()}</span>` : ''}
         </div>
         <div class="pac-actions">
-          <button class="btn btn-outline btn-sm" onclick="editProductById('${p.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-outline btn-sm" onclick="editProductById('${p.id}')" title="Edit"><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn-outline btn-sm" onclick="duplicateProductById('${p.id}')" title="Duplicate"><i class="fa-regular fa-copy"></i> Copy</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
     </div>`;
@@ -3768,10 +3769,18 @@ function handleTagKeydown(event, field) {
 }
 
 function editProduct(product) { openProductModal(product); }
-function editProductById(id) {
+
+function duplicateProductById(id) {
   const product = allProducts.find(p => p.id === id);
-  if (!product) { toast('Product not found — try refreshing the list.', 'error'); return; }
-  openProductModal(product);
+  if (!product) { toast('Product not found.', 'error'); return; }
+  
+  // Create a copy of the product but without an ID
+  const copiedProduct = JSON.parse(JSON.stringify(product));
+  copiedProduct.id = '';
+  copiedProduct.name = copiedProduct.name + ' (Copy)';
+  
+  openProductModal(copiedProduct);
+  document.getElementById('product-modal-title').textContent = 'Duplicate Product';
 }
 
 async function saveProduct() {
@@ -4955,6 +4964,7 @@ async function saveCompanySettings() {
 
 </body>
 </html>
+
 
 
 
