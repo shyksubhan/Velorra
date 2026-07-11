@@ -202,54 +202,37 @@ header > nav.scrolled .nav-links a {
   }
 }
 
-/* ── Hero Section ── */
+/* ── Hero Section (Video Background) ── */
 #hero {
   position: relative;
-  height: 100vh; min-height: 700px;
+  height: 100vh; min-height: 600px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
-  background: linear-gradient(155deg, #f5ede0 0%, #faf7f2 45%, #f0e8d8 100%);
+  background: #1a1008;
 }
-#three-canvas {
-  position: absolute; inset: 0;
+
+/* Video fills the hero on all screen sizes */
+#hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
   z-index: 0;
-  opacity: 0.55;
 }
-.hero-bg {
-  position: absolute; inset: 0; z-index: 0;
-  background-image: radial-gradient(rgba(184,136,58,0.18) 1px, transparent 1.6px);
-  background-size: 38px 38px;
-}
-.hero-ring {
-  position: absolute; border: 1px solid var(--gold);
-  border-radius: 50%; opacity: 0.18; pointer-events: none;
-}
-.hero-ring-1 {
-  width: 380px; height: 380px; top: 8%; right: -60px;
-  transform: rotate(28deg) scaleY(0.62);
-  animation: heroSpin 70s linear infinite;
-}
-.hero-ring-2 {
-  width: 240px; height: 240px; bottom: 6%; left: -50px;
-  transform: rotate(-18deg) scaleY(0.7);
-  animation: heroSpin 50s linear infinite reverse;
-}
-.hero-gem {
-  position: absolute; width: 9px; height: 9px;
-  background: var(--gold-rose); opacity: 0.45;
-  transform: rotate(45deg);
-  animation: heroGemFloat 7s ease-in-out infinite;
-}
-.hero-gem-1 { top: 22%; left: 12%; animation-delay: 0s; }
-.hero-gem-2 { top: 70%; left: 18%; width: 6px; height: 6px; animation-delay: 1.4s; }
-.hero-gem-3 { top: 30%; right: 14%; width: 7px; height: 7px; animation-delay: 2.6s; }
-.hero-gem-4 { top: 76%; right: 10%; animation-delay: 0.8s; }
-.hero-spotlight {
-  position: absolute; z-index: 1;
-  left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(980px, 96vw); height: min(620px, 80vh);
-  background: radial-gradient(ellipse at center, rgba(250,247,242,0.7) 0%, rgba(250,247,242,0.3) 55%, rgba(250,247,242,0) 78%);
-  pointer-events: none;
+
+/* Dark overlay for text readability */
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 6, 2, 0.35) 0%,
+    rgba(10, 6, 2, 0.45) 50%,
+    rgba(10, 6, 2, 0.6) 100%
+  );
 }
 .hero-content {
   position: relative; z-index: 2;
@@ -273,7 +256,8 @@ header > nav.scrolled .nav-links a {
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: 0.04em;
-  color: var(--text);
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.4);
   opacity: 0; animation: fadeUp 1s 0.55s forwards;
 }
 .hero-title em {
@@ -282,7 +266,7 @@ header > nav.scrolled .nav-links a {
 .hero-sub {
   margin-top: 24px;
   font-size: 0.72rem; letter-spacing: 0.28em;
-  text-transform: uppercase; color: var(--text-mid); opacity: 0;
+  text-transform: uppercase; color: rgba(255,255,255,0.82); opacity: 0;
   font-family: var(--font-ui);
   animation: fadeUp 1s 0.8s forwards;
 }
@@ -880,14 +864,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   from { opacity: 0; transform: translateY(32px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes heroSpin {
-  from { transform: rotate(0deg) scaleY(0.65); }
-  to   { transform: rotate(360deg) scaleY(0.65); }
-}
-@keyframes heroGemFloat {
-  0%, 100% { transform: translateY(0) rotate(45deg); opacity: 0.4; }
-  50%      { transform: translateY(-16px) rotate(45deg); opacity: 0.75; }
-}
+/* heroSpin and heroGemFloat removed — replaced by video hero */
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -926,6 +903,9 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   .nav-links { display: none; }
   .hamburger { display: flex; }
   .hero-title { font-size: 3.8rem; }
+  /* Video hero — mobile: portrait crop */
+  #hero { height: 100svh; min-height: 500px; }
+  #hero-video { object-position: center 30%; }
   .cat-grid { grid-template-columns: 1fr 1fr; }
   #cart-drawer { width: 100%; }
   .footer-grid { grid-template-columns: 1fr; }

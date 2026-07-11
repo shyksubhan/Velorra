@@ -122,16 +122,20 @@
   </div>
   <!-- HERO -->
   <section id="hero">
-    <canvas id="three-canvas"></canvas>
-    <div class="hero-bg" aria-hidden="true">
-      <span class="hero-ring hero-ring-1"></span>
-      <span class="hero-ring hero-ring-2"></span>
-      <span class="hero-gem hero-gem-1"></span>
-      <span class="hero-gem hero-gem-2"></span>
-      <span class="hero-gem hero-gem-3"></span>
-      <span class="hero-gem hero-gem-4"></span>
-    </div>
-    <div class="hero-spotlight" aria-hidden="true"></div>
+    <!-- Video Background -->
+    <video
+      id="hero-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+    >
+      <source src="videos/hero-bg.mp4" type="video/mp4" />
+    </video>
+    <!-- Dark overlay so text stays readable -->
+    <div class="hero-video-overlay" aria-hidden="true"></div>
     <div class="hero-content">
       <p class="hero-eyebrow">Pakistan's Premier Destination For Style</p>
       <h1 class="hero-title">GOLNISÀ<br><em style="font-size:0.6em;letter-spacing:4px;color:var(--gold);">Style & Elegance</em><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;"> — Hair Accessories &amp; Jewelry Online Pakistan</span></h1>
@@ -351,13 +355,10 @@
     </a>
   </div>
 
-  <!-- Three.js for 3D Hero Background -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/whatsapp-config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script src="js/products-render.js"></script>
-  <script src="js/three-hero.js"></script>
   <script src="js/search.js"></script>
   <script>
     /* ── Load Real Reviews on Homepage ── */
