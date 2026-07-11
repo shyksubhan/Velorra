@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Golnisà — Hair Accessories, Jewelry & Women Clothing </title>
+  <title>Golnisà — Hair Accessories & Jewelry Online Pakistan | COD Available</title>
   <meta name="description" content="Shop Pakistan's finest hair accessories & jewelry online at Golnisà. Scrunchies, hair clips, pins, necklaces, earrings, rings & bracelets. Cash on Delivery across Pakistan." />
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="stylesheet" href="css/style.css" />
@@ -132,8 +132,7 @@
       preload="auto"
       aria-hidden="true"
     >
-      <source src="videos/hero-bg-mobile.mp4" type="video/mp4" media="(max-width: 600px)" />
-      <source src="videos/hero-bg.mp4" type="video/mp4" />
+      <source id="hero-video-src" src="videos/hero-bg.mp4" type="video/mp4" />
     </video>
     <!-- Dark overlay so text stays readable -->
     <div class="hero-video-overlay" aria-hidden="true"></div>
@@ -141,7 +140,7 @@
     <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Golnisà — Hair Accessories &amp; Jewelry Online Pakistan</h1>
     <div class="hero-content">
       <p class="hero-title-main">GOLNISÀ</p>
-      <p class="hero-title-sub">Hair Accessories, Jewelry &amp; Women Clothing · Pakistan</p>
+      <p class="hero-title-sub">Hair Accessories &amp; Jewelry · Pakistan</p>
     </div>
   </section>
 
@@ -384,6 +383,20 @@
       } catch {
         container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem">No reviews yet.</p>';
       }
+    })();
+  </script>
+  <!-- Hero video responsive loader -->
+  <script>
+    (function() {
+      var vid = document.getElementById('hero-video');
+      var src = document.getElementById('hero-video-src');
+      if (!vid || !src) return;
+      var isMobile = window.innerWidth <= 600;
+      var url = isMobile ? 'videos/hero-bg-mobile.mp4' : 'videos/hero-bg.mp4';
+      // Cache bust so browser always loads the latest file
+      src.src = url + '?v=2';
+      vid.load();
+      vid.play().catch(function(){});
     })();
   </script>
 </body>
