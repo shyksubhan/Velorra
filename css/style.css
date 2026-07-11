@@ -71,17 +71,19 @@ body > nav.scrolled, header > nav.scrolled {
   backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--border), 0 4px 24px var(--shadow);
 }
-/* Nav logo default: gold text (works on both light and dark backgrounds) */
+/* Nav logo default: white (visible on dark video hero) */
 .nav-logo-link {
-  color: var(--gold) !important;
+  color: #fff !important;
+  filter: brightness(0) invert(1);
 }
 .nav-logo-link em {
   color: var(--gold) !important;
 }
-/* Scrolled nav: switch to dark text on light cream background */
+/* Scrolled nav: switch back to normal colors on light background */
 body > nav.scrolled .nav-logo-link,
 header > nav.scrolled .nav-logo-link {
   color: var(--text) !important;
+  filter: none;
 }
 body > nav.scrolled .nav-logo-link em,
 header > nav.scrolled .nav-logo-link em {
@@ -208,7 +210,7 @@ header > nav.scrolled .nav-links a {
   height: 100vh; min-height: 600px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
-  background: #2a1a14;
+  background: #000;
 }
 
 /* Video fills the hero on all screen sizes */
@@ -217,10 +219,9 @@ header > nav.scrolled .nav-links a {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center center;
   z-index: 0;
-  background: #2a1a14;
 }
 
 /* Dark overlay for text readability */
@@ -459,8 +460,8 @@ section { padding: 100px 0; }
   /* Video hero — phone: no scale (scale causes black bars), just cover */
   #hero { height: 100svh; min-height: 480px; }
   #hero-video {
-    object-fit: contain;
-    object-position: center center;
+    object-fit: cover;
+    object-position: 60% center;
     transform: none;
   }
   .hero-title { font-size: 2.8rem; }
@@ -948,8 +949,8 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   /* Video hero — tablet */
   #hero { height: 100svh; min-height: 500px; }
   #hero-video {
-    object-fit: contain;
-    object-position: center center;
+    object-fit: cover;
+    object-position: 60% center;
     transform: none;
   }
   .cat-grid { grid-template-columns: 1fr 1fr; }
