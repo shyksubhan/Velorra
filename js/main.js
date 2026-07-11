@@ -223,6 +223,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /* ── Mobile: Shop dropdown touch toggle ── */
+  if (window.innerWidth <= 900) {
+    const dropdownToggle = document.querySelector('.nav-dropdown > a');
+    const dropdownParent = document.querySelector('.nav-dropdown');
+    dropdownToggle?.addEventListener('click', (e) => {
+      e.preventDefault();
+      dropdownParent.classList.toggle('open');
+    });
+  }
+
 });
 
  /* ============================================================

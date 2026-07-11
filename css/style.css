@@ -166,8 +166,10 @@ header > nav.scrolled .nav-links a {
 }
 .hamburger { display: none; flex-direction: column; gap: 5px; }
 .hamburger span { display: block; width: 24px; height: 1px; background: var(--text); transition: var(--transition); }
+/* Homepage hamburger white over video */
+body.page-home nav:not(.scrolled) .hamburger span { background: #fff; }
 
-/* ── Mobile Nav Dropdown (opened state) ── */
+/* ── Mobile Nav (opened state) ── */
 .nav-links.mobile-open {
   display: flex !important;
   flex-direction: column;
@@ -179,9 +181,10 @@ header > nav.scrolled .nav-links a {
   gap: 20px;
   border-top: 1px solid var(--border);
   box-shadow: 0 12px 32px var(--shadow);
+  z-index: 999;
 }
-.nav-links.mobile-open a { color: var(--text-mid); opacity: 1; }
-.nav-links.mobile-open a:hover { color: var(--gold); }
+.nav-links.mobile-open a { color: var(--text-mid) !important; opacity: 1; }
+.nav-links.mobile-open a:hover { color: var(--gold) !important; }
 
 /* ── Nav Dropdown ── */
 .nav-dropdown { position: relative; }
@@ -204,6 +207,11 @@ header > nav.scrolled .nav-links a {
   opacity: 1; visibility: visible;
   transform: translateY(0);
 }
+/* Mobile touch: dropdown toggled via .open class added by JS */
+.nav-dropdown .dropdown-menu.open {
+  opacity: 1; visibility: visible;
+  transform: translateY(0);
+}
 .nav-dropdown .dropdown-menu li { padding: 0; margin: 0; }
 .nav-dropdown .dropdown-menu a {
   display: block; padding: 10px 24px;
@@ -221,6 +229,11 @@ header > nav.scrolled .nav-links a {
     transform: none; box-shadow: none; border: none;
     background: transparent; padding: 0; min-width: 100%;
     margin-top: 12px; margin-left: 20px;
+    display: none;
+  }
+  .nav-dropdown .dropdown-menu.open,
+  .nav-dropdown.open .dropdown-menu {
+    display: flex;
   }
 }
 
