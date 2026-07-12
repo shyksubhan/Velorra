@@ -216,7 +216,8 @@ async function golnisaRenderHomepageGrids() {
         const pinProducts = allProducts.filter(p => {
           const c = p.category === 'catchers' ? 'clips' : p.category;
           const s = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
-          return (c === pin.id || s === pin.id);
+          const additional = p.additionalCategories || [];
+          return (c === pin.id || s === pin.id || additional.includes(pin.id));
         });
         if (pinProducts.length > 0) {
           const section = document.createElement('section');
@@ -224,11 +225,10 @@ async function golnisaRenderHomepageGrids() {
           section.style.padding = '40px 0 0 0';
 
           const catUrl = (() => {
-            const jewCats = ['bracelets','rings','earrings','necklace'];
-            const hairCats = ['scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items'];
-            if (jewCats.includes(pin.id)) return `jewelry.html?cat=${pin.id}`;
-            if (hairCats.includes(pin.id)) return `hair-accessories.html?cat=${pin.id}`;
-            return `shop?cat=${pin.id}`;
+            if (CATEGORY_HIERARCHY['jewelry'].includes(pin.id)) return `jewelry.html?cat=${pin.id}`;
+            if (CATEGORY_HIERARCHY['hair-accessories'].includes(pin.id)) return `hair-accessories.html?cat=${pin.id}`;
+            if (CATEGORY_HIERARCHY['clothing'].includes(pin.id)) return `clothing.html?cat=${pin.id}`;
+            return `shop.html?cat=${pin.id}`;
           })();
 
           const rowId = `pinrow-${pin.id}`;
