@@ -84,8 +84,13 @@ body.page-home nav:not(.scrolled) .nav-logo-link {
   color: #fff !important;
   filter: brightness(0) invert(1);
 }
-body.page-home nav:not(.scrolled) .nav-links:not(.mobile-open) a {
+body.page-home nav:not(.scrolled) .nav-links:not(.mobile-open) > li:not(.nav-dropdown) > a,
+body.page-home nav:not(.scrolled) .nav-links:not(.mobile-open) > .nav-dropdown > a {
   color: rgba(255,255,255,0.92) !important;
+}
+/* Dropdown menu links always dark */
+.nav-dropdown .dropdown-menu a {
+  color: var(--text-mid) !important;
 }
 body.page-home nav:not(.scrolled) .nav-icons button,
 body.page-home nav:not(.scrolled) .nav-icons a {
