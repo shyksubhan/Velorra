@@ -206,7 +206,11 @@ window.updateShopHero = function(cat) {
     'party-wear': { title: 'Party Wear <em style="color: var(--gold);">Collection</em>', desc: 'Turn heads with our exclusive party wear dresses.' },
     'summer-collection': { title: 'Summer <em style="color: var(--gold);">Collection</em>', desc: 'Light, breathable, and beautiful summer clothing.' },
     'winter-collection': { title: 'Winter <em style="color: var(--gold);">Collection</em>', desc: 'Cozy, stylish winter wear and shawls.' },
-    'daily-pret': { title: 'Daily Pret <em style="color: var(--gold);">Collection</em>', desc: 'Ready-to-wear daily pret for the modern woman.' }
+    'daily-pret': { title: 'Daily Pret <em style="color: var(--gold);">Collection</em>', desc: 'Ready-to-wear daily pret for the modern woman.' },
+    'unstitched': { title: 'Unstitched <em style="color: var(--gold);">Collection</em>', desc: 'Premium unstitched fabrics to create your unique style.' },
+    'g-prints': { title: 'G. Prints <em style="color: var(--gold);">Collection</em>', desc: 'Exclusive printed fabrics and designs.' },
+    'new-arrivals': { title: 'New Arrivals <em style="color: var(--gold);">Collection</em>', desc: 'Discover our latest clothing pieces and fresh designs.' },
+    'trending-now': { title: 'Trending <em style="color: var(--gold);">Now</em>', desc: 'Shop the most popular and trending outfits of the season.' }
   };
 
   const info = data[cat] || data['all'];
@@ -247,7 +251,11 @@ const HIERARCHY = {
     { label: 'Party Wear', filter: 'party-wear' },
     { label: 'Summer', filter: 'summer-collection' },
     { label: 'Winter', filter: 'winter-collection' },
-    { label: 'Daily Pret', filter: 'daily-pret' }
+    { label: 'Daily Pret', filter: 'daily-pret' },
+    { label: 'Unstitched', filter: 'unstitched' },
+    { label: 'G. Prints', filter: 'g-prints' },
+    { label: 'New Arrivals', filter: 'new-arrivals' },
+    { label: 'Trending Now', filter: 'trending-now' }
   ]
 };
 

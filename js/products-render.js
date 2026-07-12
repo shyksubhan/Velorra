@@ -20,13 +20,17 @@ const GOLNISÀ_CAT_LABELS = {
   'party-wear':  'Party Wear',
   'summer-collection': 'Summer Collection',
   'winter-collection': 'Winter Collection',
-  'daily-pret':  'Daily Pret Ready to Wear'
+  'daily-pret':  'Daily Pret Ready to Wear',
+  'unstitched':  'Unstitched',
+  'g-prints':    'G. Prints',
+  'new-arrivals':'New Arrivals',
+  'trending-now':'Trending Now'
 };
 
 const CATEGORY_HIERARCHY = {
   'jewelry': ['bracelets', 'rings', 'earrings', 'necklace', 'bangles', 'jewelry-sets'],
   'hair-accessories': ['scrunchies', 'clips', 'hair-bands', 'pins', 'ponies', 'fancy', 'gift-items'],
-  'clothing': ['fancy-wear', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret']
+  'clothing': ['fancy-wear', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret', 'unstitched', 'g-prints', 'new-arrivals', 'trending-now']
 };
 
 function velorCatLabel(cat) {
@@ -64,7 +68,7 @@ function golnisaProductCardHTML(p) {
       : `<div style="width:100%;height:100%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--gold);">${emoji}</div>`;
 
   return `
-    <div class="product-card" data-cat="${resolvedCat}" data-main-cat="${mainCat}">
+    <div class="product-card" data-cat="${resolvedCat}" data-main-cat="${mainCat}" data-additional-cats="${(p.additionalCategories || []).join(',')}">
       <div class="product-img-wrap">
         ${badge}
         <a href="product.html?id=${p.id}">${mediaHTML}</a>
@@ -128,7 +132,8 @@ function golnisaSetupShopFilters(products, grid, mainCat) {
           const bdg = card.querySelector('.product-badge');
           show = bdg && bdg.innerText.toLowerCase().includes('sale');
         } else {
-          show = (c === f);
+          const additional = card.dataset.additionalCats ? card.dataset.additionalCats.split(',') : [];
+          show = (c === f) || additional.includes(f);
         }
 
         card.style.display = show ? '' : 'none';
@@ -174,7 +179,8 @@ async function golnisaRenderShopGrid() {
       products = products.filter(p => {
         const cat = p.category === 'catchers' ? 'clips' : p.category;
         const subcat = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
-        return allowed.includes(subcat) || allowed.includes(cat);
+        const additional = p.additionalCategories || [];
+        return allowed.includes(subcat) || allowed.includes(cat) || additional.some(a => allowed.includes(a));
       });
     }
 
@@ -287,7 +293,10 @@ async function golnisaRenderHomepageGrids() {
     // Clothing
     const clothGrid = document.getElementById('featured-clothing-grid');
     if (clothGrid) {
-      const cProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['clothing'].includes(p.subcategory || p.category));
+      const cProds = featuredProducts.filter(p => {
+        const additional = p.additionalCategories || [];
+        return CATEGORY_HIERARCHY['clothing'].includes(p.subcategory || p.category) || additional.some(a => CATEGORY_HIERARCHY['clothing'].includes(a));
+      });
       clothGrid.innerHTML = cProds.length ? cProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
       golnisaReInitCards(clothGrid);
     }
