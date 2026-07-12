@@ -1321,37 +1321,36 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         </div>
         <div class="form-group" style="flex: 2;">
           <label>Additional Categories</label>
-          <select id="p-additional-categories" multiple style="height: 80px;" title="Hold Ctrl/Cmd to select multiple">
-            <optgroup label="Clothing">
-              <option value="fancy-wear">Fancy Wear</option>
-              <option value="casual">Casual</option>
-              <option value="party-wear">Party Wear</option>
-              <option value="summer-collection">Summer Collection</option>
-              <option value="winter-collection">Winter Collection</option>
-              <option value="daily-pret">Daily Pret</option>
-              <option value="unstitched">Unstitched</option>
-              <option value="g-prints">G. Prints</option>
-              <option value="new-arrivals">New Arrivals</option>
-              <option value="trending-now">Trending Now</option>
-            </optgroup>
-            <optgroup label="Jewelry">
-              <option value="bracelets">Bracelets</option>
-              <option value="rings">Rings</option>
-              <option value="earrings">Earrings</option>
-              <option value="necklace">Necklace</option>
-              <option value="bangles">Bangles</option>
-              <option value="jewelry-sets">Jewelry Sets</option>
-            </optgroup>
-            <optgroup label="Hair Accessories">
-              <option value="scrunchies">Scrunchies</option>
-              <option value="clips">Hair Clips</option>
-              <option value="hair-bands">Hair Bands</option>
-              <option value="pins">Pins</option>
-              <option value="ponies">Ponies</option>
-              <option value="fancy">Fancy</option>
-              <option value="gift-items">Gift Items</option>
-            </optgroup>
-          </select>
+          <div id="p-additional-categories" style="border: 1px solid var(--border); border-radius: 8px; padding: 10px; height: 120px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 6px;">
+            <strong style="font-size:0.8rem; color:var(--muted); margin-top:4px;">Clothing</strong>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="fancy-wear"> Fancy Wear</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="casual"> Casual</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="party-wear"> Party Wear</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="summer-collection"> Summer Collection</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="winter-collection"> Winter Collection</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="daily-pret"> Daily Pret</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="unstitched"> Unstitched</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="g-prints"> G. Prints</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="new-arrivals"> New Arrivals</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="trending-now"> Trending Now</label>
+
+            <strong style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Jewelry</strong>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="bracelets"> Bracelets</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="rings"> Rings</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="earrings"> Earrings</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="necklace"> Necklace</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="bangles"> Bangles</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="jewelry-sets"> Jewelry Sets</label>
+
+            <strong style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Hair Accessories</strong>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="scrunchies"> Scrunchies</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="clips"> Hair Clips</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="hair-bands"> Hair Bands</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="pins"> Pins</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="ponies"> Ponies</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="fancy"> Fancy</label>
+            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="gift-items"> Gift Items</label>
+          </div>
         </div>
         <div class="form-group"><label>Badge</label>
           <select id="p-badge">
@@ -3752,11 +3751,12 @@ function openProductModal(product = null) {
   document.getElementById('p-name').value       = product?.name || '';
   document.getElementById('p-emoji').value      = product?.emoji || '';
   document.getElementById('p-category').value   = product?.category || '';
-  const additionalSelect = document.getElementById('p-additional-categories');
+  const additionalContainer = document.getElementById('p-additional-categories');
+  const additionalCheckboxes = additionalContainer.querySelectorAll('input[type="checkbox"]');
   const additionalCategories = product?.additionalCategories || [];
-  for (let i = 0; i < additionalSelect.options.length; i++) {
-    additionalSelect.options[i].selected = additionalCategories.includes(additionalSelect.options[i].value);
-  }
+  additionalCheckboxes.forEach(cb => {
+    cb.checked = additionalCategories.includes(cb.value);
+  });
   document.getElementById('p-badge').value      = product?.badge || '';
   document.getElementById('p-price').value      = product?.price || '';
   document.getElementById('p-purchase-price').value = product?.purchasePrice ?? '';
@@ -3858,8 +3858,13 @@ async function saveProduct() {
   btn.innerHTML = '<span class="spinner"></span>';
   btn.disabled  = true;
 
+  const additionalContainer = document.getElementById('p-additional-categories');
+  const additionalCheckboxes = additionalContainer.querySelectorAll('input[type="checkbox"]:checked');
+  const additionalCategories = Array.from(additionalCheckboxes).map(cb => cb.value);
+
   const payload = {
     name, category: cat,
+    additionalCategories,
     emoji:       document.getElementById('p-emoji').value || '🛍️',
     badge:       document.getElementById('p-badge').value || null,
     price:       Number(price),
