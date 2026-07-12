@@ -89,8 +89,13 @@ body.page-home nav:not(.scrolled) .nav-links:not(.mobile-open) > .nav-dropdown >
   color: rgba(255,255,255,0.92) !important;
 }
 /* Dropdown menu links always dark */
-.nav-dropdown .dropdown-menu a {
+.nav-dropdown .dropdown-menu a,
+body.page-home nav:not(.scrolled) .nav-dropdown .dropdown-menu a,
+.nav-links .nav-dropdown .dropdown-menu a {
   color: var(--text-mid) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-shadow: none !important;
 }
 body.page-home nav:not(.scrolled) .nav-icons button,
 body.page-home nav:not(.scrolled) .nav-icons a {
@@ -225,8 +230,8 @@ body.page-home nav:not(.scrolled) .hamburger span { background: #fff; }
   text-transform: none;
 }
 .nav-dropdown .dropdown-menu a:hover {
-  background: var(--bg-hover);
-  color: var(--gold);
+  background: var(--bg-hover, #fdf9f4) !important;
+  color: var(--gold) !important;
 }
 @media (max-width: 900px) {
   .nav-dropdown .dropdown-menu {
