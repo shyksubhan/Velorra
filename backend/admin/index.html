@@ -3338,7 +3338,7 @@ function exportProductsExcel() {
 
   let products = allProducts.filter(p => {
     const matchSearch = !q || p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
-    const matchCat    = !cat || p.category === cat;
+    const matchCat    = !cat || p.category === cat || (p.additionalCategories || []).includes(cat);
     return matchSearch && matchCat;
   });
   products = [...products].sort((a, b) => {
@@ -3566,7 +3566,7 @@ async function loadProducts() {
       if (p.subcategory === 'catchers') p.subcategory = 'clips';
       return p;
     });
-    renderProducts(allProducts);
+    filterProductsTable();
   } catch { toast('Failed to load products', 'error'); }
 }
 
@@ -3577,7 +3577,7 @@ function filterProductsTable() {
 
   let filtered = allProducts.filter(p => {
     const matchSearch = !q || p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
-    const matchCat    = !cat || p.category === cat;
+    const matchCat    = !cat || p.category === cat || (p.additionalCategories || []).includes(cat);
     return matchSearch && matchCat;
   });
 
