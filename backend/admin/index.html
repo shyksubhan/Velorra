@@ -3770,6 +3770,12 @@ function handleTagKeydown(event, field) {
 
 function editProduct(product) { openProductModal(product); }
 
+function editProductById(id) {
+  const product = allProducts.find(p => p.id === id);
+  if (!product) { toast('Product not found - try refreshing the list.', 'error'); return; }
+  openProductModal(product);
+}
+
 function duplicateProductById(id) {
   const product = allProducts.find(p => p.id === id);
   if (!product) { toast('Product not found.', 'error'); return; }
