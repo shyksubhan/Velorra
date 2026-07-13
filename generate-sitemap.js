@@ -47,7 +47,8 @@ function fetchJSON(url) {
 }
 
 function urlEntry(loc, changefreq, priority) {
-  return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+  const escapedLoc = loc.replace(/&/g, '&amp;');
+  return `  <url>\n    <loc>${escapedLoc}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
 }
 
 async function generate() {
