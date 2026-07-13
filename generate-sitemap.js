@@ -16,17 +16,22 @@ const TODAY   = new Date().toISOString().slice(0, 10);
 const STATIC = [
   { loc: `${DOMAIN}/`,         changefreq: 'weekly',  priority: '1.0' },
   { loc: `${DOMAIN}/shop`,     changefreq: 'daily',   priority: '0.9' },
+  { loc: `${DOMAIN}/clothing`, changefreq: 'daily',   priority: '0.9' },
+  { loc: `${DOMAIN}/jewelry`,  changefreq: 'daily',   priority: '0.9' },
+  { loc: `${DOMAIN}/hair-accessories`, changefreq: 'daily', priority: '0.9' },
   { loc: `${DOMAIN}/about`,    changefreq: 'monthly', priority: '0.7' },
   { loc: `${DOMAIN}/contact`,  changefreq: 'monthly', priority: '0.6' },
   { loc: `${DOMAIN}/policy`,   changefreq: 'monthly', priority: '0.5' },
   { loc: `${DOMAIN}/reseller`, changefreq: 'monthly', priority: '0.6' },
 ];
 
-/* Category pages */
-const CATEGORIES = [
-  'scrunchies','clips','hair-bands','pins','ponies',
-  'fancy','bracelets','rings','earrings','necklace','gift-items'
-];
+/* Category pages hierarchy */
+const CATEGORY_MAP = {
+  'jewelry': ['bracelets','rings','earrings','necklace'],
+  'hair-accessories': ['scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items'],
+  'clothing': ['winter-collection','daily-pret','unstitched','g-prints','new-arrivals','trending-now'],
+  'shop': ['sale']
+};
 
 function fetchJSON(url) {
   return new Promise((resolve, reject) => {
@@ -64,8 +69,10 @@ async function generate() {
   STATIC.forEach(p => entries.push(urlEntry(p.loc, p.changefreq, p.priority)));
 
   // Category pages
-  CATEGORIES.forEach(cat => {
-    entries.push(urlEntry(`${DOMAIN}/shop?cat=${cat}`, 'weekly', '0.8'));
+  Object.keys(CATEGORY_MAP).forEach(page => {
+    CATEGORY_MAP[page].forEach(cat => {
+      entries.push(urlEntry(`${DOMAIN}/${page}?cat=${cat}`, 'weekly', '0.8'));
+    });
   });
 
   // Product pages
@@ -91,9 +98,12 @@ ${entries.join('\n')}
 
   const outPath = path.join(__dirname, 'sitemap.xml');
   fs.writeFileSync(outPath, xml, 'utf8');
+  let catCount = 0;
+  Object.values(CATEGORY_MAP).forEach(arr => catCount += arr.length);
+
   console.log(`\nDone! sitemap.xml updated with ${entries.length} URLs`);
   console.log(`  - ${STATIC.length} static pages`);
-  console.log(`  - ${CATEGORIES.length} category pages`);
+  console.log(`  - ${catCount} category pages`);
   console.log(`  - ${products.length} product pages`);
 }
 
