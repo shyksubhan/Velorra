@@ -67,8 +67,7 @@ body > nav, header > nav, .site-nav {
   transition: background var(--transition), box-shadow var(--transition);
 }
 body > nav.scrolled, header > nav.scrolled {
-  background: rgba(250,247,242,0.96);
-  backdrop-filter: blur(16px);
+  background: rgba(250,247,242,1);
   box-shadow: 0 1px 0 var(--border), 0 4px 24px var(--shadow);
 }
 /* Nav logo default: original gold/dark colors for all pages */
@@ -185,8 +184,7 @@ body.page-home nav:not(.scrolled) .hamburger span { background: #fff; }
   flex-direction: column;
   position: absolute;
   top: var(--nav-h); left: 0; right: 0;
-  background: rgba(250,247,242,0.98);
-  backdrop-filter: blur(16px);
+  background: rgba(250,247,242,1);
   padding: 24px;
   gap: 20px;
   border-top: 1px solid var(--border);
