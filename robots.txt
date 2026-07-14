@@ -11,4 +11,4 @@ Disallow: /checkout
 Disallow: /account
 
 # Sitemap location
-Sitemap: https://velorra.store/sitemap.xml
+Sitemap: https://golnisa.com/sitemap.xml

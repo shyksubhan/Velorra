@@ -408,21 +408,31 @@ app.get('/sitemap.xml', async (req, res) => {
   const { getDB } = require('./utils/firebase');
   const today = new Date().toISOString().slice(0, 10);
 
+  const DOMAIN = 'https://golnisa.com';
   const staticUrls = [
-    { loc: 'https://velorra.store/',         priority: '1.0', changefreq: 'weekly'  },
-    { loc: 'https://velorra.store/shop',     priority: '0.9', changefreq: 'daily'   },
-    { loc: 'https://velorra.store/about',    priority: '0.7', changefreq: 'monthly' },
-    { loc: 'https://velorra.store/contact',  priority: '0.6', changefreq: 'monthly' },
-    { loc: 'https://velorra.store/policy',   priority: '0.5', changefreq: 'monthly' },
-    { loc: 'https://velorra.store/reseller', priority: '0.6', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/`,                  priority: '1.0', changefreq: 'weekly'  },
+    { loc: `${DOMAIN}/shop`,              priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/jewelry`,           priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/hair-accessories`,  priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/clothing`,          priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/about`,             priority: '0.7', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/contact`,           priority: '0.6', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/policy`,            priority: '0.5', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/reseller`,          priority: '0.6', changefreq: 'monthly' },
   ];
 
   const categories = [
-    'scrunchies','clips','hair-bands','pins','ponies','fancy',
-    'bracelets','rings','earrings','necklace','gift-items'
+    // Hair accessories
+    'scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items',
+    // Jewelry
+    'bracelets','rings','earrings','necklace',
+    // Clothing
+    'winter-collection','daily-pret','unstitched','g-prints','new-arrivals','trending-now',
+    // Shop
+    'sale'
   ];
   const catUrls = categories.map(c => ({
-    loc: `https://velorra.store/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
+    loc: `${DOMAIN}/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
   }));
 
   /* Fetch live products from Firestore */
@@ -438,7 +448,7 @@ app.get('/sitemap.xml', async (req, res) => {
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         const id   = slug || d.id;
         return {
-          loc: `https://velorra.store/product?id=${encodeURIComponent(id)}&name=${encodeURIComponent(id)}`,
+          loc: `${DOMAIN}/product?id=${encodeURIComponent(d.id)}&name=${encodeURIComponent(slug)}`,
           priority: '0.7',
           changefreq: 'weekly',
           lastmod: data.createdAt ? new Date(data.createdAt).toISOString().slice(0,10) : today
