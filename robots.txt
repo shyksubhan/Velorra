@@ -1,6 +1,9 @@
 User-agent: *
 Allow: /
 
+# Explicitly allow sitemap
+Allow: /sitemap.xml
+
 # Block admin, api, backend from all bots
 Disallow: /admin/
 Disallow: /api/
