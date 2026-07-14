@@ -32,6 +32,8 @@ router.post('/', requireAdmin, async (req, res) => {
       couponCode,
       advanceAmount,
       customDiscount,
+      deliveryOverride,
+      deliveryCustomVal,
     } = req.body;
 
     /* ── Validation ── */
@@ -51,12 +53,15 @@ router.post('/', requireAdmin, async (req, res) => {
     const subtotal    = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const payMethod   = paymentMethod || 'cod';
 
-    /* Same delivery fee rules as website orders:
-       - bank_deposit → always FREE
-       - COD          → PKR 200, waived once subtotal ≥ PKR 5,000 */
-    const deliveryFee = payMethod === 'bank_deposit'
-      ? 0
-      : (subtotal >= 5000 ? 0 : 200);
+    /* Delivery fee: honour admin override first, then auto rules */
+    let deliveryFee;
+    if (deliveryOverride === 'free') {
+      deliveryFee = 0;
+    } else if (deliveryOverride === 'custom' && deliveryCustomVal != null) {
+      deliveryFee = Math.max(0, Number(deliveryCustomVal) || 0);
+    } else {
+      deliveryFee = payMethod === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+    }
 
     /* ── Coupon (optional) — same rule set as website checkout ── */
     let discount   = 0;
@@ -92,6 +97,7 @@ router.post('/', requireAdmin, async (req, res) => {
     const finalTotal = Math.max(0, (subtotal - discount - (customDiscountMeta?.amount || 0)) + deliveryFee);
     const orderRef = 'SOC-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
+    const order = {
       id:            orderRef,
       orderType:     'social',
       source,
@@ -104,6 +110,7 @@ router.post('/', requireAdmin, async (req, res) => {
       discount,
       coupon:        couponMeta,
       customDiscount: customDiscountMeta,
+      deliveryOverride: deliveryOverride || 'auto',
       deliveryFee,
       total:         finalTotal,
       advanceAmount: Number(advanceAmount) || 0,
@@ -194,7 +201,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     }
 
     const {
-      customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount, customDiscount,
+      customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount, customDiscount, deliveryOverride, deliveryCustomVal,
     } = req.body;
 
     if (!customerName?.trim()) return res.status(400).json({ error: 'Customer name is required.' });
@@ -211,7 +218,15 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
     const subtotal  = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const payMethod = paymentMethod || 'cod';
-    const deliveryFee = payMethod === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+    /* Delivery fee: honour admin override first, then auto rules */
+    let deliveryFee;
+    if (deliveryOverride === 'free') {
+      deliveryFee = 0;
+    } else if (deliveryOverride === 'custom' && deliveryCustomVal != null) {
+      deliveryFee = Math.max(0, Number(deliveryCustomVal) || 0);
+    } else {
+      deliveryFee = payMethod === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+    }
 
     let discount = 0;
     let couponMeta = null;
@@ -257,6 +272,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
       discount,
       coupon:        couponMeta,
       customDiscount: customDiscountMeta,
+      deliveryOverride: deliveryOverride || 'auto',
       deliveryFee,
       total:         finalTotal,
       advanceAmount: Number(advanceAmount) || 0,
