@@ -89,6 +89,22 @@ initCloudinary();
    directly. To make the BROWSER bar show /shop (not /shop.html), the
    internal <a href> links in the HTML files must point to the extension-
    less path too — see the .html link rewrite below. ── */
+/* ── GET /robots.txt — Serve with no-cache headers ── */
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.send(`User-agent: *
+Allow: /sitemap.xml
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /backend/
+Disallow: /checkout
+Disallow: /account
+
+Sitemap: https://golnisa.com/sitemap.xml`);
+});
+
 /* ── GET /sitemap.xml — Dynamic sitemap including all live products ── */
 app.get('/sitemap.xml', async (req, res) => {
   const { getDB } = require('./utils/firebase');
