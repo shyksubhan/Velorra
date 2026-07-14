@@ -160,8 +160,19 @@ const store = {
     let revenue = 0, cost = 0, profit = 0;
     const allOrders = [...this.orders, ...this.socialOrders];
     allOrders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).forEach(o => {
+      /* Total discount on this order (coupon + custom discount) */
+      const orderDiscount = (o.discount || 0) + (o.customDiscount?.amount || 0);
+      /* Subtotal before discount - used to allocate discount proportionally per item */
+      const orderSubtotal = (o.subtotal || 0) || (o.items || []).reduce((s, i) => s + ((i.price || 0) * (i.qty || 1)), 0);
+
       (o.items || []).forEach(item => {
-        const { revenue: r, cost: c, profit: p } = this._itemProfit(item);
+        const { revenue: r, cost: c } = this._itemProfit(item);
+        /* Allocate discount proportionally: if item = 30% of subtotal, it absorbs 30% of discount */
+        const itemRevenueFraction = orderSubtotal > 0 ? (r / orderSubtotal) : (1 / (o.items?.length || 1));
+        const itemDiscount = Math.round(orderDiscount * itemRevenueFraction);
+        const effectiveRevenue = Math.max(0, r - itemDiscount);
+        const p = effectiveRevenue - c;
+
         revenue += r; cost += c; profit += p;
         lines.push({
           orderId:   o.id,

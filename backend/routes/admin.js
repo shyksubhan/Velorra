@@ -170,10 +170,16 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.monthSocialRevenue  = Math.round(sOrders
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
       .reduce((s, o) => s + (o.total || 0), 0));
-    base.todaySocialProfit   = Math.round(todaySocialOrders.reduce((s, o) =>
-      s + (o.items || []).reduce((sum, i) => sum + ((i.price - (i.purchasePrice || 0)) * (i.qty || 1)), 0), 0));
-    base.totalSocialProfit   = Math.round(sOrders.filter(o => o.status !== 'Cancelled').reduce((s, o) =>
-      s + (o.items || []).reduce((sum, i) => sum + ((i.price - (i.purchasePrice || 0)) * (i.qty || 1)), 0), 0));
+    base.todaySocialProfit   = Math.round(todaySocialOrders.reduce((s, o) => {
+      const orderDiscount = (o.discount || 0) + (o.customDiscount?.amount || 0);
+      const itemProfit = (o.items || []).reduce((sum, i) => sum + ((i.price - (i.purchasePrice || 0)) * (i.qty || 1)), 0);
+      return s + Math.max(0, itemProfit - orderDiscount);
+    }, 0));
+    base.totalSocialProfit   = Math.round(sOrders.filter(o => o.status !== 'Cancelled').reduce((s, o) => {
+      const orderDiscount = (o.discount || 0) + (o.customDiscount?.amount || 0);
+      const itemProfit = (o.items || []).reduce((sum, i) => sum + ((i.price - (i.purchasePrice || 0)) * (i.qty || 1)), 0);
+      return s + Math.max(0, itemProfit - orderDiscount);
+    }, 0));
 
     /* Combined */
     base.todayCombinedRevenue = base.todayRevenue + base.todaySocialRevenue;
