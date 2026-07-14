@@ -471,7 +471,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
   </div>
   <div class="table-wrap">
-    <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+    <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Profit</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
     <tbody id="orders-body"></tbody></table>
   </div>
 </div>
@@ -561,13 +561,14 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <th>Customer</th>
         <th>Items</th>
         <th>Total</th>
+        <th>Profit</th>
         <th>Payment</th>
         <th>Advance</th>
         <th>Status</th>
         <th>Date</th>
         <th>Action</th>
       </tr></thead>
-      <tbody id="social-orders-body"><tr><td colspan="10" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+      <tbody id="social-orders-body"><tr><td colspan="11" class="empty-state"><div class="spinner"></div></td></tr></tbody>
     </table>
   </div>
 </div>
@@ -2494,7 +2495,7 @@ async function loadSocialOrders() {
   const source = document.getElementById('soc-source-filter')?.value || '';
   const status = document.getElementById('soc-status-filter')?.value || '';
   const tbody  = document.getElementById('social-orders-body');
-  tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
   try {
     let qs = [];
     if (source) qs.push('source=' + source);
@@ -2533,19 +2534,44 @@ function filterSocialOrdersTable() {
   ));
 }
 
+/* Real-time per-order profit (matches store.js _buildStatement logic exactly):
+   Profit = sum of items (effectiveRevenue - cost)
+   effectiveRevenue = item revenue minus its proportional share of order discount */
+function calcOrderProfit(o) {
+  if (!o || o.status === 'Cancelled') return 0;
+  const orderDiscount = (o.discount || 0) + (o.customDiscount?.amount || 0);
+  const orderSubtotal = o.subtotal || (o.items || []).reduce((s, i) => s + ((i.price || 0) * (i.qty || 1)), 0);
+  let profit = 0;
+  (o.items || []).forEach(item => {
+    const qty = item.qty || 1;
+    const revenue = (item.price || 0) * qty;
+    const cost    = (Number(item.purchasePrice) || 0) * qty;
+    const fraction = orderSubtotal > 0 ? (revenue / orderSubtotal) : (1 / (o.items?.length || 1));
+    const itemDiscount = Math.round(orderDiscount * fraction);
+    const effectiveRevenue = Math.max(0, revenue - itemDiscount);
+    profit += effectiveRevenue - cost;
+  });
+  return Math.round(profit);
+}
+
 function renderSocialOrders(orders) {
   const tbody = document.getElementById('social-orders-body');
   if (!orders.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fa-solid fa-share-nodes"></i><p>No social media orders yet</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><i class="fa-solid fa-share-nodes"></i><p>No social media orders yet</p></div></td></tr>`;
     return;
   }
-  tbody.innerHTML = orders.map(o => `
+  tbody.innerHTML = orders.map(o => {
+    const profit = calcOrderProfit(o);
+    const profitColor = profit >= 0 ? 'var(--green)' : 'var(--red)';
+    const profitLabel = (profit >= 0 ? '+' : '') + 'PKR ' + profit.toLocaleString();
+    return `
     <tr>
       <td><code style="color:#e1306c;cursor:pointer" onclick="viewSocialOrder('${o.id}')">${o.id}</code></td>
       <td>${socSourceBadge(o.source)}</td>
       <td><strong>${esc(o.customerName || '—')}</strong><br><small style="color:var(--muted)">${esc(o.phone || '')}</small></td>
       <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
       <td style="color:var(--gold);font-weight:600">PKR ${(o.total || 0).toLocaleString()}</td>
+      <td style="color:${profitColor};font-weight:600">${profitLabel}</td>
       <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
       <td style="color:var(--blue);font-weight:600">PKR ${Number(o.advanceAmount || 0).toLocaleString()}</td>
       <td>
@@ -2558,7 +2584,8 @@ function renderSocialOrders(orders) {
         <button class="btn btn-outline btn-sm" onclick="viewSocialOrder('${o.id}')">Details</button>
         <button class="btn btn-danger btn-sm" onclick="deleteSocialOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function updateSocialOrderStatus(id, status) {
@@ -3127,7 +3154,7 @@ async function deleteCoupon(id, code) {
 async function loadOrders() {
   const status = document.getElementById('order-status-filter').value;
   const tbody  = document.getElementById('orders-body');
-  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
   try {
     const res  = await apiFetch(`/orders${status ? '?status=' + status : ''}`);
     const data = await res.json();
@@ -3143,13 +3170,18 @@ function filterOrdersTable() {
 
 function renderOrders(orders) {
   const tbody = document.getElementById('orders-body');
-  if (!orders.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>`; return; }
-  tbody.innerHTML = orders.map(o => `
+  if (!orders.length) { tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>`; return; }
+  tbody.innerHTML = orders.map(o => {
+    const profit = calcOrderProfit(o);
+    const profitColor = profit >= 0 ? 'var(--green)' : 'var(--red)';
+    const profitLabel = (profit >= 0 ? '+' : '') + 'PKR ' + profit.toLocaleString();
+    return `
     <tr>
       <td><code style="color:var(--gold);cursor:pointer" onclick="viewOrder('${o.id}')">${o.id}</code></td>
       <td>${o.delivery?.fname} ${o.delivery?.lname}<br><small style="color:var(--muted)">${o.delivery?.email}</small></td>
       <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
       <td>PKR ${(o.total || 0).toLocaleString()}</td>
+      <td style="color:${profitColor};font-weight:600">${profitLabel}</td>
       <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
       <td>
         <select class="status-select" onchange="updateOrderStatus('${o.id}', this.value)">
@@ -3158,7 +3190,8 @@ function renderOrders(orders) {
       </td>
       <td>${fmtDate(o.createdAt)}</td>
       <td><button class="btn btn-outline btn-sm" onclick="viewOrder('${o.id}')">Details</button></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function updateOrderStatus(id, status) {
