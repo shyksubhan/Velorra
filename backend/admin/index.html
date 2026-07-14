@@ -743,6 +743,19 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <p id="soc-coupon-msg" style="font-size:0.78rem;margin-top:6px;display:none"></p>
       </div>
 
+      <!-- Custom Discount -->
+      <div class="form-group">
+        <label>Custom Discount <span style="color:var(--muted)">(optional)</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" id="soc-custom-discount-val" placeholder="0" min="0" step="1" style="flex:1" oninput="recalcSocialTotal()" />
+          <select id="soc-custom-discount-type" style="width:110px" onchange="recalcSocialTotal()">
+            <option value="fixed">PKR (Fixed)</option>
+            <option value="percent">% (Percent)</option>
+          </select>
+        </div>
+        <p style="font-size:0.72rem;color:var(--muted);margin-top:4px">Enter a manual discount amount or percentage on this order.</p>
+      </div>
+
       <!-- Advance Payment -->
       <div class="form-group">
         <label>Advance Paid (PKR) <span style="color:var(--muted)">(optional)</span></label>
@@ -2612,6 +2625,14 @@ async function openSocialOrderModal(orderId = null) {
   document.getElementById('soc-advance-paid').value = o ? o.advanceAmount || '' : '';
   document.getElementById('soc-coupon-code').value = (o && o.coupon) ? o.coupon.code : '';
   document.getElementById('soc-coupon-msg').style.display = 'none';
+  // Populate custom discount on edit
+  if (o && o.customDiscount) {
+    document.getElementById('soc-custom-discount-val').value  = o.customDiscount.value || 0;
+    document.getElementById('soc-custom-discount-type').value = o.customDiscount.type || 'fixed';
+  } else {
+    document.getElementById('soc-custom-discount-val').value  = '';
+    document.getElementById('soc-custom-discount-type').value = 'fixed';
+  }
   document.getElementById('soc-items-container').innerHTML = '';
 
   if (o && o.coupon) {
@@ -2823,6 +2844,15 @@ function recalcSocialTotal() {
       : _socAppliedCoupon.value;
     discount = Math.min(discount, subtotal);
   }
+  // Apply custom discount on top of coupon discount
+  const customDiscVal  = Number(document.getElementById('soc-custom-discount-val')?.value) || 0;
+  const customDiscType = document.getElementById('soc-custom-discount-type')?.value || 'fixed';
+  if (customDiscVal > 0) {
+    const customAmt = customDiscType === 'percent'
+      ? Math.round(subtotal * (customDiscVal / 100))
+      : customDiscVal;
+    discount = Math.min(discount + customAmt, subtotal);
+  }
   const total = Math.max(0, subtotal - discount) + delFee;
   const advance = Number(document.getElementById('soc-advance-paid')?.value) || 0;
   const due = Math.max(0, total - advance);
@@ -2860,6 +2890,10 @@ async function saveSocialOrder() {
   const status       = document.getElementById('soc-status').value;
   const notes        = document.getElementById('soc-notes').value.trim();
   const couponCode   = _socAppliedCoupon?.code || null;
+  // Custom discount
+  const customDiscVal  = Number(document.getElementById('soc-custom-discount-val')?.value) || 0;
+  const customDiscType = document.getElementById('soc-custom-discount-type')?.value || 'fixed';
+  const customDiscount = customDiscVal > 0 ? { value: customDiscVal, type: customDiscType } : null;
 
   if (!customerName) { toast('Customer name is required.', 'error'); return; }
 
@@ -2891,7 +2925,7 @@ async function saveSocialOrder() {
 
     const res  = await apiFetch(url, {
       method: method,
-      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid }),
+      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount }),
     });
     const data = await res.json();
     if (res.ok) {

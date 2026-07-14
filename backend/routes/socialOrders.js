@@ -31,6 +31,7 @@ router.post('/', requireAdmin, async (req, res) => {
       notes,
       couponCode,
       advanceAmount,
+      customDiscount,
     } = req.body;
 
     /* ── Validation ── */
@@ -76,9 +77,21 @@ router.post('/', requireAdmin, async (req, res) => {
     }
 
     const total    = Math.max(0, subtotal - discount) + deliveryFee;
+
+    /* Custom Discount (manual override by admin) */
+    let customDiscountMeta = null;
+    if (customDiscount && Number(customDiscount.value) > 0) {
+      const cdVal = Number(customDiscount.value);
+      const cdType = customDiscount.type === 'percent' ? 'percent' : 'fixed';
+      const cdAmt = cdType === 'percent'
+        ? Math.round(subtotal * (cdVal / 100))
+        : cdVal;
+      const cdFinal = Math.min(cdAmt, Math.max(0, subtotal - discount));
+      customDiscountMeta = { value: cdVal, type: cdType, amount: cdFinal };
+    }
+    const finalTotal = Math.max(0, (subtotal - discount - (customDiscountMeta?.amount || 0)) + deliveryFee);
     const orderRef = 'SOC-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
-    const order = {
       id:            orderRef,
       orderType:     'social',
       source,
@@ -90,8 +103,9 @@ router.post('/', requireAdmin, async (req, res) => {
       subtotal,
       discount,
       coupon:        couponMeta,
+      customDiscount: customDiscountMeta,
       deliveryFee,
-      total,
+      total:         finalTotal,
       advanceAmount: Number(advanceAmount) || 0,
       paymentMethod: payMethod,
       status:        STATUSES.includes(status) ? status : 'Pending',
@@ -180,7 +194,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     }
 
     const {
-      customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount,
+      customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount, customDiscount,
     } = req.body;
 
     if (!customerName?.trim()) return res.status(400).json({ error: 'Customer name is required.' });
@@ -218,6 +232,19 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
     const total = Math.max(0, subtotal - discount) + deliveryFee;
 
+    /* Custom Discount (manual override by admin) */
+    let customDiscountMeta = null;
+    if (customDiscount && Number(customDiscount.value) > 0) {
+      const cdVal = Number(customDiscount.value);
+      const cdType = customDiscount.type === 'percent' ? 'percent' : 'fixed';
+      const cdAmt = cdType === 'percent'
+        ? Math.round(subtotal * (cdVal / 100))
+        : cdVal;
+      const cdFinal = Math.min(cdAmt, Math.max(0, subtotal - discount));
+      customDiscountMeta = { value: cdVal, type: cdType, amount: cdFinal };
+    }
+    const finalTotal = Math.max(0, (subtotal - discount - (customDiscountMeta?.amount || 0)) + deliveryFee);
+
     const updatedOrder = {
       ...existingOrder,
       source,
@@ -229,8 +256,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
       subtotal,
       discount,
       coupon:        couponMeta,
+      customDiscount: customDiscountMeta,
       deliveryFee,
-      total,
+      total:         finalTotal,
       advanceAmount: Number(advanceAmount) || 0,
       paymentMethod: payMethod,
       status:        STATUSES.includes(status) ? status : 'Pending',
