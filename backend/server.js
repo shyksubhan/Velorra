@@ -89,6 +89,81 @@ initCloudinary();
    directly. To make the BROWSER bar show /shop (not /shop.html), the
    internal <a href> links in the HTML files must point to the extension-
    less path too — see the .html link rewrite below. ── */
+/* ── GET /sitemap.xml — Dynamic sitemap including all live products ── */
+app.get('/sitemap.xml', async (req, res) => {
+  const { getDB } = require('./utils/firebase');
+  const today = new Date().toISOString().slice(0, 10);
+
+  const DOMAIN = 'https://golnisa.com';
+  const staticUrls = [
+    { loc: `${DOMAIN}/`,                  priority: '1.0', changefreq: 'weekly'  },
+    { loc: `${DOMAIN}/shop`,              priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/jewelry`,           priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/hair-accessories`,  priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/clothing`,          priority: '0.9', changefreq: 'daily'   },
+    { loc: `${DOMAIN}/about`,             priority: '0.7', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/contact`,           priority: '0.6', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/policy`,            priority: '0.5', changefreq: 'monthly' },
+    { loc: `${DOMAIN}/reseller`,          priority: '0.6', changefreq: 'monthly' },
+  ];
+
+  const categories = [
+    // Hair accessories
+    'scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items',
+    // Jewelry
+    'bracelets','rings','earrings','necklace',
+    // Clothing
+    'winter-collection','daily-pret','unstitched','g-prints','new-arrivals','trending-now',
+    // Shop
+    'sale'
+  ];
+  const catUrls = categories.map(c => ({
+    loc: `${DOMAIN}/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
+  }));
+
+  /* Fetch live products from Firestore */
+  let productUrls = [];
+  try {
+    let db;
+    try { db = getDB(); } catch(_) {}
+    if (db) {
+      const snap = await db.collection('products').get();
+      productUrls = snap.docs.map(d => {
+        const data = d.data();
+        const name = data.name || '';
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const id   = slug || d.id;
+        return {
+          loc: `${DOMAIN}/product?id=${encodeURIComponent(d.id)}&name=${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'weekly',
+          lastmod: data.createdAt ? new Date(data.createdAt).toISOString().slice(0,10) : today
+        };
+      }).filter(u => u.loc.includes('id=') && u.loc.length > 50);
+    }
+  } catch(e) { console.warn('Sitemap: could not fetch products', e.message); }
+
+  const allUrls = [...staticUrls, ...catUrls, ...productUrls];
+
+  const urlTags = allUrls.map(u => `  <url>
+    <loc>${u.loc}</loc>
+    <lastmod>${u.lastmod || today}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlTags}
+</urlset>`;
+
+  res.setHeader('Content-Type', 'application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.send(xml);
+});
+
+
+
 app.use(express.static(path.join(__dirname, '..'), { extensions: ['html'] }));
 
 /* ── SSE Notifications endpoint (/api/notifications/stream) ── */
@@ -402,79 +477,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-
-/* ── GET /sitemap.xml — Dynamic sitemap including all live products ── */
-app.get('/sitemap.xml', async (req, res) => {
-  const { getDB } = require('./utils/firebase');
-  const today = new Date().toISOString().slice(0, 10);
-
-  const DOMAIN = 'https://golnisa.com';
-  const staticUrls = [
-    { loc: `${DOMAIN}/`,                  priority: '1.0', changefreq: 'weekly'  },
-    { loc: `${DOMAIN}/shop`,              priority: '0.9', changefreq: 'daily'   },
-    { loc: `${DOMAIN}/jewelry`,           priority: '0.9', changefreq: 'daily'   },
-    { loc: `${DOMAIN}/hair-accessories`,  priority: '0.9', changefreq: 'daily'   },
-    { loc: `${DOMAIN}/clothing`,          priority: '0.9', changefreq: 'daily'   },
-    { loc: `${DOMAIN}/about`,             priority: '0.7', changefreq: 'monthly' },
-    { loc: `${DOMAIN}/contact`,           priority: '0.6', changefreq: 'monthly' },
-    { loc: `${DOMAIN}/policy`,            priority: '0.5', changefreq: 'monthly' },
-    { loc: `${DOMAIN}/reseller`,          priority: '0.6', changefreq: 'monthly' },
-  ];
-
-  const categories = [
-    // Hair accessories
-    'scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items',
-    // Jewelry
-    'bracelets','rings','earrings','necklace',
-    // Clothing
-    'winter-collection','daily-pret','unstitched','g-prints','new-arrivals','trending-now',
-    // Shop
-    'sale'
-  ];
-  const catUrls = categories.map(c => ({
-    loc: `${DOMAIN}/shop?cat=${c}`, priority: '0.8', changefreq: 'weekly'
-  }));
-
-  /* Fetch live products from Firestore */
-  let productUrls = [];
-  try {
-    let db;
-    try { db = getDB(); } catch(_) {}
-    if (db) {
-      const snap = await db.collection('products').get();
-      productUrls = snap.docs.map(d => {
-        const data = d.data();
-        const name = data.name || '';
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        const id   = slug || d.id;
-        return {
-          loc: `${DOMAIN}/product?id=${encodeURIComponent(d.id)}&name=${encodeURIComponent(slug)}`,
-          priority: '0.7',
-          changefreq: 'weekly',
-          lastmod: data.createdAt ? new Date(data.createdAt).toISOString().slice(0,10) : today
-        };
-      }).filter(u => u.loc.includes('id=') && u.loc.length > 50);
-    }
-  } catch(e) { console.warn('Sitemap: could not fetch products', e.message); }
-
-  const allUrls = [...staticUrls, ...catUrls, ...productUrls];
-
-  const urlTags = allUrls.map(u => `  <url>
-    <loc>${u.loc}</loc>
-    <lastmod>${u.lastmod || today}</lastmod>
-    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
-  </url>`).join('\n');
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urlTags}
-</urlset>`;
-
-  res.setHeader('Content-Type', 'application/xml');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  res.send(xml);
-});
 
 /* ── Catch-all ── */
 app.get('*', (req, res) => {
