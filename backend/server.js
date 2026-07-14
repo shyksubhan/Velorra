@@ -146,7 +146,7 @@ app.get('/sitemap.xml', async (req, res) => {
   const allUrls = [...staticUrls, ...catUrls, ...productUrls];
 
   const urlTags = allUrls.map(u => `  <url>
-    <loc>${u.loc}</loc>
+    <loc>${u.loc.replace(/&/g, '&amp;')}</loc>
     <lastmod>${u.lastmod || today}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
