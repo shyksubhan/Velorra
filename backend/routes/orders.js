@@ -394,7 +394,7 @@ router.patch('/:id/advance', requireAdmin, async (req, res) => {
 });
 
 /* ── DELETE /api/orders/:id (super_admin only) ── */
-router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     if (isFirebaseAvailable()) {
