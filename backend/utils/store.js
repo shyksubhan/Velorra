@@ -186,6 +186,8 @@ const store = {
           profit:    p,
         });
       });
+      revenue += (o.deliveryFee || 0);
+      cost    += (o.deliveryFee || 0);
     });
     return { lines, totals: { revenue: Math.round(revenue), cost: Math.round(cost), profit: Math.round(profit), orders: allOrders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).length } };
   },
