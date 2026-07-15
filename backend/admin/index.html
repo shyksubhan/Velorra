@@ -3246,7 +3246,8 @@ function renderOrders(orders) {
         </select>
       </td>
       <td>${fmtDate(o.createdAt)}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="viewOrder('${o.id}')">Details</button></td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewOrder('${o.id}')">Details</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('');
 }
@@ -3258,6 +3259,20 @@ async function updateOrderStatus(id, status) {
     if (res.ok) { toast(`Order ${id} → ${status}`, 'success'); loadStats(); }
     else toast(d.error || 'Update failed', 'error');
   } catch { toast('Update failed', 'error'); }
+}
+
+async function deleteOrder(id) {
+  const ok = await bktConfirm({ title: 'Delete Web Order?', message: `Order ${id} will be permanently deleted. This cannot be undone.`, confirmText: 'Delete', icon: '🗑️', danger: true });
+  if (!ok) return;
+  try {
+    const res = await apiFetch(`/orders/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Order deleted.', 'success');
+      allOrders = allOrders.filter(o => o.id !== id);
+      renderOrders(allOrders);
+      loadStats();
+    } else { const d = await res.json(); toast(d.error || 'Delete failed.', 'error'); }
+  } catch { toast('Network error.', 'error'); }
 }
 
 function viewOrder(id) {

@@ -393,4 +393,32 @@ router.patch('/:id/advance', requireAdmin, async (req, res) => {
   }
 });
 
+/* ── DELETE /api/orders/:id (super_admin only) ── */
+router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (isFirebaseAvailable()) {
+      const ref = getDB().collection('orders').doc(id);
+      const snap = await ref.get();
+      if (!snap.exists) return res.status(404).json({ error: 'Order not found.' });
+      await ref.delete();
+    } else {
+      const idx = store.orders.findIndex(o => o.id === id);
+      if (idx === -1) return res.status(404).json({ error: 'Order not found.' });
+      store.orders.splice(idx, 1);
+    }
+    store.logActivity({
+      staffId:   req.user.id || req.user.uid,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Deleted Web Order',
+      details:   id,
+      role:      req.user.role
+    });
+    return res.json({ message: `Order ${id} deleted.` });
+  } catch (err) {
+    console.error('Delete order error:', err);
+    return res.status(500).json({ error: 'Failed to delete order.' });
+  }
+});
+
 module.exports = router;
