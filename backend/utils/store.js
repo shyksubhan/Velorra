@@ -186,8 +186,13 @@ const store = {
           profit:    p,
         });
       });
-      revenue += (o.deliveryFee || 0);
-      cost    += (o.deliveryFee || 0);
+      /* Fallback for older orders that didn't save deliveryFee explicitly */
+      const actualDeliveryFee = o.deliveryFee !== undefined 
+        ? o.deliveryFee 
+        : Math.max(0, (o.total || 0) - Math.max(0, orderSubtotal - orderDiscount));
+        
+      revenue += actualDeliveryFee;
+      cost    += actualDeliveryFee;
     });
     return { lines, totals: { revenue: Math.round(revenue), cost: Math.round(cost), profit: Math.round(profit), orders: allOrders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).length } };
   },
