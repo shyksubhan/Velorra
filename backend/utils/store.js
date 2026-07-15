@@ -164,16 +164,16 @@ const store = {
       const orderDiscount = (o.discount || 0) + (o.customDiscount?.amount || 0);
       /* Subtotal before discount - used to allocate discount proportionally per item */
       const orderSubtotal = (o.subtotal || 0) || (o.items || []).reduce((s, i) => s + ((i.price || 0) * (i.qty || 1)), 0);
-
+      let orderItemCostSum = 0;
       (o.items || []).forEach(item => {
         const { revenue: r, cost: c } = this._itemProfit(item);
-        /* Allocate discount proportionally: if item = 30% of subtotal, it absorbs 30% of discount */
+        /* Allocate discount proportionally */
         const itemRevenueFraction = orderSubtotal > 0 ? (r / orderSubtotal) : (1 / (o.items?.length || 1));
         const itemDiscount = Math.round(orderDiscount * itemRevenueFraction);
         const effectiveRevenue = Math.max(0, r - itemDiscount);
         const p = effectiveRevenue - c;
 
-        revenue += r; cost += c; profit += p;
+        orderItemCostSum += c;
         lines.push({
           orderId:   o.id,
           date:      o.createdAt,
@@ -181,18 +181,20 @@ const store = {
           qty:       item.qty || 1,
           salePrice: item.price || 0,
           purchasePrice: item.purchasePrice ?? (this.findProduct(item.productId)?.purchasePrice ?? null),
-          revenue:   r,
+          revenue:   effectiveRevenue,
           cost:      c,
           profit:    p,
         });
       });
-      /* Fallback for older orders that didn't save deliveryFee explicitly */
-      const actualDeliveryFee = o.deliveryFee !== undefined 
+      
+      const orderRevenue = (o.total || 0);
+      const deliveryCost = o.deliveryFee !== undefined 
         ? o.deliveryFee 
-        : Math.max(0, (o.total || 0) - Math.max(0, orderSubtotal - orderDiscount));
+        : Math.max(0, orderRevenue - Math.max(0, orderSubtotal - orderDiscount));
         
-      revenue += actualDeliveryFee;
-      cost    += actualDeliveryFee;
+      revenue += orderRevenue;
+      cost    += (orderItemCostSum + deliveryCost);
+      profit  += (orderRevenue - (orderItemCostSum + deliveryCost));
     });
     return { lines, totals: { revenue: Math.round(revenue), cost: Math.round(cost), profit: Math.round(profit), orders: allOrders.filter(o => o.status !== 'Cancelled').filter(orderFilterFn).length } };
   },
