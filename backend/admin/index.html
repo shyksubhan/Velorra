@@ -2733,7 +2733,12 @@ function addSocialItem(prefill = null) {
   const total = qty * sale;
 
   row.id = `soc-item-row-${idx}`;
-  const isCustom = prefill ? (prefill.productId === 'custom' || !prefill.productId) : false;
+  /* A row is custom if: it was explicitly saved as custom (productId==='custom'),
+     or it has no productId at all but has a name (old custom item saved as productId=''). 
+     Regular catalog products always have a real productId string. */
+  const isCustom = prefill
+    ? (prefill.productId === 'custom' || (prefill.productId === '' && !!prefill.name))
+    : false;
   row.innerHTML = `
     <div class="soc-product-search-wrap" style="flex: 2;">
       <input type="hidden" id="si-pid-${idx}" value="${pid}"/>
@@ -3031,8 +3036,11 @@ async function saveSocialOrder() {
     const price   = Number(document.getElementById(`si-price-${rowId}`)?.value) || 0;
     const purchasePrice = Number(document.getElementById(`si-cost-${rowId}`)?.value) || 0;
     if (!name) return; /* empty row, ignore */
-    if (!isCustom && !pid) { hasUnselectedRow = true; return; } /* typed but never picked */
-    items.push({ productId: isCustom ? '' : pid, name, qty, price, purchasePrice });
+    /* If item has a name and price but no pid (e.g. old order items without productId),
+       treat as custom rather than blocking the save */
+    const effectivelyCustom = isCustom || (!pid && name && price > 0);
+    if (!effectivelyCustom && !pid) { hasUnselectedRow = true; return; } /* typed name but never picked */
+    items.push({ productId: effectivelyCustom ? '' : pid, name, qty, price, purchasePrice });
   });
   if (hasUnselectedRow) { toast('Please pick a product from the search list for every item.', 'error'); return; }
   if (!items.length) { toast('Add at least one item.', 'error'); return; }
@@ -3209,7 +3217,7 @@ async function loadOrders() {
     const data = await res.json();
     allOrders = data.orders || [];
     renderOrders(allOrders);
-  } catch { tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p>Failed to load orders.</p></div></td></tr>`; }
+  } catch { tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><p>Failed to load orders.</p></div></td></tr>`; }
 }
 
 function filterOrdersTable() {
