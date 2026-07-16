@@ -171,12 +171,13 @@ router.get('/', requireAdmin, async (req, res) => {
 
     if (isFirebaseAvailable()) {
       const db = getDB();
-      let q = db.collection('social_orders').orderBy('createdAt', 'desc');
+      let q = db.collection('social_orders');
       if (status) q = q.where('status', '==', status);
       if (source) q = q.where('source', '==', source);
-      if (lim)    q = q.limit(parseInt(lim));
       const snap   = await q.get();
-      const orders = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      let orders = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      if (lim)    orders = orders.slice(0, parseInt(lim));
       return res.json({ orders, total: orders.length });
     }
 
@@ -188,7 +189,11 @@ router.get('/', requireAdmin, async (req, res) => {
 
   } catch (err) {
     console.error('Get social orders error:', err);
-    return res.json({ orders: store.socialOrders, total: store.socialOrders.length });
+    let orders = [...store.socialOrders];
+    if (req.query.status) orders = orders.filter(o => o.status === req.query.status);
+    if (req.query.source) orders = orders.filter(o => o.source === req.query.source);
+    if (req.query.limit)  orders = orders.slice(0, parseInt(req.query.limit));
+    return res.json({ orders, total: orders.length });
   }
 });
 
