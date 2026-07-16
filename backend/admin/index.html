@@ -676,9 +676,14 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <div class="form-group"><label>Phone Number</label><input id="soc-phone" placeholder="03001234567"/></div>
       </div>
 
-      <!-- Row 2: City + Source -->
+      <!-- Row 2: City + Address -->
       <div class="form-row">
         <div class="form-group"><label>City</label><input id="soc-city" placeholder="Lahore"/></div>
+        <div class="form-group"><label>Address</label><input id="soc-address" placeholder="House 123, Street 4..."/></div>
+      </div>
+
+      <!-- Row 3: Source + Payment -->
+      <div class="form-row">
         <div class="form-group">
           <label>Source Platform *</label>
           <select id="soc-source">
@@ -2570,6 +2575,7 @@ function renderSocialOrders(orders) {
       <td><code style="color:#e1306c;cursor:pointer" onclick="viewSocialOrder('${o.id}')">${o.id}</code></td>
       <td>${socSourceBadge(o.source)}</td>
       <td><strong>${esc(o.customerName || '—')}</strong><br><small style="color:var(--muted)">${esc(o.phone || '')}</small></td>
+      <td style="color:var(--muted)">${esc(o.address || '—')}</td>
       <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
       <td style="color:var(--gold);font-weight:600">PKR ${(o.total || 0).toLocaleString()}</td>
       <td style="color:${profitColor};font-weight:600">${profitLabel}</td>
@@ -2622,6 +2628,7 @@ function viewSocialOrder(id) {
       <div><small style="color:var(--muted)">Customer</small><p><strong>${esc(o.customerName||'—')}</strong></p></div>
       <div><small style="color:var(--muted)">Phone</small><p>${esc(o.phone||'—')}</p></div>
       <div><small style="color:var(--muted)">City</small><p>${esc(o.city||'—')}</p></div>
+      <div><small style="color:var(--muted)">Address</small><p>${esc(o.address||'—')}</p></div>
       <div><small style="color:var(--muted)">Source</small><p>${socSourceBadge(o.source)}</p></div>
       <div><small style="color:var(--muted)">Payment</small><p>${(o.paymentMethod||'').toUpperCase()}</p></div>
       <div><small style="color:var(--muted)">Status</small><p><span class="badge badge-${o.status?.toLowerCase()}">${o.status}</span></p></div>
@@ -2663,6 +2670,7 @@ async function openSocialOrderModal(orderId = null, prefillAban = null) {
       customerName: `${d.fname || ''} ${d.lname || ''}`.trim(),
       phone: d.phone || '',
       city: d.city || '',
+      address: d.address || d.street || '',
       source: 'whatsapp',
       paymentMethod: d.paymentMethod || 'cod',
       status: 'Pending',
@@ -2677,6 +2685,7 @@ async function openSocialOrderModal(orderId = null, prefillAban = null) {
   document.getElementById('soc-cname').value   = o ? o.customerName || '' : '';
   document.getElementById('soc-phone').value   = o ? o.phone || '' : '';
   document.getElementById('soc-city').value    = o ? o.city || '' : '';
+  document.getElementById('soc-address').value = o ? o.address || '' : '';
   document.getElementById('soc-source').value  = o ? o.source || 'facebook' : 'facebook';
   document.getElementById('soc-payment').value = o ? o.paymentMethod || 'cod' : 'cod';
   document.getElementById('soc-status').value  = o ? o.status || 'Pending' : 'Pending';
@@ -3023,6 +3032,7 @@ async function saveSocialOrder() {
   const customerName = document.getElementById('soc-cname').value.trim();
   const phone        = document.getElementById('soc-phone').value.trim();
   const city         = document.getElementById('soc-city').value.trim();
+  const address      = document.getElementById('soc-address').value.trim();
   const source       = document.getElementById('soc-source').value;
   const paymentMethod= document.getElementById('soc-payment').value;
   const advancePaid  = Number(document.getElementById('soc-advance-paid')?.value) || 0;
@@ -3073,7 +3083,7 @@ async function saveSocialOrder() {
 
     const res  = await apiFetch(url, {
       method: method,
-      body: JSON.stringify({ customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount, deliveryOverride, deliveryCustomVal }),
+      body: JSON.stringify({ customerName, phone, city, address, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount, deliveryOverride, deliveryCustomVal }),
     });
     const data = await res.json();
     if (res.ok) {

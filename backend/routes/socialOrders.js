@@ -24,6 +24,7 @@ router.post('/', requireAdmin, async (req, res) => {
       customerName,
       phone,
       city,
+      address,
       source,
       items,
       paymentMethod,
@@ -104,6 +105,7 @@ router.post('/', requireAdmin, async (req, res) => {
       customerName:  customerName.trim(),
       phone:         phone?.trim() || '',
       city:          city?.trim()  || '',
+      address:       address?.trim() || '',
       notes:         notes?.trim() || '',
       items:         enrichedItems,
       subtotal,
@@ -201,7 +203,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     }
 
     const {
-      customerName, phone, city, source, items, paymentMethod, status, notes, couponCode, advanceAmount, customDiscount, deliveryOverride, deliveryCustomVal,
+      customerName, phone, city, address, source, items, paymentMethod, status, notes, couponCode, advanceAmount, customDiscount, deliveryOverride, deliveryCustomVal,
     } = req.body;
 
     if (!customerName?.trim()) return res.status(400).json({ error: 'Customer name is required.' });
@@ -266,6 +268,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
       customerName:  customerName.trim(),
       phone:         phone?.trim() || '',
       city:          city?.trim()  || '',
+      address:       address?.trim() || '',
       notes:         notes?.trim() || '',
       items:         enrichedItems,
       subtotal,
