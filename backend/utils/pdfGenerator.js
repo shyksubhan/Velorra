@@ -71,7 +71,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     const fWeb = company.website || 'golnisa.com';
     const fEmail = company.email || 'golnisaqueries@gmail.com';
     const fPhone = company.phone || '+92 331 4978295';
-    const fInsta = company.instagram || '@golnisajewelry_';
+    const fInsta = company.instagram || '@golnisa_';
     const fAddr = company.address || 'Lahore, Punjab, Pakistan';
 
     doc.text(fWeb, 50, startY + 40, { link: 'https://' + fWeb.replace(/^https?:\/\//, '') });
@@ -110,14 +110,15 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     const cPhone = order.phone || order.delivery?.phone || 'N/A';
     const cEmail = order.email || order.delivery?.email || '';
     const cCity = order.city || order.delivery?.city || '';
-    const cAddress = order.delivery?.address ? `${order.delivery.address}, ${cCity}` : cCity;
+    const fullAddr = order.delivery?.address || order.address || '';
+    const cAddress = fullAddr ? `${fullAddr}, ${cCity}` : cCity;
 
     doc.fontSize(9).font('Helvetica').fillColor(C_TEXT);
-    doc.text(cName, 65, billY + 30);
+    doc.text(cName, 65, billY + 30, { width: 220 });
     doc.fillColor(C_MUTED);
-    doc.text(cPhone, 65, billY + 45);
-    doc.text(cEmail, 65, billY + 58);
-    doc.text(cAddress, 65, billY + 70);
+    doc.text(cPhone, 65, billY + 45, { width: 220 });
+    doc.text(cEmail, 65, billY + 58, { width: 220 });
+    doc.text(cAddress, 65, billY + 70, { width: 220 });
 
     // --- TABLE HEADER ---
     let y = billY + 115;
@@ -136,8 +137,8 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
       const itemTotal = (item.price * item.qty);
       doc.rect(50, y, 495, 40).fillAndStroke('#ffffff', '#ffffff');
       doc.fillColor(C_TEXT);
-      doc.text(item.name, 60, y + 10);
-      doc.fillColor(C_MUTED).fontSize(8).text(`SKU: ${item.sku || 'N/A'}`, 60, y + 22);
+      doc.text(item.name, 60, y + 10, { width: 230, height: 25 });
+      doc.fillColor(C_MUTED).fontSize(8).text(`SKU: ${item.sku || 'N/A'}`, 60, y + 30);
       doc.fillColor(C_TEXT).fontSize(9);
       doc.text(`PKR ${item.price.toLocaleString()}`, 300, y + 15, { width: 80, align: 'right' });
       doc.text(item.qty.toString(), 390, y + 15, { width: 50, align: 'center' });

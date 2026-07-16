@@ -13,7 +13,7 @@ const GOLNISÀ_CONFIG = {
   /* ── Social Media ──
      Replace these URLs with your actual profile links         */
   social: {
-    instagram: 'https://www.instagram.com/golnisajewelry_/',   // ← your Instagram URL
+    instagram: 'https://www.instagram.com/golnisa_/',   // ← your Instagram URL
     facebook:  'https://www.facebook.com/profile.php?id=61590913872614',    // ← your Facebook URL
     whatsapp:  '',                                    // auto-built from number above
     tiktok:    '',                                    // optional — leave blank to hide
