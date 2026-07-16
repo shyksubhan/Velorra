@@ -469,8 +469,11 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
     const user = store.adminUsers.find(u => u.id === targetId);
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
-    // Super admin cannot modify another super admin's password or role
-    if ((user.role === 'ceo') || (user.role === 'super_admin' && req.user.role !== 'ceo' && targetId !== req.user.uid)) {
+    // CEO can modify anyone. Super Admin cannot modify CEO or another Super Admin.
+    if (user.role === 'ceo' && req.user.role !== 'ceo') {
+      return res.status(403).json({ error: 'Cannot modify CEO.' });
+    }
+    if (user.role === 'super_admin' && req.user.role !== 'ceo' && targetId !== req.user.uid) {
       return res.status(403).json({ error: 'Cannot modify another super admin.' });
     }
 
@@ -480,10 +483,13 @@ router.patch('/admin-users/:id', requireAdmin, async (req, res) => {
     if (password) {
       updates.passwordHash = await bcrypt.hash(password, 12);
       updates.tokenVersion = (user.tokenVersion || 0) + 1;
+      if (targetId === 'super-admin-1') {
+        process.env.ADMIN_PASSWORD = password;
+      }
     }
 
     /* Try Firebase first */
-    if (isFirebaseAvailable() && targetId !== 'super-admin-1') {
+    if (isFirebaseAvailable()) {
       try {
         const ref = getDB().collection('adminUsers').doc(targetId);
         const doc = await ref.get();

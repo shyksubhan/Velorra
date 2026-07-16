@@ -48,15 +48,6 @@ async function requireAdmin(req, res, next) {
     if (req.user.uid === 'super-admin-1') {
       try {
         let liveTokenVersion = store.adminUsers.find(u => u.id === 'super-admin-1')?.tokenVersion || 0;
-        /* Fall back to Firestore in case this server instance hasn't loaded
-           the latest persisted version yet (e.g. right after a redeploy on
-           a different instance changed the password). */
-        if (isFirebaseAvailable()) {
-          try {
-            const doc = await getDB().collection('adminUsers').doc('super-admin-1').get();
-            if (doc.exists && doc.data().tokenVersion) liveTokenVersion = doc.data().tokenVersion;
-          } catch {}
-        }
         const tokenVersion = req.user.tokenVersion || 0;
         if (tokenVersion < liveTokenVersion) {
           return res.status(401).json({ error: 'Your password was changed. Please sign in again.' });
