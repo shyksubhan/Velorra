@@ -2679,6 +2679,17 @@ async function openSocialOrderModal(orderId = null, prefillAban = null) {
     };
   }
 
+  if (o && o.items && allProducts) {
+    o.items.forEach(it => {
+      if (!it.purchasePrice) {
+        const match = allProducts.find(p => p.name === it.name || p.id === it.productId);
+        if (match && match.purchasePrice != null) {
+          it.purchasePrice = match.purchasePrice;
+        }
+      }
+    });
+  }
+
   document.getElementById('social-order-modal-title').innerHTML = `<i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>${o && orderId ? 'Edit Social Order ' + orderId : (prefillAban ? 'Recover Abandoned Order' : 'Add Social Media Order')}`;
   document.getElementById('save-social-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${o && orderId ? 'Save Changes' : (prefillAban ? 'Recover Order' : 'Create Order')}`;
 

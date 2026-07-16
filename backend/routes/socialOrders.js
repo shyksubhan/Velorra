@@ -43,13 +43,20 @@ router.post('/', requireAdmin, async (req, res) => {
     if (!source || !SOURCES.includes(source)) return res.status(400).json({ error: `Source must be one of: ${SOURCES.join(', ')}` });
 
     /* ── Enrich items and calculate totals ── */
-    const enrichedItems = items.map(i => ({
-      productId:     String(i.productId || '').trim(),
-      name:          String(i.name || '').trim(),
-      qty:           Number(i.qty)   || 1,
-      price:         Number(i.price) || 0,
-      purchasePrice: Number(i.purchasePrice) || 0,
-    }));
+    const enrichedItems = items.map(i => {
+      let pp = Number(i.purchasePrice) || 0;
+      if (!pp && i.name) {
+        const match = store.products.find(p => p.name === String(i.name).trim() || p.id === String(i.productId).trim());
+        if (match && match.purchasePrice != null) pp = match.purchasePrice;
+      }
+      return {
+        productId:     String(i.productId || '').trim(),
+        name:          String(i.name || '').trim(),
+        qty:           Number(i.qty)   || 1,
+        price:         Number(i.price) || 0,
+        purchasePrice: pp,
+      };
+    });
 
     const subtotal    = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const payMethod   = paymentMethod || 'cod';
@@ -210,13 +217,20 @@ router.put('/:id', requireAdmin, async (req, res) => {
     if (!items?.length)        return res.status(400).json({ error: 'At least one item is required.' });
     if (!source || !SOURCES.includes(source)) return res.status(400).json({ error: `Source must be one of: ${SOURCES.join(', ')}` });
 
-    const enrichedItems = items.map(i => ({
-      productId:     String(i.productId || '').trim(),
-      name:          String(i.name || '').trim(),
-      qty:           Number(i.qty)   || 1,
-      price:         Number(i.price) || 0,
-      purchasePrice: Number(i.purchasePrice) || 0,
-    }));
+    const enrichedItems = items.map(i => {
+      let pp = Number(i.purchasePrice) || 0;
+      if (!pp && i.name) {
+        const match = store.products.find(p => p.name === String(i.name).trim() || p.id === String(i.productId).trim());
+        if (match && match.purchasePrice != null) pp = match.purchasePrice;
+      }
+      return {
+        productId:     String(i.productId || '').trim(),
+        name:          String(i.name || '').trim(),
+        qty:           Number(i.qty)   || 1,
+        price:         Number(i.price) || 0,
+        purchasePrice: pp,
+      };
+    });
 
     const subtotal  = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const payMethod = paymentMethod || 'cod';
