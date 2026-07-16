@@ -2658,12 +2658,13 @@ async function openSocialOrderModal(orderId = null, prefillAban = null) {
   if (orderId) {
     o = allSocialOrders.find(x => x.id === orderId);
   } else if (prefillAban) {
+    const d = prefillAban.delivery || {};
     o = {
-      customerName: prefillAban.fname || '',
-      phone: prefillAban.phone || '',
-      city: prefillAban.city || '',
+      customerName: `${d.fname || ''} ${d.lname || ''}`.trim(),
+      phone: d.phone || '',
+      city: d.city || '',
       source: 'whatsapp',
-      paymentMethod: prefillAban.delivery?.paymentMethod || 'cod',
+      paymentMethod: d.paymentMethod || 'cod',
       status: 'Pending',
       notes: 'Recovered from abandoned checkout.',
       items: prefillAban.items || []
