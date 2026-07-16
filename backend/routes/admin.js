@@ -220,7 +220,7 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
         const [reviewsSnap, resellersSnap, abandonedSnap, msgsSnap, prodsSnap, subsSnap, usersSnap] = await Promise.all([
           db.collection('reviews').where('approved', '==', false).count().get(),
           db.collection('resellers').where('read', '==', false).count().get(),
-          db.collection('abandoned').count().get(),
+          db.collection('abandoned').where('status', '==', 'abandoned').count().get(),
           db.collection('contact_messages').where('read', '==', false).count().get(),
           db.collection('products').count().get(),
           db.collection('subscribers').count().get(),

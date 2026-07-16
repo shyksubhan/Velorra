@@ -387,6 +387,7 @@ const store = {
       socialOrders:        { total: sOrders.length, statuses: socialStatusCounts },
       products:            { total: this.products.length },
       subscribers:         { total: this.subscribers.length },
+      abandonedCheckouts:  this.abandoned.filter(a => a.status === 'abandoned').length,
       unreadMessages:      this.messages.filter(m => !m.read).length,
       totalRevenue:        Math.round(revenue),
       socialRevenue:       Math.round(socialRevenue),
