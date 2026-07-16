@@ -200,9 +200,13 @@ const store = {
   },
 
   /* Statement for one calendar day (dateStr = 'YYYY-MM-DD', server local time) */
-  dailyStatement(dateStr) {
-    const target = dateStr || new Date().toISOString().slice(0, 10);
-    const stmt = this._buildStatement(o => (o.createdAt || '').slice(0, 10) === target);
+  dailyStatement(target) {
+    const stmt = this._buildStatement(o => {
+      if (!o.createdAt) return false;
+      const d = new Date(o.createdAt);
+      d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
+      return d.toISOString().slice(0, 10) === target;
+    });
     return { date: target, ...stmt };
   },
 
@@ -213,7 +217,8 @@ const store = {
     const launch = this.siteLaunchDate;
     for (let i = 0; i < days; i++) {
       const d = new Date();
-      d.setDate(d.getDate() - i);
+      d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
+      d.setUTCDate(d.getUTCDate() - i);
       const dateStr = d.toISOString().slice(0, 10);
       /* Skip days before launch — but do NOT break, keep going for full 30-day range */
       if (dateStr < launch) continue;
@@ -224,7 +229,12 @@ const store = {
 
   /* Statement for one calendar month (monthStr = 'YYYY-MM') */
   monthlyStatement(monthStr) {
-    const stmt = this._buildStatement(o => (o.createdAt || '').slice(0, 7) === monthStr);
+    const stmt = this._buildStatement(o => {
+      if (!o.createdAt) return false;
+      const d = new Date(o.createdAt);
+      d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
+      return d.toISOString().slice(0, 7) === monthStr;
+    });
     return { month: monthStr, ...stmt };
   },
 
@@ -236,6 +246,7 @@ const store = {
     const launch = new Date(this.siteLaunchDate + 'T00:00:00');
     const launchMonth = new Date(launch.getFullYear(), launch.getMonth(), 1);
     const now = new Date();
+    now.setTime(now.getTime() + (5 * 60 * 60 * 1000));
     const out = [];
     let cursor = new Date(now.getFullYear(), now.getMonth(), 1);
     while (cursor >= launchMonth) {
@@ -249,19 +260,29 @@ const store = {
   /* Lifetime earnings — every sale ever recorded since launch, no other date filter */
   lifetimeEarnings() {
     const launch = this.siteLaunchDate;
-    const stmt = this._buildStatement(o => (o.createdAt || '').slice(0, 10) >= launch);
+    const stmt = this._buildStatement(o => {
+      if (!o.createdAt) return false;
+      const d = new Date(o.createdAt);
+      d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
+      return d.toISOString().slice(0, 10) >= launch;
+    });
     /* Also bucket by day so the UI can show a quick trend if desired */
     const byDay = {};
     const allOrders = [...this.orders, ...this.socialOrders];
-    allOrders.filter(o => o.status !== 'Cancelled' && (o.createdAt || '').slice(0, 10) >= launch).forEach(o => {
-      const day = (o.createdAt || '').slice(0, 10);
-      if (!byDay[day]) byDay[day] = { date: day, revenue: 0, cost: 0, profit: 0 };
-      (o.items || []).forEach(item => {
-        const { revenue, cost, profit } = this._itemProfit(item);
-        byDay[day].revenue += revenue;
-        byDay[day].cost    += cost;
-        byDay[day].profit  += profit;
-      });
+    allOrders.filter(o => o.status !== 'Cancelled').forEach(o => {
+      if (!o.createdAt) return;
+      const d = new Date(o.createdAt);
+      d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
+      const day = d.toISOString().slice(0, 10);
+      if (day >= launch) {
+        if (!byDay[day]) byDay[day] = { date: day, revenue: 0, cost: 0, profit: 0 };
+        (o.items || []).forEach(item => {
+          const { revenue, cost, profit } = this._itemProfit(item);
+          byDay[day].revenue += revenue;
+          byDay[day].cost    += cost;
+          byDay[day].profit  += profit;
+        });
+      }
     });
     const days = Object.values(byDay)
       .map(d => ({ ...d, revenue: Math.round(d.revenue), cost: Math.round(d.cost), profit: Math.round(d.profit) }))
