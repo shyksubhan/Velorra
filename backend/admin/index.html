@@ -2796,10 +2796,10 @@ function addSocialItem(prefill = null) {
     <button class="soc-item-remove" onclick="toggleSocCustomItem(${idx})" title="Toggle custom item" id="si-custom-btn-${idx}" style="background:${isCustom ? 'rgba(184,136,58,0.2)' : 'rgba(100,100,120,0.12)'};border-color:${isCustom ? 'var(--gold)' : 'var(--border)'};color:${isCustom ? 'var(--gold)' : 'var(--muted)'};font-size:0.75rem;">✏️</button>
     <button class="soc-item-remove" onclick="removeSocialItem(${idx})" title="Remove">✕</button>
   `;
+  document.getElementById('soc-items-container').appendChild(row);
   if (isCustom) {
     document.getElementById(`si-pid-${idx}`).value = 'custom';
   }
-  document.getElementById('soc-items-container').appendChild(row);
 }
 
 /* Toggle between product-search mode and custom free-text mode per item row */
