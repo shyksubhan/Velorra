@@ -2953,8 +2953,8 @@ function recalcSocialTotal() {
   } else if (delivOverride === 'custom') {
     delFee = Number(document.getElementById('soc-delivery-custom-val')?.value) || 0;
   } else {
-    // Auto: bank_deposit = free, COD = 200 unless subtotal >= 5000
-    delFee = pay === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+    // Auto: bank_deposit = 200 (free >= 1000), COD = 200 (free >= 5000)
+    delFee = pay === 'bank_deposit' ? (subtotal >= 1000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
   }
 
   let discount = 0;
