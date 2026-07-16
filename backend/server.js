@@ -539,10 +539,18 @@ app.use((err, req, res, next) => {
         db.collection('spendings').get(),
         db.collection('invoices').get()
       ]);
-      store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      store.socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
-      store.spendings = spendingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      store.invoices = invoicesSnap.docs.map(d => d.data());
+        if (ordersSnap.docs.length > 0) {
+          store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+        if (socialSnap.docs.length > 0) {
+          store.socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
+        }
+        if (spendingsSnap.docs.length > 0) {
+          store.spendings = spendingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+        if (invoicesSnap.docs.length > 0) {
+          store.invoices = invoicesSnap.docs.map(d => d.data());
+        }
       console.log(`✅ Loaded ${store.orders.length} orders, ${store.socialOrders.length} social orders, ${store.spendings.length} spendings, ${store.invoices.length} invoices from Firestore.`);
 
       /* Migration already completed — block removed to prevent accidental user deletion on restart */
