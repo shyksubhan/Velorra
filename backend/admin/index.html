@@ -2645,17 +2645,33 @@ function viewSocialOrder(id) {
 /* ── Add Social Order Modal ── */
 let _socItemCount = 0;
 let _editingSocialOrderId = null;
+let _convertingAbandonedId = null;
 
-async function openSocialOrderModal(orderId = null) {
+async function openSocialOrderModal(orderId = null, prefillAban = null) {
   _editingSocialOrderId = orderId;
+  _convertingAbandonedId = prefillAban ? prefillAban.id : null;
   _socItemCount = 0;
   _socSearchMatches = {};
   _socAppliedCoupon = null;
 
-  const o = orderId ? allSocialOrders.find(x => x.id === orderId) : null;
+  let o = null;
+  if (orderId) {
+    o = allSocialOrders.find(x => x.id === orderId);
+  } else if (prefillAban) {
+    o = {
+      customerName: prefillAban.fname || '',
+      phone: prefillAban.phone || '',
+      city: prefillAban.city || '',
+      source: 'whatsapp',
+      paymentMethod: prefillAban.delivery?.paymentMethod || 'cod',
+      status: 'Pending',
+      notes: 'Recovered from abandoned checkout.',
+      items: prefillAban.items || []
+    };
+  }
 
-  document.getElementById('social-order-modal-title').innerHTML = `<i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>${o ? 'Edit Social Order ' + o.id : 'Add Social Media Order'}`;
-  document.getElementById('save-social-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${o ? 'Save Changes' : 'Create Order'}`;
+  document.getElementById('social-order-modal-title').innerHTML = `<i class="fa-solid fa-share-nodes" style="color:#e1306c;margin-right:8px"></i>${o && orderId ? 'Edit Social Order ' + orderId : (prefillAban ? 'Recover Abandoned Order' : 'Add Social Media Order')}`;
+  document.getElementById('save-social-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${o && orderId ? 'Save Changes' : (prefillAban ? 'Recover Order' : 'Create Order')}`;
 
   document.getElementById('soc-cname').value   = o ? o.customerName || '' : '';
   document.getElementById('soc-phone').value   = o ? o.phone || '' : '';
@@ -3061,6 +3077,18 @@ async function saveSocialOrder() {
     const data = await res.json();
     if (res.ok) {
       toast(isEdit ? `✓ Social order updated` : `✓ Social order created — ${data.orderRef || ''}`, 'success');
+      
+      if (!isEdit && _convertingAbandonedId) {
+        try {
+          await apiFetch(`/abandoned/${_convertingAbandonedId}/converted`, { method: 'PATCH' });
+          toast('Abandoned checkout marked as recovered!', 'success');
+          _convertingAbandonedId = null;
+          loadAbandoned();
+        } catch (e) {
+          console.error('Failed to mark abandoned as converted', e);
+        }
+      }
+
       closeModal('social-order-modal');
       loadSocialOrders();
       loadStats();
@@ -4767,44 +4795,10 @@ async function deleteAbandoned(id) {
 /* ── Convert abandoned checkout → real order (manually resolved) ── */
 async function convertAbandonedToOrder(id) {
   const rec = allAbandoned.find(a => a.id === id);
-  console.log('[Resolve] id=', id, 'rec=', rec);
   if (!rec) { toast('Record not found in local list', 'error'); return; }
-  const d = rec.delivery || {};
-  const customerName = `${d.fname || ''} ${d.lname || ''}`.trim() || 'Unknown';
-
-  /* Pretty modal instead of browser confirm */
-  const confirmed = await showConfirmModal({
-    icon: '✅',
-    title: 'Mark as Resolved?',
-    message: `<strong>${customerName}</strong>'s abandoned checkout will be moved to Orders and marked as <span style="color:#22c55e;font-weight:600">Resolved</span>.`,
-    confirmText: 'Yes, Resolve',
-    cancelText: 'Cancel',
-    confirmColor: '#b8883a',
-  });
-  if (!confirmed) return;
-
-  try {
-    console.log('[Resolve] Calling /orders/from-abandoned with abandonedId=', id);
-    /* Step 1: Create a real order from abandoned data */
-    const res  = await apiFetch('/orders/from-abandoned', {
-      method: 'POST',
-      body: JSON.stringify({ abandonedId: id }),
-    });
-    const data = await res.json();
-    console.log('[Resolve] Response:', res.status, data);
-    if (!res.ok) {
-      toast('Failed to resolve: ' + (data.error || 'Unknown error'), 'error');
-      return;
-    }
-    /* Step 2: Mark abandoned record as resolved */
-    await apiFetch(`/abandoned/${id}/converted`, { method: 'PATCH' });
-    toast(`✅ Order created: ${data.orderRef || ''}`, 'success');
-    loadAbandoned();
-    loadStats();
-  } catch (err) {
-    console.error('Convert abandoned error:', err);
-    toast('Error converting order. Check console.', 'error');
-  }
+  
+  openSocialOrderModal(null, rec);
+  showPage('social-orders');
 }
 
 /* ── Pretty confirm modal ── */
