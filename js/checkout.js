@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (totalEl)    totalEl.textContent     = 'PKR ' + Math.max(0, subtotal - discount + delivery).toLocaleString();
   };
   const getDeliveryFee = (subtotal, paymentMethod) => {
-    if (paymentMethod === 'bank_deposit') return 0;
+    if (paymentMethod === 'bank_deposit') return subtotal >= 1000 ? 0 : 200;
     return subtotal >= 5000 ? 0 : 200;
   };
   const getSelectedPayment = () =>

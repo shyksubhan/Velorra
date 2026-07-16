@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
        Bank Deposit → always FREE delivery.
        COD          → PKR 200, waived once subtotal reaches PKR 5,000. */
     const deliveryFee = payMethod === 'bank_deposit'
-      ? 0
+      ? (subtotal >= 1000 ? 0 : 200)
       : (subtotal >= 5000 ? 0 : 200);
 
     /* ── Coupon (optional) ──
@@ -186,7 +186,7 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
 
     const subtotal   = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const payMethod  = delivery.paymentMethod || 'cod';
-    const deliveryFee = payMethod === 'bank_deposit' ? 0 : (subtotal >= 5000 ? 0 : 200);
+    const deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 1000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
     const total      = subtotal + deliveryFee;
     const orderRef   = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
