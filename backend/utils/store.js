@@ -204,6 +204,7 @@ const store = {
     const stmt = this._buildStatement(o => {
       if (!o.createdAt) return false;
       const d = new Date(o.createdAt);
+      if (isNaN(d.getTime())) return false;
       d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
       return d.toISOString().slice(0, 10) === target;
     });
@@ -232,6 +233,7 @@ const store = {
     const stmt = this._buildStatement(o => {
       if (!o.createdAt) return false;
       const d = new Date(o.createdAt);
+      if (isNaN(d.getTime())) return false;
       d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
       return d.toISOString().slice(0, 7) === monthStr;
     });
@@ -263,6 +265,7 @@ const store = {
     const stmt = this._buildStatement(o => {
       if (!o.createdAt) return false;
       const d = new Date(o.createdAt);
+      if (isNaN(d.getTime())) return false;
       d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
       return d.toISOString().slice(0, 10) >= launch;
     });
@@ -272,6 +275,7 @@ const store = {
     allOrders.filter(o => o.status !== 'Cancelled').forEach(o => {
       if (!o.createdAt) return;
       const d = new Date(o.createdAt);
+      if (isNaN(d.getTime())) return;
       d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
       const day = d.toISOString().slice(0, 10);
       if (day >= launch) {
