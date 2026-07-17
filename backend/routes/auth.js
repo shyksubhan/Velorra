@@ -26,7 +26,8 @@ const VALID_ROLES = ['super_admin', 'admin', 'supervisor'];
    password change survives Render restarts/redeploys instead of
    reverting to the .env default. ── */
 async function initSuperAdmin() {
-  const u = store.adminUsers[0];
+  const u = store.findAdminUserById('super-admin-1');
+  if (!u) return;
   if (!u.username) {
     u.username = (process.env.ADMIN_USERNAME || 'admin').toLowerCase();
     u.email    = u.username;
@@ -304,7 +305,7 @@ router.patch('/change-password', requireAuth, async (req, res) => {
       }
 
       /* Issue a fresh token for THIS session so the user changing the password isn't logged out too */
-      const freshToken = signToken({ uid: 'super-admin-1', isAdmin: true, role: 'super_admin', tokenVersion: adminUser.tokenVersion });
+      const freshToken = signToken({ uid: adminUser.id, email: adminUser.username, isAdmin: true, role: adminUser.role, tokenVersion: adminUser.tokenVersion });
       return res.json({
         message: firestorePersisted
           ? 'Password changed successfully. You have been logged out of all other devices.'

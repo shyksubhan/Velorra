@@ -71,7 +71,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     const fWeb = company.website || 'golnisa.com';
     const fEmail = company.email || 'golnisaqueries@gmail.com';
     const fPhone = company.phone || '+92 331 4978295';
-    const fInsta = company.instagram || '@golnisa_';
+    const fInsta = company.instagram || 'golnisa_';
     const fAddr = company.address || 'Lahore, Punjab, Pakistan';
 
     doc.text(fWeb, 50, startY + 40, { link: 'https://' + fWeb.replace(/^https?:\/\//, '') });
@@ -82,10 +82,10 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     SVGtoPDF(doc, instaSvg, 50, startY + 74, { width: 10, height: 10 });
     doc.text(fInsta, 65, startY + 76, { link: 'https://instagram.com/' + fInsta.replace('@', '') });
     
-    doc.text(fAddr, 50, startY + 88);
+    doc.text(fAddr, 50, startY + 88, { width: 200 });
     
     // Divider
-    doc.moveTo(50, startY + 115).lineTo(545, startY + 115).stroke(C_GOLD);
+    doc.moveTo(50, startY + 125).lineTo(545, startY + 125).stroke(C_GOLD);
 
     // Company Info (Right aligned)
     doc.fontSize(24).fillColor(C_BLACK).font('Helvetica-Bold').text('INVOICE', 350, startY, { align: 'right', width: 195 });
@@ -103,8 +103,8 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.text(`Invoice Status:   Generated`, 350, startY + 100, { align: 'right', width: 195 });
 
     // BILL TO (Left aligned styled card)
-    let billY = startY + 140;
-    doc.rect(50, billY, 250, 85).fillAndStroke(C_CREAM, C_BORDER);
+    let billY = startY + 150;
+    doc.rect(50, billY, 250, 105).fillAndStroke(C_CREAM, C_BORDER);
     doc.fillColor(C_BLACK).fontSize(9).font('Helvetica-Bold').text('BILL TO', 65, billY + 15);
     const cName = order.customerName || `${order.delivery?.fname || ''} ${order.delivery?.lname || ''}`.trim() || 'Valued Customer';
     const cPhone = order.phone || order.delivery?.phone || 'N/A';
@@ -121,7 +121,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.text(cAddress, 65, billY + 70, { width: 220 });
 
     // --- TABLE HEADER ---
-    let y = billY + 115;
+    let y = billY + 135;
     doc.rect(50, y, 495, 25).fillAndStroke(C_CREAM, C_CREAM);
     doc.fillColor(C_BLACK).font('Helvetica-Bold').fontSize(9);
     doc.text('ITEMS', 60, y + 8);
@@ -135,15 +135,19 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.font('Helvetica').fillColor(C_TEXT);
     (order.items || []).forEach(item => {
       const itemTotal = (item.price * item.qty);
-      doc.rect(50, y, 495, 40).fillAndStroke('#ffffff', '#ffffff');
+      doc.fillColor(C_TEXT).fontSize(9);
+      const nameHeight = doc.heightOfString(item.name, { width: 230 });
+      const rowHeight = Math.max(40, nameHeight + 25);
+      
+      doc.rect(50, y, 495, rowHeight).fillAndStroke('#ffffff', '#ffffff');
       doc.fillColor(C_TEXT);
-      doc.text(item.name, 60, y + 10, { width: 230, height: 25 });
-      doc.fillColor(C_MUTED).fontSize(8).text(`SKU: ${item.sku || 'N/A'}`, 60, y + 30);
+      doc.text(item.name, 60, y + 10, { width: 230 });
+      doc.fillColor(C_MUTED).fontSize(8).text(`SKU: ${item.sku || 'N/A'}`, 60, y + 10 + nameHeight + 4);
       doc.fillColor(C_TEXT).fontSize(9);
       doc.text(`PKR ${item.price.toLocaleString()}`, 300, y + 15, { width: 80, align: 'right' });
       doc.text(item.qty.toString(), 390, y + 15, { width: 50, align: 'center' });
       doc.text(`PKR ${itemTotal.toLocaleString()}`, 450, y + 15, { width: 85, align: 'right' });
-      y += 40;
+      y += rowHeight;
       doc.moveTo(50, y).lineTo(545, y).stroke(C_BORDER);
     });
     y += 15;

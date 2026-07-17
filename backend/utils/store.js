@@ -188,8 +188,9 @@ const store = {
       });
       
       const orderRevenue = (o.total || 0);
-      const deliveryCost = o.deliveryFee !== undefined 
-        ? o.deliveryFee 
+      const explicitDelivery = o.delivery?.fee !== undefined ? Number(o.delivery.fee) : o.deliveryFee;
+      const deliveryCost = explicitDelivery !== undefined 
+        ? explicitDelivery 
         : Math.max(0, orderRevenue - Math.max(0, orderSubtotal - orderDiscount));
         
       revenue += orderRevenue;

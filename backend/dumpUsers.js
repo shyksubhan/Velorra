@@ -1,0 +1,1 @@
+require('dotenv').config({ path: __dirname + '/.env' }); const { initFirebase, getDB } = require('./utils/firebase.js'); async function run() { initFirebase(); const snap = await getDB().collection('adminUsers').get(); snap.forEach(d => console.log(d.id, d.data().username, d.data().role, d.data().fname)); } run().catch(console.error);
