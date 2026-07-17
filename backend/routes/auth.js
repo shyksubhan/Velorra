@@ -177,13 +177,18 @@ router.post('/login', async (req, res) => {
 
     /* ── Customer login ── */
     if (isFirebaseAvailable()) {
-      const db = getDB();
-      const snap = await db.collection('users').where('email', '==', normalEmail).limit(1).get();
-      if (snap.empty) return res.status(401).json({ error: 'No account found with this email.' });
-      const u = snap.docs[0].data();
-      if (!await bcrypt.compare(password, u.passwordHash)) return res.status(401).json({ error: 'Incorrect password.' });
-      const token = signToken({ uid: u.id, email: normalEmail, isAdmin: false });
-      return res.json({ message: `Welcome back, ${u.fname}! ✓`, token, user: { id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone } });
+      try {
+        const db = getDB();
+        const snap = await db.collection('users').where('email', '==', normalEmail).limit(1).get();
+        if (!snap.empty) {
+          const u = snap.docs[0].data();
+          if (!await bcrypt.compare(password, u.passwordHash)) return res.status(401).json({ error: 'Incorrect password.' });
+          const token = signToken({ uid: u.id, email: normalEmail, isAdmin: false });
+          return res.json({ message: `Welcome back, ${u.fname}! ✓`, token, user: { id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone } });
+        }
+      } catch (err) {
+        console.error('Firebase customer login failed, falling back to memory:', err.message);
+      }
     }
 
     const u = store.findUser(normalEmail);
@@ -216,7 +221,7 @@ router.get('/me', requireAuth, async (req, res) => {
             store.adminUsers.push(u); /* Cache it so it's there next time */
           }
         } catch (err) {
-          console.error('Failed to fetch admin user from FB in /me', err);
+          console.error('Failed to fetch admin user from FB in /me', err.message);
         }
       }
       if (!u) return res.status(401).json({ error: 'Your account no longer exists. Please sign in again.' });
@@ -224,15 +229,21 @@ router.get('/me', requireAuth, async (req, res) => {
       return res.json({ id: u.id, fname: u.fname, lname: u.lname, email: u.username, isAdmin: true, role: u.role });
     }
     if (isFirebaseAvailable()) {
-      const doc = await getDB().collection('users').doc(req.user.uid).get();
-      if (!doc.exists) return res.status(404).json({ error: 'User not found.' });
-      const u = doc.data();
-      return res.json({ id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone });
+      try {
+        const doc = await getDB().collection('users').doc(req.user.uid).get();
+        if (doc.exists) {
+          const u = doc.data();
+          return res.json({ id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone });
+        }
+      } catch (err) {
+        console.error('Failed to fetch user from FB in /me, falling back to memory:', err.message);
+      }
     }
     const u = store.users.find(u => u.id === req.user.uid);
     if (!u) return res.status(404).json({ error: 'User not found.' });
     return res.json({ id: u.id, fname: u.fname, lname: u.lname, email: u.email, phone: u.phone });
   } catch (err) {
+    console.error('Auth me error:', err);
     return res.status(500).json({ error: 'Something went wrong.' });
   }
 });

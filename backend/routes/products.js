@@ -35,16 +35,22 @@ router.get('/', async (req, res) => {
     const { category, featured, search, limit: lim } = req.query;
 
     if (isFirebaseAvailable()) {
-      const db = getDB();
-      await seedFirestore(db);
-      let query = db.collection('products');
-      if (category && category !== 'all') query = query.where('category', '==', category);
-      if (featured === 'true') query = query.where('featured', '==', true);
-      const snap = await query.get();
-      let products = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-      if (search) { const q = search.toLowerCase(); products = products.filter(p => p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q)); }
-      if (lim) products = products.slice(0, parseInt(lim));
-      return res.json({ products, total: products.length });
+      try {
+        const db = getDB();
+        await seedFirestore(db);
+        let query = db.collection('products');
+        if (category && category !== 'all') query = query.where('category', '==', category);
+        if (featured === 'true') query = query.where('featured', '==', true);
+        const snap = await query.get();
+        let products = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+        if (search) { const q = search.toLowerCase(); products = products.filter(p => p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q)); }
+        // For products we also need to sort by createdAt descending like the others if we want
+        products.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        if (lim) products = products.slice(0, parseInt(lim));
+        return res.json({ products, total: products.length });
+      } catch (fbErr) {
+        console.error('Firebase GET products failed, falling back to memory:', fbErr.message);
+      }
     }
 
     /* In-memory (shared store) */
@@ -52,12 +58,13 @@ router.get('/', async (req, res) => {
     if (category && category !== 'all') products = products.filter(p => p.category === category);
     if (featured === 'true') products = products.filter(p => p.featured);
     if (search) { const q = search.toLowerCase(); products = products.filter(p => p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q)); }
+    products.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     if (lim) products = products.slice(0, parseInt(lim));
     return res.json({ products, total: products.length });
 
   } catch (err) {
     console.error('Get products error:', err);
-    return res.json({ products: store.products, total: store.products.length });
+    return res.status(500).json({ error: 'Failed to fetch products.' });
   }
 });
 

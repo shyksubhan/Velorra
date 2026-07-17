@@ -76,9 +76,13 @@ router.post('/', requireRole('super_admin'), async (req, res) => {
 router.get('/', requireRole('super_admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
-      const snap = await getDB().collection('coupons').orderBy('createdAt', 'desc').get();
-      const coupons = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-      return res.json({ coupons, total: coupons.length });
+      try {
+        const snap = await getDB().collection('coupons').orderBy('createdAt', 'desc').get();
+        const coupons = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+        return res.json({ coupons, total: coupons.length });
+      } catch (fbErr) {
+        console.error('Firebase GET coupons failed, falling back to memory:', fbErr.message);
+      }
     }
     const coupons = [...store.coupons].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return res.json({ coupons, total: coupons.length });

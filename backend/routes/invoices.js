@@ -96,10 +96,16 @@ router.get('/', requireAdmin, async (req, res) => {
     let invoices = [];
     let liveOrders = [];
     if (isFirebaseAvailable()) {
-      const snap = await getDB().collection('invoices').orderBy('createdAt', 'desc').get();
-      invoices = snap.docs.map(d => d.data());
-      const ordersSnap = await getDB().collection('orders').get();
-      liveOrders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      try {
+        const snap = await getDB().collection('invoices').orderBy('createdAt', 'desc').get();
+        invoices = snap.docs.map(d => d.data());
+        const ordersSnap = await getDB().collection('orders').get();
+        liveOrders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (fbErr) {
+        console.error('Firebase GET invoices failed, falling back to memory:', fbErr.message);
+        invoices = store.invoices;
+        liveOrders = store.orders;
+      }
     } else {
       invoices = store.invoices;
       liveOrders = store.orders;

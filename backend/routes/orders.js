@@ -241,20 +241,25 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const { status, limit: lim } = req.query;
     if (isFirebaseAvailable()) {
-      const db = getDB();
-      let q = db.collection('orders').orderBy('createdAt', 'desc');
-      if (status) q = q.where('status', '==', status);
-      if (lim) q = q.limit(parseInt(lim));
-      const snap = await q.get();
-      const orders = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-      return res.json({ orders, total: orders.length });
+      try {
+        const db = getDB();
+        let q = db.collection('orders').orderBy('createdAt', 'desc');
+        if (status) q = q.where('status', '==', status);
+        if (lim) q = q.limit(parseInt(lim));
+        const snap = await q.get();
+        const orders = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+        return res.json({ orders, total: orders.length });
+      } catch (fbErr) {
+        console.error('Firebase GET orders failed, falling back to memory:', fbErr.message);
+      }
     }
     let orders = [...store.orders];
     if (status) orders = orders.filter(o => o.status === status);
     if (lim) orders = orders.slice(0, parseInt(lim));
     return res.json({ orders, total: orders.length });
   } catch (err) {
-    return res.json({ orders: store.orders, total: store.orders.length });
+    console.error('Get orders error:', err);
+    return res.status(500).json({ error: 'Failed to fetch orders.' });
   }
 });
 

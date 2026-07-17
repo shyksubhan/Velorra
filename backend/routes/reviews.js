@@ -94,18 +94,23 @@ router.get('/', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 20, 50);
     if (isFirebaseAvailable()) {
-      const snap = await getDB().collection('reviews')
-        .where('approved', '==', true)
-        .get();
-      const reviews = snap.docs
-        .map(d => ({ ...d.data(), id: d.id }))
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, limit);
-      return res.json({ reviews });
+      try {
+        const snap = await getDB().collection('reviews')
+          .where('approved', '==', true)
+          .get();
+        const reviews = snap.docs
+          .map(d => ({ ...d.data(), id: d.id }))
+          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+          .slice(0, limit);
+        return res.json({ reviews });
+      } catch (fbErr) {
+        console.error('Firebase GET reviews failed, falling back to memory:', fbErr.message);
+      }
     }
     const reviews = (store.reviews || []).filter(r => r.approved).slice(0, limit);
     return res.json({ reviews });
   } catch (err) {
+    console.error('Get reviews error details:', err.message, err.stack);
     return res.status(500).json({ error: 'Failed to fetch reviews.' });
   }
 });
@@ -114,14 +119,19 @@ router.get('/', async (req, res) => {
 router.get('/all', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
-      const snap = await getDB().collection('reviews').get();
-      const reviews = snap.docs
-        .map(d => ({ ...d.data(), id: d.id }))
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      return res.json({ reviews });
+      try {
+        const snap = await getDB().collection('reviews').get();
+        const reviews = snap.docs
+          .map(d => ({ ...d.data(), id: d.id }))
+          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        return res.json({ reviews });
+      } catch (fbErr) {
+        console.error('Firebase GET all reviews failed, falling back to memory:', fbErr.message);
+      }
     }
     return res.json({ reviews: store.reviews || [] });
   } catch (err) {
+    console.error('Get all reviews error:', err);
     return res.status(500).json({ error: 'Failed to fetch reviews.' });
   }
 });

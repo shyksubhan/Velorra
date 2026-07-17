@@ -17,11 +17,15 @@ function isFirebaseAvailable() {
 router.get('/', requireRole('super_admin'), async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
-      const db = getDB();
-      const snap = await db.collection('spendings').orderBy('date', 'desc').get();
-      const spendings = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      store.spendings = spendings;
-      return res.json({ spendings });
+      try {
+        const db = getDB();
+        const snap = await db.collection('spendings').orderBy('date', 'desc').get();
+        const spendings = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        store.spendings = spendings;
+        return res.json({ spendings });
+      } catch (fbErr) {
+        console.error('Firebase GET spendings failed, falling back to memory:', fbErr.message);
+      }
     }
     return res.json({ spendings: store.spendings });
   } catch (err) {
