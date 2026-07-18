@@ -180,7 +180,7 @@ router.post('/:id/email', requireAdmin, async (req, res) => {
     if (!inv) return res.status(404).json({ error: 'Invoice not found.' });
 
     const pdfPath = inv.pdfFilePath || path.join(INVOICES_DIR, `${invId}.pdf`);
-    const toEmail = inv.snapshot?.delivery?.email;
+    const toEmail = inv.snapshot?.delivery?.email || inv.snapshot?.customerEmail;
     if (!toEmail) return res.status(400).json({ error: 'Customer email missing.' });
 
     let liveOrder = null;

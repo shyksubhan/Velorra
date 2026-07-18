@@ -108,7 +108,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.fillColor(C_BLACK).fontSize(9).font('Helvetica-Bold').text('BILL TO', 65, billY + 15);
     const cName = order.customerName || `${order.delivery?.fname || ''} ${order.delivery?.lname || ''}`.trim() || 'Valued Customer';
     const cPhone = order.phone || order.delivery?.phone || 'N/A';
-    const cEmail = order.email || order.delivery?.email || '';
+    const cEmail = order.email || order.delivery?.email || order.customerEmail || '';
     const cCity = order.city || order.delivery?.city || '';
     const fullAddr = order.delivery?.address || order.address || '';
     const cAddress = fullAddr ? `${fullAddr}, ${cCity}` : cCity;
