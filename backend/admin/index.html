@@ -669,9 +669,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
     <div class="modal-body">
 
-      <!-- Row 1: Customer + Phone -->
-      <div class="form-row">
+      <!-- Row 1: Customer + Email + Phone -->
+      <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
         <div class="form-group"><label>Customer Name *</label><input id="soc-cname" placeholder="Customer name"/></div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="soc-email" placeholder="customer@example.com"/></div>
         <div class="form-group"><label>Phone Number</label><input id="soc-phone" placeholder="03001234567"/></div>
       </div>
 
@@ -2660,6 +2661,7 @@ function viewSocialOrder(id) {
   document.getElementById('social-detail-body').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div><small style="color:var(--muted)">Customer</small><p><strong>${esc(o.customerName||'—')}</strong></p></div>
+      <div><small style="color:var(--muted)">Email</small><p>${esc(o.customerEmail||'—')}</p></div>
       <div><small style="color:var(--muted)">Phone</small><p>${esc(o.phone||'—')}</p></div>
       <div><small style="color:var(--muted)">City</small><p>${esc(o.city||'—')}</p></div>
       <div><small style="color:var(--muted)">Address</small><p>${esc(o.address||'—')}</p></div>
@@ -2728,6 +2730,7 @@ async function openSocialOrderModal(orderId = null, prefillAban = null) {
   document.getElementById('save-social-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${o && orderId ? 'Save Changes' : (prefillAban ? 'Recover Order' : 'Create Order')}`;
 
   document.getElementById('soc-cname').value   = o ? o.customerName || '' : '';
+  document.getElementById('soc-email').value   = o ? o.customerEmail || '' : '';
   document.getElementById('soc-phone').value   = o ? o.phone || '' : '';
   document.getElementById('soc-city').value    = o ? o.city || '' : '';
   document.getElementById('soc-address').value = o ? o.address || '' : '';
@@ -3075,6 +3078,7 @@ function recalcSocialTotal() {
 
 async function saveSocialOrder() {
   const customerName = document.getElementById('soc-cname').value.trim();
+  const customerEmail= document.getElementById('soc-email').value.trim();
   const phone        = document.getElementById('soc-phone').value.trim();
   const city         = document.getElementById('soc-city').value.trim();
   const address      = document.getElementById('soc-address').value.trim();
@@ -3128,7 +3132,7 @@ async function saveSocialOrder() {
 
     const res  = await apiFetch(url, {
       method: method,
-      body: JSON.stringify({ customerName, phone, city, address, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount, deliveryOverride, deliveryCustomVal }),
+      body: JSON.stringify({ customerName, customerEmail, phone, city, address, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount, deliveryOverride, deliveryCustomVal }),
     });
     const data = await res.json();
     if (res.ok) {
