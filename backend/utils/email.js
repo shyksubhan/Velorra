@@ -171,6 +171,36 @@ async function sendBulkPromotion({ subscribers, subject, body, promoCode }) {
   return results;
 }
 
+/* 🧾 Invoice Email (to customer) 🧾 */
+async function sendInvoiceEmail({ to, invoiceRef, customerName, pdfPath, liveOrder }) {
+  const fs = require('fs');
+  const resend = getResend();
+
+  let attachments = [];
+  if (pdfPath && fs.existsSync(pdfPath)) {
+    const fileBuffer = fs.readFileSync(pdfPath);
+    attachments = [{
+      filename: `Invoice_${invoiceRef}.pdf`,
+      content: fileBuffer
+    }];
+  }
+
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Invoice ${invoiceRef} | Golnisá`,
+    attachments,
+    html: `<!DOCTYPE html><html><body style="margin:0;padding:40px;background:#faf7f2;font-family:Georgia,serif;color:#2c1f14;">
+      <h2 style="color:#b8883a;">GOLNISA?</h2>
+      <p>Dear ${customerName || 'Customer'},</p>
+      <p>Thank you for shopping with Golnisá. Please find attached the invoice for your order <strong>${invoiceRef}</strong>.</p>
+      <p style="color:#9a8070;font-size:.78rem;margin-top:24px;">
+        Golnisá — golnisaqueries@gmail.com
+      </p>
+    </body></html>`,
+  });
+}
+
 module.exports = {
   sendOrderConfirmation,
   sendNewOrderNotification,
@@ -178,4 +208,5 @@ module.exports = {
   sendNewsletterWelcome,
   sendReplyEmail,
   sendBulkPromotion,
+  sendInvoiceEmail,
 };
