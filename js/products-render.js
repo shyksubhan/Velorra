@@ -16,6 +16,7 @@ const GOLNISÀ_CAT_LABELS = {
   'necklace':    'Necklace',
   'gift-items':  'Gift Items',
   'fancy-wear':  'Fancy Wear',
+  'kaftan':      'Kaftan',
   'casual':      'Casual',
   'party-wear':  'Party Wear',
   'summer-collection': 'Summer Collection',
@@ -30,7 +31,7 @@ const GOLNISÀ_CAT_LABELS = {
 const CATEGORY_HIERARCHY = {
   'jewelry': ['bracelets', 'rings', 'earrings', 'necklace', 'bangles', 'jewelry-sets'],
   'hair-accessories': ['scrunchies', 'clips', 'hair-bands', 'pins', 'ponies', 'fancy', 'gift-items'],
-  'clothing': ['fancy-wear', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret', 'unstitched', 'g-prints', 'new-arrivals', 'trending-now']
+  'clothing': ['fancy-wear', 'kaftan', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret', 'unstitched', 'g-prints', 'new-arrivals', 'trending-now']
 };
 
 function velorCatLabel(cat) {
