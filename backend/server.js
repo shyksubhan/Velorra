@@ -63,12 +63,13 @@ app.use((req, res, next) => {
 });
 
 /* ── Simple API rate limiter (no extra package needed) ── */
+app.set('trust proxy', 1);
 const rateLimitStore = new Map();
 app.use('/api/', (req, res, next) => {
-  const ip  = req.ip || req.connection.remoteAddress;
+  const ip  = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress;
   const now = Date.now();
   const windowMs = 60 * 1000;  /* 1 minute */
-  const maxReqs  = 120;         /* per minute */
+  const maxReqs  = 1000;         /* per minute */
   const entry    = rateLimitStore.get(ip) || { count: 0, start: now };
   if (now - entry.start > windowMs) { entry.count = 0; entry.start = now; }
   entry.count++;
