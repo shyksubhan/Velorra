@@ -407,11 +407,10 @@ router.delete('/:id', requireAdmin, async (req, res) => {
       const snap = await ref.get();
       if (!snap.exists) return res.status(404).json({ error: 'Order not found.' });
       await ref.delete();
-    } else {
-      const idx = store.orders.findIndex(o => o.id === id);
-      if (idx === -1) return res.status(404).json({ error: 'Order not found.' });
-      store.orders.splice(idx, 1);
     }
+    const idx = store.orders.findIndex(o => o.id === id);
+    if (idx !== -1) store.orders.splice(idx, 1);
+    else if (!isFirebaseAvailable()) return res.status(404).json({ error: 'Order not found.' });
     store.logActivity({
       staffId:   req.user.id || req.user.uid,
       staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),

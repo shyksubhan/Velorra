@@ -360,11 +360,10 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       await getDB().collection('social_orders').doc(req.params.id).delete();
-    } else {
-      const idx = store.socialOrders.findIndex(o => o.id === req.params.id);
-      if (idx < 0) return res.status(404).json({ error: 'Order not found.' });
-      store.socialOrders.splice(idx, 1);
     }
+    const idx = store.socialOrders.findIndex(o => o.id === req.params.id);
+    if (idx !== -1) store.socialOrders.splice(idx, 1);
+    else if (!isFirebaseAvailable()) return res.status(404).json({ error: 'Order not found.' });
     return res.json({ ok: true });
   } catch (err) {
     console.error('Delete social order error:', err);
