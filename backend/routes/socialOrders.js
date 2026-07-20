@@ -340,12 +340,12 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
       const ref = db.collection('social_orders').doc(req.params.id);
       if (!(await ref.get()).exists) return res.status(404).json({ error: 'Order not found.' });
       await ref.update({ status, updatedAt: new Date().toISOString() });
-    } else {
-      const idx = store.socialOrders.findIndex(o => o.id === req.params.id);
-      if (idx < 0) return res.status(404).json({ error: 'Order not found.' });
+    }
+    const idx = store.socialOrders.findIndex(o => o.id === req.params.id);
+    if (idx !== -1) {
       store.socialOrders[idx].status    = status;
       store.socialOrders[idx].updatedAt = new Date().toISOString();
-    }
+    } else if (!isFirebaseAvailable()) return res.status(404).json({ error: 'Order not found.' });
 
     store.emit('order_status_changed', { id: req.params.id, status, orderType: 'social' });
     return res.json({ message: `Social order updated to "${status}".`, status });

@@ -332,12 +332,12 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
       const ref = db.collection('orders').doc(req.params.id);
       if (!(await ref.get()).exists) return res.status(404).json({ error: 'Order not found.' });
       await ref.update({ status, updatedAt: new Date().toISOString() });
-    } else {
-      const idx = store.orders.findIndex(o => o.id === req.params.id);
-      if (idx < 0) return res.status(404).json({ error: 'Order not found.' });
+    }
+    const idx = store.orders.findIndex(o => o.id === req.params.id);
+    if (idx !== -1) {
       store.orders[idx].status    = status;
       store.orders[idx].updatedAt = new Date().toISOString();
-    }
+    } else if (!isFirebaseAvailable()) return res.status(404).json({ error: 'Order not found.' });
 
     /* ── Log activity for ALL staff (including super admins tracking each other) ── */
     store.logActivity({
@@ -372,16 +372,16 @@ router.patch('/:id/advance', requireAdmin, async (req, res) => {
         advanceRef: advanceRef || '',
         updatedAt: new Date().toISOString()
       });
-    } else {
-      const idx = store.orders.findIndex(o => o.id === req.params.id);
-      if (idx < 0) return res.status(404).json({ error: 'Order not found.' });
+    }
+    const idx = store.orders.findIndex(o => o.id === req.params.id);
+    if (idx !== -1) {
       store.orders[idx].advanceStatus = advanceStatus || 'Pending';
       store.orders[idx].advanceAmount = Number(advanceAmount) || 0;
       store.orders[idx].advanceDate = advanceDate || '';
       store.orders[idx].advanceMethod = advanceMethod || '';
       store.orders[idx].advanceRef = advanceRef || '';
       store.orders[idx].updatedAt = new Date().toISOString();
-    }
+    } else if (!isFirebaseAvailable()) return res.status(404).json({ error: 'Order not found.' });
 
     store.logActivity({
       staffId:   req.user.id || req.user.uid,
