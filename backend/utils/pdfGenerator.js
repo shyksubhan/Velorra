@@ -70,7 +70,7 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     doc.fontSize(8).fillColor(C_MUTED).font('Helvetica');
     const fWeb = company.website || 'golnisa.com';
     const fEmail = company.email || 'golnisaqueries@gmail.com';
-    const fPhone = company.phone || '+92 331 4978295';
+    const fPhone = company.phone || '+92 301 4617844';
     const fInsta = company.instagram || 'golnisa_';
     const fAddr = company.address || 'Lahore, Punjab, Pakistan';
 

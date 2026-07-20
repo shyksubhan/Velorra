@@ -26,7 +26,7 @@ const store = {
     company: {
       name: 'Golnisà',
       address: '',
-      phone: '+92 331 4978295',
+      phone: '+92 301 4617844',
       email: '',
       website: '',
       socials: ''

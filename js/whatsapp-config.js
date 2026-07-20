@@ -7,7 +7,7 @@ const GOLNISÀ_CONFIG = {
      Format: country code + number, no spaces, no +
      Example: Pakistan 0300-1234567 → '923001234567'          */
   whatsapp: {
-    number:  '923314978295',          // ← REPLACE with your number
+    number:  '923014617844',          // ← REPLACE with your number
     message: 'Hi! I found you on Golnisà and I have a question.',
   },
   /* ── Social Media ──
@@ -21,7 +21,7 @@ const GOLNISÀ_CONFIG = {
   /* ── Contact ── */
   contact: {
     email:    'golnisaqueries@gmail.com',
-    phone:    '+92 331 4978295',
+    phone:    '+92 301 4617844',
     location: 'Lahore, Punjab, Pakistan',
     hours:    'Monday – Saturday',
   },
