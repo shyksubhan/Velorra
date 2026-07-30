@@ -853,7 +853,10 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <p style="color:var(--muted);font-size:0.8rem;margin-top:2px;">Track and add stock for all products.</p>
     </div>
     <div class="ml-auto" style="display:flex;gap:8px;">
-      <input type="text" id="stock-search" placeholder="Search product..." class="filter-sel" oninput="filterStock()" style="width:200px" />
+      <div style="position:relative;">
+        <i class="fa-solid fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)"></i>
+        <input type="text" id="stock-search" placeholder="Search products..." oninput="filterStock()" style="width:260px;padding:8px 12px 8px 36px;border:1px solid #ddd;border-radius:20px;outline:none;font-size:0.9rem;transition:all 0.3s;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);" onfocus="this.style.borderColor='var(--gold)';this.style.boxShadow='0 0 0 2px rgba(212,175,55,0.2)'" onblur="this.style.borderColor='#ddd';this.style.boxShadow='inset 0 1px 3px rgba(0,0,0,0.05)'" />
+      </div>
     </div>
   </div>
   <div class="card">
@@ -3953,13 +3956,20 @@ function renderStock(inventory) {
   });
   
   let html = '';
+  let catIndex = 0;
   for (const cat in grouped) {
-    html += `<tr style="background:var(--bg)"><td colspan="6" style="font-weight:700;color:var(--gold);font-size:1.1rem;padding:15px;text-transform:capitalize"><i class="fa-solid fa-layer-group" style="margin-right:8px"></i>${esc(cat)}</td></tr>`;
+    const catId = `stock-cat-${catIndex++}`;
+    html += `<tr style="background:var(--bg);cursor:pointer;user-select:none;" onclick="toggleCategory('${catId}', this)" title="Click to collapse/expand">
+      <td colspan="6" style="font-weight:700;color:var(--gold);font-size:1.1rem;padding:15px;text-transform:capitalize">
+        <i class="fa-solid fa-layer-group" style="margin-right:8px"></i>${esc(cat)}
+        <i class="fa-solid fa-chevron-up" style="float:right;margin-top:4px;color:var(--muted);transition:transform 0.3s;"></i>
+      </td>
+    </tr>`;
     html += grouped[cat].map(i => {
       const p = i.product;
       const isOut = i.current_stock <= 0;
       return `
-        <tr>
+        <tr class="${catId}">
           <td>
             <div style="display:flex;align-items:center;gap:12px;">
               <img src="${p.images?.[0] || 'images/placeholder.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
@@ -4004,13 +4014,20 @@ async function loadStockNeeded() {
   });
   
   let html = '';
+  let catIndex = 0;
   for (const cat in grouped) {
-    html += `<tr style="background:var(--bg)"><td colspan="3" style="font-weight:700;color:var(--gold);font-size:1.1rem;padding:15px;text-transform:capitalize"><i class="fa-solid fa-layer-group" style="margin-right:8px"></i>${esc(cat)}</td></tr>`;
+    const catId = `needed-cat-${catIndex++}`;
+    html += `<tr style="background:var(--bg);cursor:pointer;user-select:none;" onclick="toggleCategory('${catId}', this)" title="Click to collapse/expand">
+      <td colspan="3" style="font-weight:700;color:var(--gold);font-size:1.1rem;padding:15px;text-transform:capitalize">
+        <i class="fa-solid fa-layer-group" style="margin-right:8px"></i>${esc(cat)}
+        <i class="fa-solid fa-chevron-up" style="float:right;margin-top:4px;color:var(--muted);transition:transform 0.3s;"></i>
+      </td>
+    </tr>`;
     html += grouped[cat].map(i => {
       const p = i.product;
       const missing = Math.abs(i.current_stock);
       return `
-        <tr>
+        <tr class="${catId}">
           <td>
             <div style="display:flex;align-items:center;gap:12px;">
               <img src="${p.images?.[0] || 'images/placeholder.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
@@ -4029,6 +4046,21 @@ async function loadStockNeeded() {
     }).join('');
   }
   tbody.innerHTML = html;
+}
+
+function toggleCategory(catId, rowEl) {
+  const rows = document.querySelectorAll(`tr.${catId}`);
+  const icon = rowEl.querySelector('.fa-chevron-up');
+  
+  let isHidden = false;
+  if (rows.length > 0) {
+    isHidden = rows[0].style.display === 'none';
+    rows.forEach(r => r.style.display = isHidden ? '' : 'none');
+  }
+  
+  if (icon) {
+    icon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
 }
 
 function openAddStockModal(productId, type = 'add', currentPurchased = 0) {
