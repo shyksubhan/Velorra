@@ -149,20 +149,24 @@ router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
 router.post('/:id/stock', requireRole('super_admin', 'admin'), async (req, res) => {
   try {
     const qty = Number(req.body.qty);
-    if (!qty) return res.status(400).json({ error: 'Quantity is required' });
+    const type = req.body.type || 'add'; // 'add' or 'set'
+    if (isNaN(qty)) return res.status(400).json({ error: 'Quantity is required' });
 
     if (isFirebaseAvailable()) {
       const db = getDB();
       const ref = db.collection('products').doc(req.params.id);
       const snap = await ref.get();
       if (!snap.exists) return res.status(404).json({ error: 'Product not found' });
+      
       const currentPurchased = Number(snap.data().stock_purchased || 0);
-      await ref.update({ stock_purchased: currentPurchased + qty, updatedAt: new Date().toISOString() });
+      const newPurchased = type === 'set' ? qty : currentPurchased + qty;
+      await ref.update({ stock_purchased: newPurchased, updatedAt: new Date().toISOString() });
     }
 
     const idx = store.products.findIndex(p => p.id === req.params.id);
     if (idx !== -1) {
-      store.products[idx].stock_purchased = (Number(store.products[idx].stock_purchased) || 0) + qty;
+      const currentPurchased = Number(store.products[idx].stock_purchased) || 0;
+      store.products[idx].stock_purchased = type === 'set' ? qty : currentPurchased + qty;
       store.products[idx].updatedAt = new Date().toISOString();
     } else if (!isFirebaseAvailable()) {
       return res.status(404).json({ error: 'Product not found' });
