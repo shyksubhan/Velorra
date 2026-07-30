@@ -818,11 +818,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
     <div class="modal-body" id="social-detail-body"></div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('social-detail-modal')">Close</button>
-    </div>
-  </div>
-</div>
-
 <!--  ADD STOCK MODAL  -->
 <div class="modal-overlay" id="add-stock-modal">
   <div class="modal" style="max-width:400px">
@@ -832,14 +827,15 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
     <div class="modal-body">
       <input type="hidden" id="add-stock-id" />
+      <input type="hidden" id="add-stock-type" value="add" />
       <div class="form-group">
-        <label>Quantity Received/Purchased</label>
+        <label id="add-stock-label">Quantity Received/Purchased</label>
         <input type="number" id="add-stock-qty" placeholder="Enter quantity..." />
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('add-stock-modal')">Cancel</button>
-      <button class="btn btn-gold" onclick="submitAddStock()">Save Stock</button>
+      <button class="btn btn-gold" id="add-stock-btn" onclick="submitAddStock()">Save Stock</button>
     </div>
   </div>
 </div>
@@ -3972,8 +3968,9 @@ function renderStock(inventory) {
           <td>${i.stock_sold}</td>
           <td style="font-weight:600;color:${isOut ? 'var(--f44336)' : 'var(--text)'}">${i.current_stock}</td>
           <td><span class="badge" style="background:${isOut ? 'var(--f44336)' : 'var(--green)'}">${isOut ? 'Out of Stock' : 'In Stock'}</span></td>
-          <td>
-            <button class="btn btn-outline btn-sm" onclick="openAddStockModal('${p.id}')"><i class="fa-solid fa-plus"></i> Add Stock</button>
+          <td style="display:flex;gap:6px;">
+            <button class="btn btn-outline btn-sm" onclick="openAddStockModal('${p.id}', 'add')"><i class="fa-solid fa-plus"></i> Add</button>
+            <button class="btn btn-outline btn-sm" onclick="openAddStockModal('${p.id}', 'set', ${i.stock_purchased})"><i class="fa-solid fa-pen"></i> Edit</button>
           </td>
         </tr>
       `;
@@ -4020,7 +4017,7 @@ async function loadStockNeeded() {
           </td>
           <td style="font-weight:600;color:var(--f44336)">${missing}</td>
           <td>
-            <button class="btn btn-gold btn-sm" onclick="openAddStockModal('${p.id}')"><i class="fa-solid fa-box-open"></i> Purchase / Receive</button>
+            <button class="btn btn-gold btn-sm" onclick="openAddStockModal('${p.id}', 'add')"><i class="fa-solid fa-box-open"></i> Purchase / Receive</button>
           </td>
         </tr>
       `;
@@ -4029,25 +4026,37 @@ async function loadStockNeeded() {
   tbody.innerHTML = html;
 }
 
-function openAddStockModal(productId) {
+function openAddStockModal(productId, type = 'add', currentPurchased = 0) {
   document.getElementById('add-stock-id').value = productId;
-  document.getElementById('add-stock-qty').value = '';
+  document.getElementById('add-stock-type').value = type;
+  document.getElementById('add-stock-qty').value = type === 'set' ? currentPurchased : '';
+  
+  if (type === 'set') {
+    document.getElementById('add-stock-title').textContent = 'Edit Total Purchased Stock';
+    document.getElementById('add-stock-label').textContent = 'Exact Total Purchased Quantity';
+    document.getElementById('add-stock-btn').innerHTML = '<i class="fa-solid fa-check"></i> Update Stock';
+  } else {
+    document.getElementById('add-stock-title').textContent = 'Add Stock';
+    document.getElementById('add-stock-label').textContent = 'Quantity Received/Purchased';
+    document.getElementById('add-stock-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Save Stock';
+  }
   openModal('add-stock-modal');
 }
 
 async function submitAddStock() {
   const id = document.getElementById('add-stock-id').value;
+  const type = document.getElementById('add-stock-type').value;
   const qty = document.getElementById('add-stock-qty').value;
-  if (!qty || qty <= 0) { toast('Please enter a valid quantity', 'error'); return; }
+  if (!qty || (type === 'add' && qty <= 0) || (type === 'set' && qty < 0)) { toast('Please enter a valid quantity', 'error'); return; }
   
   try {
     const res = await apiFetch(`/products/${id}/stock`, {
       method: 'POST',
-      body: JSON.stringify({ qty })
+      body: JSON.stringify({ qty: Number(qty), type })
     });
     const data = await res.json();
     if (res.ok) {
-      toast('Stock added successfully!', 'success');
+      toast('Stock updated successfully!', 'success');
       closeModal('add-stock-modal');
       loadStats(); // Update badge
       if (document.getElementById('page-stock').style.display !== 'none') loadStock();
