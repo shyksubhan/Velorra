@@ -399,7 +399,7 @@ const store = {
       };
     });
 
-    this.orders.filter(o => o.status !== 'Cancelled').forEach(o => {
+    this.orders.filter(o => o.status === 'Pending').forEach(o => {
       (o.items || []).forEach(item => {
         if (item.productId && inventory[item.productId]) {
           inventory[item.productId].stock_sold += Number(item.qty || 1);
@@ -408,7 +408,7 @@ const store = {
       });
     });
 
-    this.socialOrders.filter(o => o.status !== 'Cancelled').forEach(o => {
+    this.socialOrders.filter(o => o.status === 'Pending').forEach(o => {
       (o.items || []).forEach(item => {
         if (item.productId && inventory[item.productId]) {
           inventory[item.productId].stock_sold += Number(item.qty || 1);
