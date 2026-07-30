@@ -534,11 +534,12 @@ app.use((err, req, res, next) => {
       }
 
       /* Load all orders into memory for store.js statement calculations */
-      const [ordersSnap, socialSnap, spendingsSnap, invoicesSnap] = await Promise.all([
+      const [ordersSnap, socialSnap, spendingsSnap, invoicesSnap, productsSnap] = await Promise.all([
         db.collection('orders').get(),
         db.collection('social_orders').get(),
         db.collection('spendings').get(),
-        db.collection('invoices').get()
+        db.collection('invoices').get(),
+        db.collection('products').get()
       ]);
         if (ordersSnap.docs.length > 0) {
           store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -551,6 +552,9 @@ app.use((err, req, res, next) => {
         }
         if (invoicesSnap.docs.length > 0) {
           store.invoices = invoicesSnap.docs.map(d => d.data());
+        }
+        if (productsSnap.docs.length > 0) {
+          store.products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
       console.log(`✅ Loaded ${store.orders.length} orders, ${store.socialOrders.length} social orders, ${store.spendings.length} spendings, ${store.invoices.length} invoices from Firestore.`);
 
