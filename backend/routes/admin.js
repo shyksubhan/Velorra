@@ -246,6 +246,16 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
   }
 });
 
+/*  GET /api/admin/inventory - Inventory status (super_admin + admin only)  */
+router.get('/inventory', requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    const inventory = store.calculateInventory();
+    return res.json(inventory);
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch inventory.' });
+  }
+});
+
 /* ── GET /api/admin/recent-orders (super_admin + admin only — supervisor uses /api/orders) ── */
 router.get('/recent-orders', requireRole('super_admin', 'admin'), async (req, res) => {
   try {

@@ -314,6 +314,13 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="nav-item" onclick="showPage('products')" id="nav-products">
       <i class="fa-solid fa-tags"></i><span>Products</span>
     </div>
+    <div class="nav-item" onclick="showPage('stock')" id="nav-stock">
+      <i class="fa-solid fa-boxes-stacked"></i><span>Stock</span>
+    </div>
+    <div class="nav-item" onclick="showPage('stock-needed')" id="nav-stock-needed">
+      <i class="fa-solid fa-boxes-packing"></i><span>Stock Needed</span>
+      <span class="nav-badge" id="stock-needed-badge" style="display:none;background:#ff9800">0</span>
+    </div>
     <div class="nav-item" onclick="showPage('messages')" id="nav-messages">
       <i class="fa-solid fa-envelope"></i><span>Messages</span>
       <span class="nav-badge" id="unread-badge" style="display:none">0</span>
@@ -816,7 +823,74 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
   </div>
 </div>
 
-<!-- ── PRODUCTS ── -->
+<!--  ADD STOCK MODAL  -->
+<div class="modal-overlay" id="add-stock-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3 id="add-stock-title">Add Stock</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('add-stock-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="add-stock-id" />
+      <div class="form-group">
+        <label>Quantity Received/Purchased</label>
+        <input type="number" id="add-stock-qty" placeholder="Enter quantity..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-stock-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="submitAddStock()">Save Stock</button>
+    </div>
+  </div>
+</div>
+
+<!--  STOCK  -->
+<div id="page-stock" class="page" style="display:none">
+  <div class="page-header">
+    <div>
+      <h1><i class="fa-solid fa-boxes-stacked" style="color:#ff9800;margin-right:8px"></i>Inventory Stock</h1>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:2px;">Track and add stock for all products.</p>
+    </div>
+    <div class="ml-auto" style="display:flex;gap:8px;">
+      <input type="text" id="stock-search" placeholder="Search product..." class="filter-sel" oninput="filterStock()" style="width:200px" />
+    </div>
+  </div>
+  <div class="card">
+    <table class="table">
+      <thead><tr>
+        <th>Product</th>
+        <th>Purchased</th>
+        <th>Sold</th>
+        <th>Current Stock</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody id="stock-body"><tr><td colspan="6" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!--  STOCK NEEDED  -->
+<div id="page-stock-needed" class="page" style="display:none">
+  <div class="page-header">
+    <div>
+      <h1><i class="fa-solid fa-boxes-packing" style="color:#f44336;margin-right:8px"></i>Stock Needed</h1>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:2px;">Items with pending orders but no stock available.</p>
+    </div>
+  </div>
+  <div class="card">
+    <table class="table">
+      <thead><tr>
+        <th>Product</th>
+        <th>Needed Qty</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody id="stock-needed-body"><tr><td colspan="3" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!--  PRODUCTS  -->
 <div id="page-products" class="page" style="display:none">
   <div class="page-header">
     <div>
@@ -1995,6 +2069,8 @@ function showPage(name) {
   if (name === 'dashboard') loadDashboard();
   if (name === 'orders')    loadOrders();
   if (name === 'products')  loadProducts();
+  if (name === 'stock')     loadStock();
+  if (name === 'stock-needed') loadStockNeeded();
   if (name === 'messages')  loadMessages();
   if (name === 'subscribers') loadSubscribers();
   if (name === 'reviews')     loadReviews();
@@ -2134,6 +2210,13 @@ function renderDashStats(data) {
   const unreadBadge = document.getElementById('unread-badge');
   unreadBadge.textContent = unread;
   unreadBadge.style.display = unread ? 'inline-block' : 'none';
+
+  const stockNeededCount = data.stockNeeded || 0;
+  const stockNeededBadge = document.getElementById('stock-needed-badge');
+  if (stockNeededBadge) {
+    stockNeededBadge.textContent = stockNeededCount;
+    stockNeededBadge.style.display = stockNeededCount ? 'inline-block' : 'none';
+  }
 
   /* Reviews badge */
   const revBadge = document.getElementById('reviews-badge');
@@ -3832,6 +3915,123 @@ function exportProductsExcel() {
   const dateStr = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, `Golnisà_Products_${dateStr}.xlsx`);
   toast('Beautiful Excel file downloaded! ✓', 'success');
+}
+
+/*  STOCK LOGIC  */
+let allInventory = [];
+
+async function fetchInventory() {
+  const res = await apiFetch('/admin/inventory');
+  if (res.ok) allInventory = await res.json();
+}
+
+async function loadStock() {
+  document.getElementById('stock-body').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  await fetchInventory();
+  renderStock(allInventory);
+}
+
+function filterStock() {
+  const q = document.getElementById('stock-search').value.toLowerCase();
+  renderStock(allInventory.filter(i => (i.product?.name||'').toLowerCase().includes(q) || (i.product?.category||'').toLowerCase().includes(q)));
+}
+
+function renderStock(inventory) {
+  const tbody = document.getElementById('stock-body');
+  if (!inventory.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No products found in inventory.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = inventory.map(i => {
+    const p = i.product;
+    const isOut = i.current_stock <= 0;
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${p.imageUrls?.[0] || 'images/placeholder.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+            <div>
+              <div style="font-weight:600;font-size:0.9rem">${esc(p.name)}</div>
+              <div style="font-size:0.8rem;color:var(--muted)">${esc(p.category)}</div>
+            </div>
+          </div>
+        </td>
+        <td>${i.stock_purchased}</td>
+        <td>${i.stock_sold}</td>
+        <td style="font-weight:600;color:${isOut ? 'var(--f44336)' : 'var(--text)'}">${i.current_stock}</td>
+        <td><span class="badge" style="background:${isOut ? 'var(--f44336)' : 'var(--green)'}">${isOut ? 'Out of Stock' : 'In Stock'}</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="openAddStockModal('${p.id}')"><i class="fa-solid fa-plus"></i> Add Stock</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function loadStockNeeded() {
+  document.getElementById('stock-needed-body').innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  await fetchInventory();
+  const needed = allInventory.filter(i => i.current_stock < 0);
+  
+  const tbody = document.getElementById('stock-needed-body');
+  if (!needed.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty-state" style="color:var(--green)"><i class="fa-solid fa-check-circle" style="font-size:2rem;margin-bottom:10px;"></i><br>No stock needed! All pending orders are fulfilled.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = needed.map(i => {
+    const p = i.product;
+    const missing = Math.abs(i.current_stock);
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${p.imageUrls?.[0] || 'images/placeholder.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+            <div>
+              <div style="font-weight:600;font-size:0.9rem">${esc(p.name)}</div>
+              <div style="font-size:0.8rem;color:var(--muted)">${esc(p.category)}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight:600;color:var(--f44336)">${missing}</td>
+        <td>
+          <button class="btn btn-gold btn-sm" onclick="openAddStockModal('${p.id}')"><i class="fa-solid fa-box-open"></i> Purchase / Receive</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openAddStockModal(productId) {
+  document.getElementById('add-stock-id').value = productId;
+  document.getElementById('add-stock-qty').value = '';
+  openModal('add-stock-modal');
+}
+
+async function submitAddStock() {
+  const id = document.getElementById('add-stock-id').value;
+  const qty = document.getElementById('add-stock-qty').value;
+  if (!qty || qty <= 0) { toast('Please enter a valid quantity', 'error'); return; }
+  
+  try {
+    const res = await apiFetch(`/products/${id}/stock`, {
+      method: 'POST',
+      body: JSON.stringify({ qty })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast('Stock added successfully!', 'success');
+      closeModal('add-stock-modal');
+      loadStats(); // Update badge
+      if (document.getElementById('page-stock').style.display !== 'none') loadStock();
+      if (document.getElementById('page-stock-needed').style.display !== 'none') loadStockNeeded();
+    } else {
+      toast(data.error || 'Failed to update stock', 'error');
+    }
+  } catch (err) {
+    toast('Error updating stock', 'error');
+  }
 }
 
 async function loadProducts() {

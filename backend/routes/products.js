@@ -145,6 +145,42 @@ router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
     return res.status(500).json({ error: 'Failed to create product: ' + err.message });
   }
 });
+/*  POST /api/products/:id/stock (super_admin + admin only)  */
+router.post('/:id/stock', requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    const qty = Number(req.body.qty);
+    if (!qty) return res.status(400).json({ error: 'Quantity is required' });
+
+    if (isFirebaseAvailable()) {
+      const db = getDB();
+      const ref = db.collection('products').doc(req.params.id);
+      const snap = await ref.get();
+      if (!snap.exists) return res.status(404).json({ error: 'Product not found' });
+      const currentPurchased = Number(snap.data().stock_purchased || 0);
+      await ref.update({ stock_purchased: currentPurchased + qty, updatedAt: new Date().toISOString() });
+    }
+
+    const idx = store.products.findIndex(p => p.id === req.params.id);
+    if (idx !== -1) {
+      store.products[idx].stock_purchased = (Number(store.products[idx].stock_purchased) || 0) + qty;
+      store.products[idx].updatedAt = new Date().toISOString();
+    } else if (!isFirebaseAvailable()) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    store.logActivity({
+      staffId:   req.user.id || req.user.uid,
+      staffName: req.user.fname + (req.user.lname ? ' ' + req.user.lname : ''),
+      action:    'Added Stock',
+      details:   `Added ${qty} to ${req.params.id}`,
+      role:      req.user.role
+    });
+
+    return res.json({ message: 'Stock updated successfully.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to update stock.' });
+  }
+});
 
 /* ── PUT /api/products/:id (super_admin + admin only) ── */
 router.put('/:id', requireRole('super_admin', 'admin'), async (req, res) => {

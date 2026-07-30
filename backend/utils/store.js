@@ -388,6 +388,38 @@ const store = {
     return Object.values(summary);
   },
 
+  calculateInventory() {
+    const inventory = {};
+    this.products.forEach(p => {
+      inventory[p.id] = {
+        product: p,
+        stock_purchased: Number(p.stock_purchased) || 0,
+        stock_sold: 0,
+        current_stock: Number(p.stock_purchased) || 0
+      };
+    });
+
+    this.orders.filter(o => o.status !== 'Cancelled').forEach(o => {
+      (o.items || []).forEach(item => {
+        if (item.productId && inventory[item.productId]) {
+          inventory[item.productId].stock_sold += Number(item.qty || 1);
+          inventory[item.productId].current_stock -= Number(item.qty || 1);
+        }
+      });
+    });
+
+    this.socialOrders.filter(o => o.status !== 'Cancelled').forEach(o => {
+      (o.items || []).forEach(item => {
+        if (item.productId && inventory[item.productId]) {
+          inventory[item.productId].stock_sold += Number(item.qty || 1);
+          inventory[item.productId].current_stock -= Number(item.qty || 1);
+        }
+      });
+    });
+
+    return Object.values(inventory);
+  },
+
   /* Stats snapshot — used by /admin/stats */
   stats() {
     const orders  = this.orders;
@@ -408,6 +440,9 @@ const store = {
     });
     const totalSpendings = this.spendings.reduce((s, x) => s + (Number(x.amount) || 0), 0);
 
+    const inventory = this.calculateInventory();
+    const stockNeeded = inventory.filter(i => i.current_stock < 0).length;
+
     return {
       orders:              { total: orders.length,  statuses: statusCounts },
       socialOrders:        { total: sOrders.length, statuses: socialStatusCounts },
@@ -420,6 +455,7 @@ const store = {
       combinedRevenue:     Math.round(revenue + socialRevenue),
       totalSpendings:      Math.round(totalSpendings),
       users:               { total: this.users.length },
+      stockNeeded:         stockNeeded,
     };
   },
 };
