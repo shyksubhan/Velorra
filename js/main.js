@@ -1,5 +1,5 @@
 /* ============================================================
-   ZARINEHUSN — Main JavaScript
+   GOLNISÀ — Main JavaScript
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
   revealEls.forEach(el => observer.observe(el));
 
   /* ── Cart System ── */
-  let cart = JSON.parse(localStorage.getItem('zarinehusn_cart') || '[]');
+  let cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
 
-  const saveCart = () => localStorage.setItem('zarinehusn_cart', JSON.stringify(cart));
+  const saveCart = () => localStorage.setItem('golnisa_cart', JSON.stringify(cart));
 
   const updateCartUI = () => {
     const count = cart.reduce((s, i) => s + i.qty, 0);
@@ -77,22 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
      customer's existing bag is stashed (not lost) so it can be
      restored if they leave checkout without completing the order. */
   window.buyNow = (name, price, emoji, variant, image) => {
-    const existingCart = localStorage.getItem('zarinehusn_cart');
+    const existingCart = localStorage.getItem('golnisa_cart');
     if (existingCart && existingCart !== '[]') {
-      localStorage.setItem('zarinehusn_cart_stashed', existingCart);
+      localStorage.setItem('golnisa_cart_stashed', existingCart);
     }
     const buyNowCart = [{ name, price, emoji: emoji || '🛍️', variant: variant || 'Standard', image: image || null, qty: 1 }];
-    localStorage.setItem('zarinehusn_cart', JSON.stringify(buyNowCart));
+    localStorage.setItem('golnisa_cart', JSON.stringify(buyNowCart));
     window.location.href = 'checkout';
   };
 
   /* ── Buy It Now: restore stashed bag if the customer left checkout
      without completing the order (i.e. they're on any page other
      than checkout.html and a stash exists) ── */
-  const stashedCart = localStorage.getItem('zarinehusn_cart_stashed');
+  const stashedCart = localStorage.getItem('golnisa_cart_stashed');
   if (stashedCart && !window.location.pathname.endsWith('checkout')) {
-    localStorage.setItem('zarinehusn_cart', stashedCart);
-    localStorage.removeItem('zarinehusn_cart_stashed');
+    localStorage.setItem('golnisa_cart', stashedCart);
+    localStorage.removeItem('golnisa_cart_stashed');
     cart = JSON.parse(stashedCart);
   }
 
@@ -236,19 +236,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
  /* ============================================================
-   ZARINEHUSN — WhatsApp + Social Footer Builder
+   GOLNISÀ — WhatsApp + Social Footer Builder
    (append to end of existing script.js)
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   /* ── Set WhatsApp button link from config ── */
   const waBtn = document.getElementById('whatsapp-float');
-  if (waBtn && window.ZARINEHUSN_CONFIG) {
-    waBtn.href = window.ZARINEHUSN_CONFIG.social.whatsapp;
+  if (waBtn && window.GOLNISÀ_CONFIG) {
+    waBtn.href = window.GOLNISÀ_CONFIG.social.whatsapp;
   }
   /* ── Build footer social links from config ── */
   const socialWrap = document.getElementById('footer-social-links');
-  if (socialWrap && window.ZARINEHUSN_CONFIG) {
-    const cfg = window.ZARINEHUSN_CONFIG.social;
+  if (socialWrap && window.GOLNISÀ_CONFIG) {
+    const cfg = window.GOLNISÀ_CONFIG.social;
     const links = [
       { url: cfg.instagram, icon: '<i class="fa-brands fa-instagram"></i>', label: 'Instagram' },
       { url: cfg.facebook,  icon: '<i class="fa-brands fa-facebook-f"></i>', label: 'Facebook' },
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ).join('');
   }
   /* ── Update account icon if logged in ── */
-  const user = JSON.parse(localStorage.getItem('zarinehusn_user') || 'null');
+  const user = JSON.parse(localStorage.getItem('golnisa_user') || 'null');
   if (user) {
     document.querySelectorAll('a[href="account"]').forEach(el => {
       el.setAttribute('title', `Hi, ${user.fname}`);
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   /* ── Validate JWT token silently (don't block page) ── */
-  const token = localStorage.getItem('zarinehusn_token');
+  const token = localStorage.getItem('golnisa_token');
   if (token && user) {
     checkBackend().then(online => {
       if (online) {
@@ -294,7 +294,7 @@ window.toggleGolnisàPassword = (inputId, btn) => {
 };
 /* ── Proceed to Checkout — cart check ── */
 window.proceedToCheckout = () => {
-  const cart = JSON.parse(localStorage.getItem('zarinehusn_cart') || '[]');
+  const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
   if (!cart.length) {
     window.showToast('Your bag is empty. Add items before checking out.');
     return;
