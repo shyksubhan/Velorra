@@ -234,7 +234,11 @@ function clearSession() {
 
 /* ═══════════════════ API HELPER ═══════════════════ */
 function apiFetch(path, options = {}) {
-  return fetch(`${API}${path}`, {
+  let finalPath = path;
+  if (!options.method || options.method === 'GET') {
+    finalPath += (path.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  }
+  return fetch(`${API}${finalPath}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}`, ...(options.headers || {}) },
   }).then(res => {
@@ -406,6 +410,8 @@ function showPage(name) {
   if (name === 'dashboard') loadDashboard();
   if (name === 'orders')    loadOrders();
   if (name === 'products')  loadProducts();
+  if (name === 'stock')     loadStock();
+  if (name === 'stock-needed') loadStockNeeded();
   if (name === 'messages')  loadMessages();
   if (name === 'subscribers') loadSubscribers();
   if (name === 'reviews')     loadReviews();
@@ -545,6 +551,13 @@ function renderDashStats(data) {
   const unreadBadge = document.getElementById('unread-badge');
   unreadBadge.textContent = unread;
   unreadBadge.style.display = unread ? 'inline-block' : 'none';
+
+  const stockNeededCount = data.stockNeeded || 0;
+  const stockNeededBadge = document.getElementById('stock-needed-badge');
+  if (stockNeededBadge) {
+    stockNeededBadge.textContent = stockNeededCount;
+    stockNeededBadge.style.display = stockNeededCount ? 'inline-block' : 'none';
+  }
 
   /* Reviews badge */
   const revBadge = document.getElementById('reviews-badge');
@@ -1026,7 +1039,6 @@ function renderSocialOrders(orders) {
       <td><code style="color:#e1306c;cursor:pointer" onclick="viewSocialOrder('${o.id}')">${o.id}</code></td>
       <td>${socSourceBadge(o.source)}</td>
       <td><strong>${esc(o.customerName || '—')}</strong><br><small style="color:var(--muted)">${esc(o.phone || '')}</small></td>
-      <td style="color:var(--muted)">${esc(o.address || '—')}</td>
       <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
       <td style="color:var(--gold);font-weight:600">PKR ${(o.total || 0).toLocaleString()}</td>
       <td style="color:${profitColor};font-weight:600">${profitLabel}</td>
@@ -1077,6 +1089,7 @@ function viewSocialOrder(id) {
   document.getElementById('social-detail-body').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div><small style="color:var(--muted)">Customer</small><p><strong>${esc(o.customerName||'—')}</strong></p></div>
+      <div><small style="color:var(--muted)">Email</small><p>${esc(o.customerEmail||'—')}</p></div>
       <div><small style="color:var(--muted)">Phone</small><p>${esc(o.phone||'—')}</p></div>
       <div><small style="color:var(--muted)">City</small><p>${esc(o.city||'—')}</p></div>
       <div><small style="color:var(--muted)">Address</small><p>${esc(o.address||'—')}</p></div>
@@ -1091,6 +1104,7 @@ function viewSocialOrder(id) {
     ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Total</span><span style="color:var(--gold)">PKR ${(o.total||0).toLocaleString()}</span></div>
+    ${(o.advanceAmount || 0) > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px dashed var(--border);margin-top:8px;padding-top:12px;"><span style="color:var(--muted)">Advance Paid</span><span style="color:var(--green)">- PKR ${Number(o.advanceAmount).toLocaleString()}</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.05rem"><span>Remaining Balance</span><span style="color:var(--orange)">PKR ${(Math.max(0, (o.total||0) - Number(o.advanceAmount))).toLocaleString()}</span></div>` : ''}
     <div style="display:flex;gap:6px;margin-top:16px;">
       <button class="btn btn-outline btn-sm" onclick="closeModal('social-detail-modal'); openSocialOrderModal('${o.id}')"><i class="fa-solid fa-pen"></i> Edit Order</button>
       <button class="btn btn-outline btn-sm" onclick="closeModal('social-detail-modal'); generateInvoice('${o.id}')"><i class="fa-solid fa-file-invoice"></i> Generate Invoice</button>
@@ -1145,6 +1159,7 @@ async function openSocialOrderModal(orderId = null, prefillAban = null) {
   document.getElementById('save-social-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${o && orderId ? 'Save Changes' : (prefillAban ? 'Recover Order' : 'Create Order')}`;
 
   document.getElementById('soc-cname').value   = o ? o.customerName || '' : '';
+  document.getElementById('soc-email').value   = o ? o.customerEmail || '' : '';
   document.getElementById('soc-phone').value   = o ? o.phone || '' : '';
   document.getElementById('soc-city').value    = o ? o.city || '' : '';
   document.getElementById('soc-address').value = o ? o.address || '' : '';
@@ -1492,6 +1507,7 @@ function recalcSocialTotal() {
 
 async function saveSocialOrder() {
   const customerName = document.getElementById('soc-cname').value.trim();
+  const customerEmail= document.getElementById('soc-email').value.trim();
   const phone        = document.getElementById('soc-phone').value.trim();
   const city         = document.getElementById('soc-city').value.trim();
   const address      = document.getElementById('soc-address').value.trim();
@@ -1545,7 +1561,7 @@ async function saveSocialOrder() {
 
     const res  = await apiFetch(url, {
       method: method,
-      body: JSON.stringify({ customerName, phone, city, address, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount, deliveryOverride, deliveryCustomVal }),
+      body: JSON.stringify({ customerName, customerEmail, phone, city, address, source, items, paymentMethod, status, notes, couponCode, advanceAmount: advancePaid, customDiscount, deliveryOverride, deliveryCustomVal }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -2240,6 +2256,162 @@ function exportProductsExcel() {
   const dateStr = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, `Golnisà_Products_${dateStr}.xlsx`);
   toast('Beautiful Excel file downloaded! ✓', 'success');
+}
+
+/*  STOCK LOGIC  */
+let allInventory = [];
+
+async function fetchInventory() {
+  const res = await apiFetch('/admin/inventory');
+  if (res.ok) allInventory = await res.json();
+}
+
+async function loadStock() {
+  document.getElementById('stock-body').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  await fetchInventory();
+  renderStock(allInventory);
+}
+
+function filterStock() {
+  const q = document.getElementById('stock-search').value.toLowerCase();
+  renderStock(allInventory.filter(i => (i.product?.name||'').toLowerCase().includes(q) || (i.product?.category||'').toLowerCase().includes(q)));
+}
+
+function renderStock(inventory) {
+  const tbody = document.getElementById('stock-body');
+  if (!inventory.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No products found in inventory.</td></tr>';
+    return;
+  }
+  
+  // Group by category
+  const grouped = {};
+  inventory.forEach(i => {
+    const cat = i.product?.category || 'Uncategorized';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(i);
+  });
+  
+  let html = '';
+  for (const cat in grouped) {
+    html += `<tr style="background:var(--bg)"><td colspan="6" style="font-weight:700;color:var(--gold);font-size:1.1rem;padding:15px;text-transform:capitalize"><i class="fa-solid fa-layer-group" style="margin-right:8px"></i>${esc(cat)}</td></tr>`;
+    html += grouped[cat].map(i => {
+      const p = i.product;
+      const isOut = i.current_stock <= 0;
+      return `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <img src="${p.images?.[0] || 'images/placeholder.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+              <div>
+                <div style="font-weight:600;font-size:0.9rem">${esc(p.name)}</div>
+                <div style="font-size:0.8rem;color:var(--muted)">${esc(p.category)}</div>
+              </div>
+            </div>
+          </td>
+          <td>${i.stock_purchased}</td>
+          <td>${i.stock_sold}</td>
+          <td style="font-weight:600;color:${isOut ? 'var(--f44336)' : 'var(--text)'}">${i.current_stock}</td>
+          <td><span class="badge" style="background:${isOut ? 'var(--f44336)' : 'var(--green)'}">${isOut ? 'Out of Stock' : 'In Stock'}</span></td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn btn-outline btn-sm" onclick="openAddStockModal('${p.id}', 'add')"><i class="fa-solid fa-plus"></i> Add</button>
+            <button class="btn btn-outline btn-sm" onclick="openAddStockModal('${p.id}', 'set', ${i.stock_purchased})"><i class="fa-solid fa-pen"></i> Edit</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+  tbody.innerHTML = html;
+}
+
+async function loadStockNeeded() {
+  document.getElementById('stock-needed-body').innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>`;
+  await fetchInventory();
+  const needed = allInventory.filter(i => i.current_stock < 0);
+  
+  const tbody = document.getElementById('stock-needed-body');
+  if (!needed.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty-state" style="color:var(--green)"><i class="fa-solid fa-check-circle" style="font-size:2rem;margin-bottom:10px;"></i><br>No stock needed! All pending orders are fulfilled.</td></tr>';
+    return;
+  }
+  
+  // Group by category
+  const grouped = {};
+  needed.forEach(i => {
+    const cat = i.product?.category || 'Uncategorized';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(i);
+  });
+  
+  let html = '';
+  for (const cat in grouped) {
+    html += `<tr style="background:var(--bg)"><td colspan="3" style="font-weight:700;color:var(--gold);font-size:1.1rem;padding:15px;text-transform:capitalize"><i class="fa-solid fa-layer-group" style="margin-right:8px"></i>${esc(cat)}</td></tr>`;
+    html += grouped[cat].map(i => {
+      const p = i.product;
+      const missing = Math.abs(i.current_stock);
+      return `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <img src="${p.images?.[0] || 'images/placeholder.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+              <div>
+                <div style="font-weight:600;font-size:0.9rem">${esc(p.name)}</div>
+                <div style="font-size:0.8rem;color:var(--muted)">${esc(p.category)}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:600;color:var(--f44336)">${missing}</td>
+          <td>
+            <button class="btn btn-gold btn-sm" onclick="openAddStockModal('${p.id}', 'add')"><i class="fa-solid fa-box-open"></i> Purchase / Receive</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+  tbody.innerHTML = html;
+}
+
+function openAddStockModal(productId, type = 'add', currentPurchased = 0) {
+  document.getElementById('add-stock-id').value = productId;
+  document.getElementById('add-stock-type').value = type;
+  document.getElementById('add-stock-qty').value = type === 'set' ? currentPurchased : '';
+  
+  if (type === 'set') {
+    document.getElementById('add-stock-title').textContent = 'Edit Total Purchased Stock';
+    document.getElementById('add-stock-label').textContent = 'Exact Total Purchased Quantity';
+    document.getElementById('add-stock-btn').innerHTML = '<i class="fa-solid fa-check"></i> Update Stock';
+  } else {
+    document.getElementById('add-stock-title').textContent = 'Add Stock';
+    document.getElementById('add-stock-label').textContent = 'Quantity Received/Purchased';
+    document.getElementById('add-stock-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Save Stock';
+  }
+  openModal('add-stock-modal');
+}
+
+async function submitAddStock() {
+  const id = document.getElementById('add-stock-id').value;
+  const type = document.getElementById('add-stock-type').value;
+  const qty = document.getElementById('add-stock-qty').value;
+  if (!qty || (type === 'add' && qty <= 0) || (type === 'set' && qty < 0)) { toast('Please enter a valid quantity', 'error'); return; }
+  
+  try {
+    const res = await apiFetch(`/products/${id}/stock`, {
+      method: 'POST',
+      body: JSON.stringify({ qty: Number(qty), type })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast('Stock updated successfully!', 'success');
+      closeModal('add-stock-modal');
+      loadStats(); // Update badge
+      if (document.getElementById('page-stock').style.display !== 'none') loadStock();
+      if (document.getElementById('page-stock-needed').style.display !== 'none') loadStockNeeded();
+    } else {
+      toast(data.error || 'Failed to update stock', 'error');
+    }
+  } catch (err) {
+    toast('Error updating stock', 'error');
+  }
 }
 
 async function loadProducts() {
@@ -3470,4 +3642,193 @@ function renderVisitors(visitors) {
         </td>
       </tr>`).join('');
   }
+}
+
+
+/* ── Custom Confirm Dialog ── */
+function bktConfirm({ title = 'Are you sure?', message = 'This action cannot be undone.', confirmText = 'Delete', icon = '🗑️', danger = true } = {}) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('golnisa-confirm-overlay');
+    const box     = document.getElementById('golnisa-confirm-box');
+    const okBtn   = document.getElementById('golnisa-confirm-ok');
+    const cancelBtn = document.getElementById('golnisa-confirm-cancel');
+
+    document.getElementById('golnisa-confirm-title').textContent = title;
+    document.getElementById('golnisa-confirm-msg').textContent   = message;
+    document.getElementById('golnisa-confirm-icon').textContent  = icon;
+    okBtn.textContent = confirmText;
+
+    /* Danger vs neutral style */
+    if (danger) {
+      okBtn.style.background = 'linear-gradient(135deg,#d96a6a,#c0392b)';
+      okBtn.style.boxShadow  = '0 4px 20px rgba(217,106,106,0.3)';
+      document.getElementById('golnisa-confirm-icon').style.background = 'rgba(217,106,106,0.12)';
+      document.getElementById('golnisa-confirm-icon').style.border = '1px solid rgba(217,106,106,0.25)';
+    } else {
+      okBtn.style.background = 'linear-gradient(135deg,#b8883a,#a8873c)';
+      okBtn.style.boxShadow  = '0 4px 20px rgba(184,136,58,0.3)';
+      document.getElementById('golnisa-confirm-icon').style.background = 'rgba(184,136,58,0.12)';
+      document.getElementById('golnisa-confirm-icon').style.border = '1px solid rgba(184,136,58,0.25)';
+    }
+
+    /* Show */
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => {
+      overlay.style.background    = 'rgba(0,0,0,0.75)';
+      overlay.style.backdropFilter = 'blur(8px)';
+      box.style.transform  = 'scale(1) translateY(0)';
+    });
+
+    const close = (result) => {
+      overlay.style.background     = 'rgba(0,0,0,0)';
+      overlay.style.backdropFilter  = 'blur(0px)';
+      box.style.transform   = 'scale(0.85) translateY(20px)';
+      setTimeout(() => { overlay.style.display = 'none'; }, 250);
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onOverlay);
+      resolve(result);
+    };
+
+    const onOk      = () => close(true);
+    const onCancel  = () => close(false);
+    const onOverlay = (e) => { if (e.target === overlay) close(false); };
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onOverlay);
+
+    /* Hover effects */
+    okBtn.onmouseenter     = () => okBtn.style.opacity = '0.88';
+    okBtn.onmouseleave     = () => okBtn.style.opacity = '1';
+    cancelBtn.onmouseenter = () => { cancelBtn.style.background = 'rgba(255,255,255,0.1)'; cancelBtn.style.color = '#fff'; };
+    cancelBtn.onmouseleave = () => { cancelBtn.style.background = 'rgba(255,255,255,0.05)'; cancelBtn.style.color = '#aaa'; };
+  });
+}
+
+/* ═══════════════════ REVIEWS ═══════════════════ */
+async function loadReviews() {
+  const tbody = document.getElementById('reviews-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Loading…</td></tr>';
+  try {
+    const filter = document.getElementById('reviews-filter')?.value || 'all';
+    const raw = await apiFetch('/reviews/all');
+    const res = await raw.json();
+
+    if (!raw.ok) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">${res.error || 'Could not load reviews (status ' + raw.status + ').'}</td></tr>`;
+      return;
+    }
+
+    let reviews = res.reviews || [];
+
+    if (filter === 'pending')  reviews = reviews.filter(r => !r.approved);
+    if (filter === 'approved') reviews = reviews.filter(r =>  r.approved);
+
+    const pendingCount = (res.reviews || []).filter(r => !r.approved).length;
+    const badge = document.getElementById('reviews-badge');
+    if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount ? 'inline-block' : 'none'; }
+
+    if (!reviews.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">No reviews found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = reviews.map(r => `
+      <tr>
+        <td>
+          <div style="font-weight:600;font-size:.85rem">${r.customerName || 'Customer'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.customerEmail || ''}</div>
+          ${r.city ? `<div style="font-size:.72rem;color:var(--muted)">${r.city}</div>` : ''}
+        </td>
+        <td style="font-size:.8rem;color:var(--gold)">${r.orderId || '—'}</td>
+        <td style="font-size:1rem;letter-spacing:1px;color:#b8883a">${'★'.repeat(r.rating||5)}${'☆'.repeat(5-(r.rating||5))}</td>
+        <td style="font-size:.82rem;max-width:260px;line-height:1.5">${r.text || ''}</td>
+        <td style="font-size:.75rem;color:var(--muted)">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-PK',{dateStyle:'medium'}) : '—'}</td>
+        <td>
+          <span class="badge" style="
+            background:${r.approved ? 'rgba(34,197,94,.15)' : 'rgba(251,191,36,.15)'};
+            color:${r.approved ? 'var(--green)' : '#fbbf24'}">
+            ${r.approved ? 'Approved' : 'Pending'}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            ${!r.approved
+              ? `<button class="btn btn-success" onclick="approveReview('${r.id}',true)"><i class="fa-solid fa-check"></i> Approve</button>`
+              : `<button class="btn btn-outline" onclick="approveReview('${r.id}',false)" style="font-size:.75rem">Hide</button>`
+            }
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Failed to load reviews.</td></tr>';
+  }
+}
+
+async function approveReview(id, approve) {
+  try {
+    const res = await fetch(`${API}/reviews/${id}/approve`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('golnisa_admin_token')}` },
+      body: JSON.stringify({ approved: approve }),
+    });
+    if (res.ok) { toast(approve ? 'Review approved — now visible on homepage ✓' : 'Review hidden.', 'success'); loadReviews(); }
+    else toast('Failed to update review.', 'error');
+  } catch { toast('Connection error.', 'error'); }
+}
+
+async function loadCompanySettings() {
+  try {
+    const res = await apiFetch('/settings');
+    const data = await res.json();
+    if(data.settings && data.settings.company) {
+      const c = data.settings.company;
+      document.getElementById('cs-name').value = c.name || '';
+      document.getElementById('cs-logo').value = c.logoUrl || '';
+      document.getElementById('cs-phone').value = c.phone || '';
+      document.getElementById('cs-email').value = c.email || '';
+      document.getElementById('cs-website').value = c.website || '';
+      document.getElementById('cs-invoiceTrigger').value = c.invoiceTrigger || 'manual';
+      document.getElementById('cs-address').value = c.address || '';
+    }
+  } catch(e) { console.error('Failed to load settings', e); }
+}
+
+async function saveCompanySettings() {
+  const btn = document.querySelector('#company-settings-section button');
+  btn.textContent = 'Saving...';
+  try {
+    const payload = {
+      settings: {
+        company: {
+          name: document.getElementById('cs-name').value,
+          logoUrl: document.getElementById('cs-logo').value,
+          phone: document.getElementById('cs-phone').value,
+          email: document.getElementById('cs-email').value,
+          website: document.getElementById('cs-website').value,
+          invoiceTrigger: document.getElementById('cs-invoiceTrigger').value,
+          address: document.getElementById('cs-address').value
+        }
+      }
+    };
+    const res = await apiFetch('/settings', { method: 'PUT', body: JSON.stringify(payload) });
+    const data = await res.json();
+    const msg = document.getElementById('company-msg');
+    msg.style.display = 'block';
+    if(res.ok) {
+      msg.className = 'alert alert-success';
+      msg.textContent = data.message || 'Company Settings Saved!';
+    } else {
+      msg.className = 'alert alert-danger';
+      msg.textContent = data.error || 'Failed to save settings.';
+    }
+  } catch(e) {
+    const msg = document.getElementById('company-msg');
+    msg.style.display = 'block';
+    msg.className = 'alert alert-danger';
+    msg.textContent = 'Network error while saving settings.';
+  }
+  btn.textContent = 'Save Company Settings';
 }

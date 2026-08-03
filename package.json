@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "install": "cd backend && npm install",
+    "start": "cd backend && node server.js"
+  },
   "dependencies": {
     "resend": "^6.14.0"
   }
