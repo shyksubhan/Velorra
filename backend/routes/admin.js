@@ -155,6 +155,10 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     const today      = new Date(); today.setHours(0,0,0,0);
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
+    const d = new Date();
+    d.setTime(d.getTime() + (5 * 60 * 60 * 1000));
+    const todayStr = d.toISOString().slice(0, 10);
+
     /* Website */
     base.todayRevenue = Math.round(orders
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today)
@@ -162,7 +166,7 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.monthRevenue = Math.round(orders
       .filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= monthStart)
       .reduce((s, o) => s + (o.total || 0), 0));
-    base.todayProfit = store.dailyStatement().totals.profit;
+    base.todayProfit = store.dailyStatement(todayStr).totals.profit;
 
     /* Social */
     const todaySocialOrders = sOrders.filter(o => o.status !== 'Cancelled' && new Date(o.createdAt) >= today);
@@ -187,7 +191,7 @@ router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
     base.combinedRevenue      = base.totalRevenue + base.socialRevenue;
     base.todayCombinedProfit  = base.todayProfit  + base.todaySocialProfit;
     base.totalCombinedProfit  = (store.lifetimeEarnings().totals.profit || 0);
-    base.todayCombinedProfit  = store.dailyStatement().totals.profit || 0;
+    base.todayCombinedProfit  = store.dailyStatement(todayStr).totals.profit || 0;
     base.todayProfit = base.todayCombinedProfit - base.todaySocialProfit;
     base.totalProfit = base.totalCombinedProfit - base.totalSocialProfit;
 
