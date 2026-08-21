@@ -10,13 +10,10 @@ let tried = false;  /* Only attempt init once */
 
 function parsePrivateKey(raw) {
   if (!raw) return null;
+  // Remove surrounding quotes if any
   let key = raw.replace(/^["']|["']$/g, '').trim();
+  // Replace literal \n with real newlines
   key = key.replace(/\\n/g, '\n');
-  if (!key.includes('\n')) {
-    key = key
-      .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-      .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----\n');
-  }
   return key;
 }
 
