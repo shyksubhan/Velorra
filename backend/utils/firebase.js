@@ -26,7 +26,7 @@ function initFirebase() {
 
   /* Skip if already initialized */
   if (admin.apps.length > 0) {
-    db = admin.firestore();
+    db = admin.apps[0].firestore();
     db.settings({ ignoreUndefinedProperties: true });
     return db;
   }
