@@ -8,6 +8,15 @@ const admin = require('firebase-admin');
 let db   = null;
 let tried = false;  /* Only attempt init once */
 
+function parsePrivateKey(raw) {
+  if (!raw) return null;
+  /* Remove surrounding quotes if any */
+  let key = raw.replace(/^["']|["']$/g, '').trim();
+  /* Replace literal \n with actual newlines */
+  key = key.replace(/\\n/g, '\n');
+  return key;
+}
+
 function initFirebase() {
   if (tried) return db;
   tried = true;
@@ -20,8 +29,8 @@ function initFirebase() {
   }
 
   /* Check that real credentials are present */
-  const projectId  = process.env.FIREBASE_PROJECT_ID;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  const projectId   = process.env.FIREBASE_PROJECT_ID;
+  const privateKey  = process.env.FIREBASE_PRIVATE_KEY;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 
   const isMissing = !projectId || !privateKey || !clientEmail ||
@@ -37,11 +46,16 @@ function initFirebase() {
   }
 
   try {
+    const parsedKey = parsePrivateKey(privateKey);
+
+    console.log('🔑 Private key preview:', parsedKey.substring(0, 40));
+    console.log('🔑 Private key ends with:', parsedKey.substring(parsedKey.length - 40));
+
     const serviceAccount = {
       type:                        'service_account',
       project_id:                  projectId,
       private_key_id:              process.env.FIREBASE_PRIVATE_KEY_ID,
-      private_key:                 privateKey.replace(/\\n/g, '\n'),
+      private_key:                 parsedKey,
       client_email:                clientEmail,
       client_id:                   process.env.FIREBASE_CLIENT_ID,
       auth_uri:                    'https://accounts.google.com/o/oauth2/auth',
