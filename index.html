@@ -389,27 +389,33 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
           wrapper.innerHTML = slides.map((p, i) => {
             const hasVideo = !!p.video;
             const hasImage = p.images && p.images.length > 0;
-            let mediaHtml = '';
+            const bgImg = hasImage ? p.images[0] : '';
+            
+            let visualHtml = '';
             if (hasVideo) {
-              let blurBg = hasImage ? `<div style="position:absolute;inset:0;background:url('${p.images[0]}') center/cover;filter:blur(30px);transform:scale(1.1);opacity:0.6;z-index:0;"></div>` : '';
-              mediaHtml = `${blurBg}<video src="${p.video}" autoplay muted loop playsinline></video>`;
+              visualHtml = `<video src="${p.video}" autoplay muted loop playsinline></video>`;
             } else if (hasImage) {
-              mediaHtml = `<div style="position:absolute;inset:0;background:url('${p.images[0]}') center/cover;filter:blur(30px);transform:scale(1.1);opacity:0.6;z-index:0;"></div><img src="${p.images[0]}" alt="${p.name}" style="object-fit:contain;z-index:0;" />`;
+              visualHtml = `<img src="${bgImg}" alt="${p.name}" />`;
             } else {
-              mediaHtml = `<div style="width:100%;height:100%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:3rem;z-index:0;position:absolute;inset:0;">${p.emoji || '✨'}</div>`;
+              visualHtml = `<div class="no-visual">${p.emoji || '✨'}</div>`;
             }
             return `
               <div class="hero-slide ${i === 0 ? 'active' : ''}">
-              ${mediaHtml}
-              <div class="hero-video-overlay"></div>
-              <div class="hero-content">
-                <p class="hero-title-main">${p.name}</p>
-                <p class="hero-title-sub" style="font-size: 1.2rem; margin-top: 10px; color: #fff;">PKR ${Number(p.price).toLocaleString()}</p>
-                <a href="product.html?id=${p.id}" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
+                <div class="hero-bg-layer" style="background-image: url('${bgImg}');"></div>
+                <div class="hero-video-overlay"></div>
+                <div class="hero-layout">
+                  <div class="hero-text-side">
+                    <p class="hero-title-main">${p.name}</p>
+                    <p class="hero-title-sub" style="font-size: 1.2rem; margin-top: 10px; color: #fff;">PKR ${Number(p.price).toLocaleString()}</p>
+                    <a href="product.html?id=${p.id}" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
+                  </div>
+                  <div class="hero-visual-side">
+                    ${visualHtml}
+                  </div>
+                </div>
               </div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
 
         if (slides.length > 1) {
           dotsContainer.innerHTML = slides.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></div>`).join('');
