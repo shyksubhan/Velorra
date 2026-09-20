@@ -202,41 +202,23 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
   </div>
 </section>
 
-  <!-- BRAND STORY -->
-  <section id="story">
-    <div class="container">
-      <div class="story-grid">
-        <div class="story-visual reveal">
-          <img src="https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=700&q=85&fit=crop" alt="Golnisà — Premium Jewelry for Women in Pakistan" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
-          <div class="story-accent"></div>
-        </div>
-        <div class="story-text reveal reveal-delay-2">
-          <p class="section-label">The Golnisà Story</p>
-          <h2 class="section-title">Born From a Passion<br>for <em>Beauty</em></h2>
-          <div class="gold-rule"></div>
-          <p>Golnisà was founded on a simple belief — that every woman deserves jewelry that is <strong>as beautiful as she is</strong>. Every necklace, every ring, every bracelet is curated with intention, so you don't just dress up — you express your soul.</p>
-          <p>From the streets of Lahore to wardrobes across Pakistan, we bring you fine jewelry that <strong>transcends trends</strong> and celebrates timeless femininity with every look.</p>
-          <a href="about.html" class="btn btn-outline" style="margin-top:20px;">Discover Our Story</a>
-          <div class="story-stats">
-            <div><div class="stat-num">200+</div><div class="stat-label">Accessories</div></div>
-            <div><div class="stat-num">5K+</div><div class="stat-label">Happy Customers</div></div>
-            <div><div class="stat-num">100%</div><div class="stat-label">Gentle Quality</div></div>
-          </div>
+      <!-- HIGHLIGHTS / REVIEWS -->
+    <section id="highlights" style="background: var(--bg); padding-top: 20px;">
+      <div class="container">
+        <h2 class="section-title" style="text-align:center;margin-bottom:30px">Our Happy Customers</h2>
+        <div class="premium-cat-grid" id="highlights-container" style="justify-content: flex-start; padding: 0 5%;">
+          <p style="text-align:center;width:100%;">Loading reviews...</p>
         </div>
       </div>
+    </section>
+
+    <!-- FULLSCREEN HIGHLIGHT MODAL -->
+    <div id="highlight-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
+      <div style="position:absolute; top:20px; right:20px; cursor:pointer; color:#fff; font-size:2rem; z-index:10001; padding: 10px;" onclick="document.getElementById(`'highlight-modal`').style.display=`'none`'">&times;</div>
+      <img id="highlight-modal-img" src="" style="max-width:100%; max-height:100vh; object-fit:contain; border-radius: 12px;" />
     </div>
-  </section>
-  <!-- REVIEWS (Dynamic — real customer reviews only) -->
-  <section id="testimonials">
-    <div class="container">
-      <p class="section-label" style="text-align:center">What Our Clients Say</p>
-      <h2 class="section-title" style="text-align:center;margin-bottom:48px">Voices of <em>Golnisà</em></h2>
-      <div class="testimonial-slider" id="reviews-container">
-        <p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem">Loading reviews…</p>
-      </div>
-    </div>
-  </section>
-  <!-- NEWSLETTER -->
+
+    <!-- NEWSLETTER -->
   <section id="newsletter" style="background: var(--bg-deep); position:relative; overflow:hidden;">
     <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1400&q=60&fit=crop') center/cover no-repeat;opacity:0.07;pointer-events:none;z-index:0;"></div>
     <div class="container" style="position:relative;z-index:1;">
@@ -447,5 +429,28 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
       }
     })();
   </script>
+
+    <script>
+      (async () => {
+        try {
+          const res = await fetch("/api/highlights");
+          const highlights = await res.json();
+          const hc = document.getElementById("highlights-container");
+          if (!highlights || highlights.length === 0) {
+            document.getElementById("highlights").style.display = "none";
+            return;
+          }
+          hc.innerHTML = highlights.map(h => `
+            <div class="premium-cat-card" style="cursor:pointer;" onclick="document.getElementById(` + "'highlight-modal'" + `).style.display=` + "'flex'" + `; document.getElementById(` + "'highlight-modal-img'" + `).src=` + "'" + `${h.url}` + "'" + `">
+              <div class="cat-img-wrap"><img src="${h.url}" loading="lazy" style="border-radius: 50%; padding: 4px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);" /></div>
+              <div class="cat-img-info"><p class="cat-name">Review</p></div>
+            </div>
+          `).join("");
+        } catch(e) {
+          console.error("Highlights load error", e);
+          document.getElementById("highlights").style.display = "none";
+        }
+      })();
+    </script>
 </body>
 </html>

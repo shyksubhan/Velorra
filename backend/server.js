@@ -556,6 +556,50 @@ app.use((err, req, res, next) => {
     }
   } catch (e) { console.warn('Could not load data from Firestore:', e.message); }
 
+  /* 🔸 GET /api/highlights 🔸 */
+  app.get('/api/highlights', (req, res) => {
+    res.json(store.settings?.highlights || []);
+  });
+
+  const { requireRole, requireAdmin } = require('./middleware/auth');
+  app.post('/api/admin/highlights', requireAdmin, async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) return res.status(400).json({ error: 'Image URL required' });
+      
+      if (!store.settings) store.settings = {};
+      if (!store.settings.highlights) store.settings.highlights = [];
+      
+      const hl = { id: 'hl_' + Date.now(), url: url, date: new Date().toISOString() };
+      store.settings.highlights.unshift(hl);
+      
+      const { getDB } = require('./utils/firebase');
+      try {
+        if (getDB()) await getDB().collection('settings').doc('global').set({ highlights: store.settings.highlights }, { merge: true });
+      } catch(e) {}
+      
+      res.json(hl);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to add highlight' });
+    }
+  });
+
+  app.delete('/api/admin/highlights/:id', requireAdmin, async (req, res) => {
+    try {
+      if (!store.settings?.highlights) return res.json({ success: true });
+      store.settings.highlights = store.settings.highlights.filter(h => h.id !== req.params.id);
+      
+      const { getDB } = require('./utils/firebase');
+      try {
+        if (getDB()) await getDB().collection('settings').doc('global').set({ highlights: store.settings.highlights }, { merge: true });
+      } catch(e) {}
+      
+      res.json({ success: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete highlight' });
+    }
+  });
+
   app.listen(PORT, () => {
     console.log('\n╔════════════════════════════════════════════════╗');
     console.log('║       VELORRA BACKEND SERVER v2.0              ║');
