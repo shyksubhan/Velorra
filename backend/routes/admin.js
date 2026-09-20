@@ -510,6 +510,45 @@ router.get('/debug-product', async (req, res) => {
   }
 });
 
+router.post('/cleanup-products', requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    let deletedCount = 0;
+    if (isFirebaseAvailable()) {
+      const db = getDB();
+      const productsRef = db.collection('products');
+      const snapshot = await productsRef.get();
+      const batch = db.batch();
+      
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.category === 'hair-accessories' || data.category === 'clothing') {
+          batch.delete(doc.ref);
+          deletedCount++;
+        }
+      });
+      if (deletedCount > 0) {
+        await batch.commit();
+      }
+    }
+    
+    // Also clean local store memory
+    const initialLen = store.products.length;
+    store.products = store.products.filter(p => p.category !== 'hair-accessories' && p.category !== 'clothing');
+    deletedCount = Math.max(deletedCount, initialLen - store.products.length);
+    store.saveAllData();
+
+    store.logActivity({
+      staffId: req.user.uid, staffName: req.user.email || 'Unknown',
+      staffRole: req.user.role, action: 'cleanup_products', details: `Deleted ${deletedCount} old products.`
+    });
+
+    return res.json({ message: `Successfully deleted ${deletedCount} old products.`, count: deletedCount });
+  } catch (err) {
+    console.error('Cleanup error:', err);
+    return res.status(500).json({ error: 'Failed to cleanup products.' });
+  }
+});
+
 module.exports = router;
 
 

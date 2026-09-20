@@ -194,7 +194,10 @@ async function golnisaRenderHomepageGrids() {
 
     // --- 1. Render Pinned Collections ---
     const pinnedRes = await apiGet('/admin/pinned').catch(e => null);
-    const pinnedData = pinnedRes && pinnedRes.pinned ? pinnedRes.pinned : [];
+    let pinnedData = pinnedRes && pinnedRes.pinned ? pinnedRes.pinned : [];
+    // Filter out old categories like clothing or hair-accessories
+    pinnedData = pinnedData.filter(pin => typeof GOLNISÀ_CAT_LABELS !== 'undefined' && GOLNISÀ_CAT_LABELS[pin.id]);
+    
     const pinnedContainer = document.getElementById('pinned-collections-wrapper');
     if (pinnedContainer && pinnedData.length > 0) {
       pinnedContainer.innerHTML = '';
