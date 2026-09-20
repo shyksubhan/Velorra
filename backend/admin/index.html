@@ -905,31 +905,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <input class="search-input" id="product-search" placeholder="Search…" oninput="filterProductsTable()"/>
       <select class="filter-sel" id="product-category-filter" onchange="filterProductsTable()" title="Filter by category">
         <option value="">All Categories</option>
-        <option value="scrunchies">Scrunchies</option>
-        <option value="clips">Hair Clips</option>
-        <option value="hair-bands">Hair Bands</option>
-        <option value="pins">Pins</option>
-        <option value="ponies">Ponies</option>
-        
-        <option value="fancy">Fancy Accessories</option>
         <option value="bracelets">Bracelets</option>
         <option value="rings">Rings</option>
         <option value="earrings">Earrings</option>
         <option value="necklace">Necklace</option>
         <option value="bangles">Bangles</option>
         <option value="jewelry-sets">Jewelry Sets</option>
-        <option value="gift-items">Gift Items</option>
-        <option value="fancy-wear">Fancy Wear</option>
-        <option value="kaftan">Kaftan</option>
-        <option value="casual">Casual</option>
-        <option value="party-wear">Party Wear</option>
-        <option value="summer-collection">Summer Collection</option>
-        <option value="winter-collection">Winter Collection</option>
-        <option value="daily-pret">Daily Pret Ready to Wear</option>
-        <option value="unstitched">Unstitched</option>
-        <option value="g-prints">G. Prints</option>
-        <option value="new-arrivals">New Arrivals</option>
-        <option value="trending-now">Trending Now</option>
 
       </select>
       <select class="filter-sel" id="product-sort-order" onchange="filterProductsTable()" title="Sort by time added">
@@ -1213,6 +1194,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <button class="btn btn-gold" onclick="updateMyProfile()">Update Profile</button>
   </div>
 
+  <div class="settings-section" id="hero-slides-section">
+    <h3><i class="fa-regular fa-images" style="color:var(--gold);margin-right:8px"></i>Hero Slideshow Management</h3>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Select the products you want to feature in the homepage hero slideshow.</p>
+    <button class="btn btn-gold" onclick="openHeroSlidesModal()"><i class="fa-solid fa-pen-to-square"></i> Manage Hero Slides</button>
+  </div>
+
   <div class="settings-section" id="launch-date-section">
     <h3><i class="fa-solid fa-flag" style="color:var(--gold);margin-right:8px"></i>Site Launch Date</h3>
     <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Monthly &amp; lifetime profit statements only count sales from this date onward. Set it to the day Golnisà actually went live.</p>
@@ -1332,15 +1319,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div style="display:flex;gap:10px;margin-bottom:20px;">
         <select id="pinned-sel" class="form-control" style="flex:1;">
           <option value="">-- Select Collection --</option>
-          <optgroup label="── Hair Accessories ──">
-            <option value="scrunchies">Scrunchies</option>
-            <option value="clips">Hair Clips</option>
-            <option value="hair-bands">Hair Bands</option>
-            <option value="pins">Pins</option>
-            <option value="ponies">Ponies</option>
-            <option value="fancy">Fancy Hair Accessories</option>
-            <option value="gift-items">Gift Items</option>
-          </optgroup>
           <optgroup label="── Jewelry ──">
             <option value="bracelets">Bracelets</option>
             <option value="rings">Rings</option>
@@ -1348,19 +1326,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
             <option value="necklace">Necklace</option>
             <option value="bangles">Bangles</option>
             <option value="jewelry-sets">Jewelry Sets</option>
-          </optgroup>
-          <optgroup label="── Clothing ──">
-            <option value="fancy-wear">Fancy Wear</option>
-            <option value="kaftan">Kaftan</option>
-            <option value="casual">Casual</option>
-            <option value="party-wear">Party Wear</option>
-            <option value="summer-collection">Summer Collection</option>
-            <option value="winter-collection">Winter Collection</option>
-            <option value="daily-pret">Daily Pret Ready to Wear</option>
-            <option value="unstitched">Unstitched</option>
-            <option value="g-prints">G. Prints</option>
-            <option value="new-arrivals">New Arrivals</option>
-            <option value="trending-now">Trending Now</option>
           </optgroup>
           <optgroup label="── Other ──">
             <option value="sale">Sale</option>
@@ -1377,6 +1342,34 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closePinnedModal()">Cancel</button>
       <button class="btn btn-primary" onclick="savePinnedCollections()">Save Settings</button>
+    </div>
+  </div>
+</div>
+<!-- Hero Slides Modal -->
+<div class="modal-overlay" id="hero-slides-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Hero Slideshow Products</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('hero-slides-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:15px;color:var(--muted);font-size:0.9rem;">Select products to feature in the homepage hero slideshow. Search to find products, then add them.</p>
+      
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="flex:1; position:relative;">
+          <input type="text" id="hero-search-input" class="form-control" placeholder="Search product name..." style="width:100%;" oninput="searchHeroProducts()">
+          <div id="hero-search-results" style="position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);max-height:200px;overflow-y:auto;z-index:10;display:none;border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+        </div>
+      </div>
+
+      <table class="table">
+        <tbody id="hero-slides-list-body">
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('hero-slides-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveHeroSlides()">Save Settings</button>
     </div>
   </div>
 </div>
@@ -1402,15 +1395,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <label>Category *</label>
           <select id="p-category">
             <option value="">Select category</option>
-            <optgroup label="Hair Accessories">
-              <option value="scrunchies">Scrunchies</option>
-              <option value="clips">Hair Clips</option>
-              <option value="hair-bands">Hair Bands</option>
-              <option value="pins">Pins</option>
-              <option value="ponies">Ponies</option>
-              <option value="fancy">Fancy Accessories</option>
-              <option value="gift-items">Gift Items</option>
-            </optgroup>
             <optgroup label="Jewelry">
               <option value="bracelets">Bracelets</option>
               <option value="rings">Rings</option>
@@ -1419,37 +1403,11 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
               <option value="bangles">Bangles</option>
               <option value="jewelry-sets">Jewelry Sets</option>
             </optgroup>
-            <optgroup label="Clothing">
-              <option value="fancy-wear">Fancy Wear</option>
-              <option value="kaftan">Kaftan</option>
-              <option value="casual">Casual</option>
-              <option value="party-wear">Party Wear</option>
-              <option value="summer-collection">Summer Collection</option>
-              <option value="winter-collection">Winter Collection</option>
-              <option value="daily-pret">Daily Pret Ready to Wear</option>
-              <option value="unstitched">Unstitched</option>
-              <option value="g-prints">G. Prints</option>
-              <option value="new-arrivals">New Arrivals</option>
-              <option value="trending-now">Trending Now</option>
-            </optgroup>
           </select>
         </div>
         <div class="form-group" style="flex: 2;">
           <label>Additional Categories</label>
           <div id="p-additional-categories" style="border: 1px solid var(--border); border-radius: 8px; padding: 10px; height: 120px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 6px;">
-            <strong style="font-size:0.8rem; color:var(--muted); margin-top:4px;">Clothing</strong>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="fancy-wear"> Fancy Wear</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="kaftan"> Kaftan</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="casual"> Casual</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="party-wear"> Party Wear</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="summer-collection"> Summer Collection</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="winter-collection"> Winter Collection</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="daily-pret"> Daily Pret</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="unstitched"> Unstitched</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="g-prints"> G. Prints</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="new-arrivals"> New Arrivals</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="trending-now"> Trending Now</label>
-
             <strong style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Jewelry</strong>
             <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="bracelets"> Bracelets</label>
             <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="rings"> Rings</label>
@@ -1457,15 +1415,6 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
             <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="necklace"> Necklace</label>
             <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="bangles"> Bangles</label>
             <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="jewelry-sets"> Jewelry Sets</label>
-
-            <strong style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Hair Accessories</strong>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="scrunchies"> Scrunchies</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="clips"> Hair Clips</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="hair-bands"> Hair Bands</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="pins"> Pins</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="ponies"> Ponies</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="fancy"> Fancy</label>
-            <label style="font-size:0.9rem; display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;"><input type="checkbox" value="gift-items"> Gift Items</label>
           </div>
         </div>
         <div class="form-group"><label>Badge</label>
@@ -3691,6 +3640,133 @@ async function savePinnedCollections() {
   btn.innerText = orig;
 }
 
+/* ═══════════════════ HERO SLIDES ═══════════════════ */
+let adminHeroSlides = [];
+let heroSearchResults = [];
+
+async function openHeroSlidesModal() {
+  document.getElementById('hero-slides-modal').style.display = 'flex';
+  const tbody = document.getElementById('hero-slides-list-body');
+  tbody.innerHTML = '<tr><td colspan="2" style="text-align:center"><div class="spinner"></div></td></tr>';
+  
+  try {
+    const res = await apiFetch('/admin/hero-slides');
+    const data = await res.json();
+    adminHeroSlides = data.slides || [];
+    renderHeroSlidesList();
+  } catch (err) {
+    toast('Error loading hero slides', 'error');
+    tbody.innerHTML = '';
+  }
+}
+
+function renderHeroSlidesList() {
+  const tbody = document.getElementById('hero-slides-list-body');
+  if (!adminHeroSlides.length) {
+    tbody.innerHTML = '<tr><td colspan="2" class="empty-state">No hero slides. Search products to add some!</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = adminHeroSlides.map((id, i) => {
+    const p = allProducts.find(prod => prod.id === id);
+    const name = p ? p.name : 'Unknown Product';
+    const mainImg = p && p.images && p.images[0] ? `<img src="${p.images[0]}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;margin-right:10px;">` : '';
+    
+    return `
+    <tr style="border-bottom: 1px solid var(--border);">
+      <td style="padding:10px 8px;display:flex;align-items:center;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;font-size:0.7rem;font-weight:700;margin-right:10px;">${i + 1}</span>
+        ${mainImg}
+        <strong style="font-size:0.9rem;">${name}</strong>
+        <span style="margin-left:8px;font-size:0.7rem;color:var(--muted);font-family:monospace;">${id}</span>
+      </td>
+      <td style="text-align:right;padding:10px 8px;white-space:nowrap;">
+        <button class="btn btn-outline btn-sm" onclick="moveHeroSlide(${i}, -1)" ${i===0?'disabled':''} title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+        <button class="btn btn-outline btn-sm" onclick="moveHeroSlide(${i}, 1)" ${i===adminHeroSlides.length-1?'disabled':''} title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+        <button class="btn btn-sm" onclick="removeHeroSlide(${i})" title="Remove" style="background:rgba(217,106,106,0.15);color:#d96a6a;border:1px solid rgba(217,106,106,0.3);margin-left:4px;"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>
+  `;
+  }).join('');
+}
+
+function searchHeroProducts() {
+  const q = document.getElementById('hero-search-input').value.toLowerCase();
+  const resultsContainer = document.getElementById('hero-search-results');
+  
+  if (q.length < 2) {
+    resultsContainer.style.display = 'none';
+    return;
+  }
+  
+  heroSearchResults = allProducts.filter(p => p.name && p.name.toLowerCase().includes(q)).slice(0, 5);
+  
+  if (heroSearchResults.length === 0) {
+    resultsContainer.innerHTML = '<div style="padding:10px;text-align:center;color:var(--muted);font-size:0.85rem;">No products found.</div>';
+  } else {
+    resultsContainer.innerHTML = heroSearchResults.map(p => {
+      const mainImg = p.images && p.images[0] ? `<img src="${p.images[0]}" style="width:24px;height:24px;object-fit:cover;border-radius:3px;margin-right:8px;">` : '';
+      return `
+        <div style="padding:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background='transparent'">
+          <div style="display:flex;align-items:center;">
+            ${mainImg}
+            <span style="font-size:0.85rem;">${p.name}</span>
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="addHeroSlide('${p.id}')">Add</button>
+        </div>
+      `;
+    }).join('');
+  }
+  resultsContainer.style.display = 'block';
+}
+
+function addHeroSlide(id) {
+  if (adminHeroSlides.includes(id)) {
+    toast('Already in hero slideshow', 'info');
+  } else {
+    adminHeroSlides.push(id);
+    renderHeroSlidesList();
+  }
+  document.getElementById('hero-search-input').value = '';
+  document.getElementById('hero-search-results').style.display = 'none';
+}
+
+function removeHeroSlide(index) {
+  adminHeroSlides.splice(index, 1);
+  renderHeroSlidesList();
+}
+
+function moveHeroSlide(index, dir) {
+  const target = index + dir;
+  if (target < 0 || target >= adminHeroSlides.length) return;
+  const temp = adminHeroSlides[index];
+  adminHeroSlides[index] = adminHeroSlides[target];
+  adminHeroSlides[target] = temp;
+  renderHeroSlidesList();
+}
+
+async function saveHeroSlides() {
+  const btn = document.querySelector('#hero-slides-modal .btn-primary');
+  const orig = btn.innerText;
+  btn.innerText = 'Saving...';
+  try {
+    const res = await apiFetch('/admin/hero-slides', {
+      method: 'POST',
+      body: JSON.stringify({ slides: adminHeroSlides })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast('Hero slides saved ✓', 'success');
+      closeModal('hero-slides-modal');
+    } else {
+      toast(data?.error || 'Failed to save', 'error');
+    }
+  } catch (err) {
+    toast('Error saving hero slides', 'error');
+  }
+  btn.innerText = orig;
+}
+
 /* ═══════════════════ PRODUCTS ═══════════════════ */
 
 function exportProductsExcel() {
@@ -3838,19 +3914,12 @@ function exportProductsExcel() {
      SHEET 2 — One sheet per category
   ──────────────────────────────────────────────── */
   const categories = [
-    { key: 'scrunchies',  label: 'Scrunchies',        color: 'C0392B' },
-    { key: 'clips',    label: 'Hair Clips',           color: '8E44AD' },
-    { key: 'hair-bands',  label: 'Hair Bands',         color: '2980B9' },
-    { key: 'pins',        label: 'Pins',               color: '27AE60' },
-    { key: 'ponies',      label: 'Ponies',             color: 'D35400' },
-    { key: 'fancy',       label: 'Fancy Accessories',  color: 'E91E8C' },
     { key: 'bracelets',   label: 'Bracelets',          color: '16A085' },
     { key: 'rings',       label: 'Rings',              color: 'C0392B' },
     { key: 'earrings',    label: 'Earrings',           color: '8E44AD' },
     { key: 'necklace',    label: 'Necklace',           color: '2471A3' },
     { key: 'bangles',     label: 'Bangles',            color: 'D35400' },
     { key: 'jewelry-sets',label: 'Jewelry Sets',       color: '7D3C98' },
-    { key: 'gift-items',  label: 'Gift Items',         color: '1E8449' },
   ];
 
   categories.forEach(({ key, label, color }) => {

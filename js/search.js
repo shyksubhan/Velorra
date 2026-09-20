@@ -13,8 +13,6 @@ const VELORRA_SEARCH_INDEX = [
   /* Categories */
   { type: 'category', title: 'All Collections',                 keywords: 'all shop products catalog', url: 'shop',     badge: 'Category' },
   { type: 'category', title: 'Jewelry',                         keywords: 'jewelry rings bracelets necklaces earrings bangles sets', url: 'collections?main=jewelry', badge: 'Category' },
-  { type: 'category', title: 'Hair Accessories',                keywords: 'hair accessories scrunchies clips bands pins ponies', url: 'collections?main=hair-accessories', badge: 'Category' },
-  { type: 'category', title: 'Clothing',                        keywords: 'clothing apparel casual fancy party wear', url: 'collections?main=clothing', badge: 'Category' },
   { type: 'category', title: 'Sale Items',                      keywords: 'sale discount offer reduced price',        url: 'shop?cat=sale',      badge: 'Sale' },
   /* Pages */
   { type: 'page', title: 'Our Story',        keywords: 'about velorra story brand lahore founded history',   url: 'about',                    badge: 'Page' },

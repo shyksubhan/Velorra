@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Golnisà — Hair Accessories, Jewelry & Women's Clothing </title>
-  <meta name="description" content="Shop Pakistan's finest hair accessories & jewelry online at Golnisà. Scrunchies, hair clips, pins, necklaces, earrings, rings & bracelets. Cash on Delivery across Pakistan." />
+  <title>Golnisà — Premium Jewelry Online Pakistan</title>
+  <meta name="description" content="Shop Pakistan's finest jewelry online at Golnisà. Necklaces, earrings, rings, bracelets, bangles & jewelry sets. Cash on Delivery across Pakistan." />
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
@@ -25,7 +25,7 @@
           "@type": "ImageObject",
           "url": "https://golnisa.store/images/logo.svg"
         },
-        "description": "Pakistan's premier online store for hair accessories and jewelry. Scrunchies, pins, hair clips, necklaces, earrings, bracelets and more.",
+        "description": "Pakistan's premier online store for premium jewelry. Necklaces, earrings, rings, bracelets, bangles, jewelry sets and more.",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Lahore",
@@ -105,10 +105,13 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
       <li class="nav-dropdown">
         <a href="shop">Shop <i class="fa-solid fa-chevron-down" style="font-size:0.7em;margin-left:4px;"></i></a>
         <ul class="dropdown-menu">
-          <li><a href="shop">All Collections</a></li>
-          <li><a href="jewelry.html">Jewelry</a></li>
-          <li><a href="hair-accessories.html">Hair Accessories</a></li>
-          <li><a href="clothing.html">Clothing</a></li>
+          <li><a href="shop">All Jewelry</a></li>
+          <li><a href="jewelry.html?cat=necklace">Necklaces</a></li>
+          <li><a href="jewelry.html?cat=earrings">Earrings</a></li>
+          <li><a href="jewelry.html?cat=bracelets">Bracelets</a></li>
+          <li><a href="jewelry.html?cat=rings">Rings</a></li>
+          <li><a href="jewelry.html?cat=bangles">Bangles</a></li>
+          <li><a href="jewelry.html?cat=jewelry-sets">Jewelry Sets</a></li>
         </ul>
       </li>
       <li><a href="about">Our Story</a></li>
@@ -131,34 +134,22 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
     <div class="search-box">
       <div class="search-inner">
         <span class="search-icon-big"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <input type="text" id="search-input" placeholder="Search hair accessories, scrunchies, pins…" autocomplete="off" />
+        <input type="text" id="search-input" placeholder="Search jewelry, necklaces, earrings…" autocomplete="off" />
         <button id="search-close">&#10005;</button>
       </div>
       <div id="search-results"></div>
     </div>
   </div>
-  <!-- HERO -->
-  <section id="hero">
-    <!-- Video Background -->
-    <video
-      id="hero-video"
-      autoplay
-      muted
-      loop
-      playsinline
-      preload="auto"
-      aria-hidden="true"
-    >
-      <source id="hero-video-src" src="videos/hero-bg.mp4" type="video/mp4" />
-    </video>
-    <!-- Dark overlay so text stays readable -->
-    <div class="hero-video-overlay" aria-hidden="true"></div>
-    <!-- SEO-only hidden heading (not visible) -->
-    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Golnisà — Hair Accessories &amp; Jewelry Online Pakistan</h1>
-    <div class="hero-content">
-      <p class="hero-title-main">GOLNISÀ</p>
-      <p class="hero-title-sub">Hair Accessories, Jewelry &amp; Women's Clothing · Pakistan</p>
+  <!-- HERO SLIDESHOW -->
+  <section id="hero" class="hero-slideshow-container">
+    <div id="hero-slides-wrapper">
+      <!-- Dynamic slides injected here -->
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#2a2522;">Loading collections...</div>
     </div>
+    <!-- SEO-only hidden heading (not visible) -->
+    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Golnisà — Premium Jewelry Online Pakistan</h1>
+    <!-- Navigation dots -->
+    <div class="hero-dots" id="hero-dots"></div>
   </section>
 
   <!-- CATEGORIES -->
@@ -167,38 +158,31 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
       <p class="section-label">Shop By Category</p>
       <h2 class="section-title">Find Your <em>Style</em></h2>
       <div class="gold-rule"></div>
-      <div class="premium-cat-grid">
-
-        <a href="jewelry.html" class="premium-cat-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/jewelry-new.jpg" alt="Jewelry Online Pakistan — Golnisà" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Jewelry</p>
-          </div>
+      <div class="premium-cat-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+        <a href="jewelry.html?cat=necklace" class="premium-cat-card">
+          <div class="cat-img-wrap"><img src="images/categories/necklace.jpg" alt="Necklaces" loading="lazy" onerror="this.src='images/categories/jewelry-new.jpg'"/><div class="cat-img-overlay"></div></div>
+          <div class="cat-img-info"><p class="cat-name">Necklaces</p></div>
         </a>
-
-        <a href="hair-accessories.html" class="premium-cat-card">
-          <div class="cat-img-wrap">
-            <img src="images/categories/scrunchies.jpg" alt="Hair Accessories Online Pakistan — Golnisà" loading="lazy"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Hair Accessories</p>
-          </div>
+        <a href="jewelry.html?cat=earrings" class="premium-cat-card">
+          <div class="cat-img-wrap"><img src="images/categories/jewelry-new.jpg" alt="Earrings" loading="lazy"/><div class="cat-img-overlay"></div></div>
+          <div class="cat-img-info"><p class="cat-name">Earrings</p></div>
         </a>
-
-        <a href="clothing.html" class="premium-cat-card">
-          <div class="cat-img-wrap" style="background:#eae3d8;">
-            <img src="images/categories/clothing-new.jpg" alt="Women's Clothing Pakistan — Golnisà" loading="lazy" onerror="this.style.display='none'"/>
-            <div class="cat-img-overlay"></div>
-          </div>
-          <div class="cat-img-info">
-            <p class="cat-name">Clothing</p>
-          </div>
+        <a href="jewelry.html?cat=rings" class="premium-cat-card">
+          <div class="cat-img-wrap"><img src="images/categories/jewelry-new.jpg" alt="Rings" loading="lazy"/><div class="cat-img-overlay"></div></div>
+          <div class="cat-img-info"><p class="cat-name">Rings</p></div>
         </a>
-
+        <a href="jewelry.html?cat=bracelets" class="premium-cat-card">
+          <div class="cat-img-wrap"><img src="images/categories/jewelry-new.jpg" alt="Bracelets" loading="lazy"/><div class="cat-img-overlay"></div></div>
+          <div class="cat-img-info"><p class="cat-name">Bracelets</p></div>
+        </a>
+        <a href="jewelry.html?cat=bangles" class="premium-cat-card">
+          <div class="cat-img-wrap"><img src="images/categories/jewelry-new.jpg" alt="Bangles" loading="lazy"/><div class="cat-img-overlay"></div></div>
+          <div class="cat-img-info"><p class="cat-name">Bangles</p></div>
+        </a>
+        <a href="jewelry.html?cat=jewelry-sets" class="premium-cat-card">
+          <div class="cat-img-wrap"><img src="images/categories/jewelry-new.jpg" alt="Jewelry Sets" loading="lazy"/><div class="cat-img-overlay"></div></div>
+          <div class="cat-img-info"><p class="cat-name">Jewelry Sets</p></div>
+        </a>
       </div>
     </div>
   </section>
@@ -218,44 +202,20 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
   </div>
 </section>
 
-<!-- Featured Hair Accessories -->
-<section id="featured-hair" style="padding:0 0 60px 0; background:var(--bg);">
-  <div class="container">
-    <div class="section-header" style="text-align:left; margin-bottom:20px;">
-      <h2 style="font-size:2rem;">Featured <em style="color: var(--gold);">Hair Accessories</em></h2>
-    </div>
-    <div class="horizontal-scroll-grid" id="featured-hair-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
-      <div style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.5;">Loading products...</div>
-    </div>
-  </div>
-</section>
-
-<!-- Featured Clothing -->
-<section id="featured-clothing" style="padding:0 0 60px 0; background:var(--bg);">
-  <div class="container">
-    <div class="section-header" style="text-align:left; margin-bottom:20px;">
-      <h2 style="font-size:2rem;">Featured <em style="color: var(--gold);">Clothing</em></h2>
-    </div>
-    <div class="horizontal-scroll-grid" id="featured-clothing-grid" style="display:flex; overflow-x:auto; gap:20px; padding-bottom:20px; scroll-snap-type:x mandatory;">
-      <div style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.5;">Loading products...</div>
-    </div>
-  </div>
-</section>
-
   <!-- BRAND STORY -->
   <section id="story">
     <div class="container">
       <div class="story-grid">
         <div class="story-visual reveal">
-          <img src="https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=700&q=85&fit=crop" alt="Golnisà — Handcrafted Hair Accessories and Jewelry for Women in Pakistan" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
+          <img src="https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=700&q=85&fit=crop" alt="Golnisà — Premium Jewelry for Women in Pakistan" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
           <div class="story-accent"></div>
         </div>
         <div class="story-text reveal reveal-delay-2">
           <p class="section-label">The Golnisà Story</p>
           <h2 class="section-title">Born From a Passion<br>for <em>Beauty</em></h2>
           <div class="gold-rule"></div>
-          <p>Golnisà was founded on a simple belief — that every woman deserves fashion and accessories that are <strong>as beautiful as she is</strong>. Every dress, every necklace, every scrunchie is curated with intention, so you don't just dress up — you express your soul.</p>
-          <p>From the streets of Lahore to wardrobes across Pakistan, we bring you premium clothing, fine jewelry, and hair accessories that <strong>transcend trends</strong> and celebrate timeless femininity with every look.</p>
+          <p>Golnisà was founded on a simple belief — that every woman deserves jewelry that is <strong>as beautiful as she is</strong>. Every necklace, every ring, every bracelet is curated with intention, so you don't just dress up — you express your soul.</p>
+          <p>From the streets of Lahore to wardrobes across Pakistan, we bring you fine jewelry that <strong>transcends trends</strong> and celebrates timeless femininity with every look.</p>
           <a href="about.html" class="btn btn-outline" style="margin-top:20px;">Discover Our Story</a>
           <div class="story-stats">
             <div><div class="stat-num">200+</div><div class="stat-label">Accessories</div></div>
@@ -297,7 +257,7 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="/" class="nav-logo nav-logo-link" style="display:inline-flex;align-items:center;text-decoration:none;"><img src="images/logo.svg" alt="Golnisà" style="height:36px;width:auto;" /></a>
-          <p>Pakistan's premier destination for fine clothing, jewelry, and hair accessories. Crafted with elegance for the modern woman.</p>
+          <p>Pakistan's premier destination for premium jewelry. Crafted with elegance for the modern woman.</p>
           <div class="footer-social" id="footer-social-links">
             <!-- filled by JS from config -->
           </div>
@@ -305,9 +265,11 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
         <div class="footer-col">
           <h4>Shop</h4>
           <ul>
-            <li><a href="jewelry.html">Jewelry</a></li>
-            <li><a href="hair-accessories.html">Hair Accessories</a></li>
-            <li><a href="clothing.html">Clothing</a></li>
+            <li><a href="jewelry.html">All Jewelry</a></li>
+            <li><a href="jewelry.html?cat=necklace">Necklaces</a></li>
+            <li><a href="jewelry.html?cat=earrings">Earrings</a></li>
+            <li><a href="jewelry.html?cat=bracelets">Bracelets</a></li>
+            <li><a href="jewelry.html?cat=rings">Rings</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -402,18 +364,78 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
       }
     })();
   </script>
-  <!-- Hero video responsive loader -->
+  <!-- Hero slideshow dynamic loader -->
   <script>
-    (function() {
-      var vid = document.getElementById('hero-video');
-      var src = document.getElementById('hero-video-src');
-      if (!vid || !src) return;
-      var isMobile = window.innerWidth <= 600;
-      var url = isMobile ? 'videos/hero-bg-mobile.mp4' : 'videos/hero-bg.mp4';
-      // Cache bust so browser always loads the latest file
-      src.src = url + '?v=2';
-      vid.load();
-      vid.play().catch(function(){});
+    (async function() {
+      const wrapper = document.getElementById('hero-slides-wrapper');
+      const dotsContainer = document.getElementById('hero-dots');
+      if (!wrapper) return;
+      try {
+        const res = await apiGet('/admin/hero-slides');
+        const ids = res.slides || [];
+        if (!ids.length) {
+          wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#2a2522;">No collections pinned to hero</div>';
+          return;
+        }
+        const data = await apiGet('/products');
+        const allProds = data.products || [];
+        const slides = ids.map(id => allProds.find(p => p.id === id)).filter(Boolean);
+        
+        if (!slides.length) {
+          wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#2a2522;">No collections pinned to hero</div>';
+          return;
+        }
+
+        wrapper.innerHTML = slides.map((p, i) => {
+          const hasVideo = !!p.video;
+          const hasImage = p.images && p.images.length > 0;
+          let mediaHtml = '';
+          if (hasVideo) {
+            mediaHtml = `<video src="${p.video}" autoplay muted loop playsinline></video>`;
+          } else if (hasImage) {
+            mediaHtml = `<img src="${p.images[0]}" alt="${p.name}" />`;
+          } else {
+            mediaHtml = `<div style="width:100%;height:100%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:3rem;">${p.emoji || '✨'}</div>`;
+          }
+          return `
+            <div class="hero-slide ${i === 0 ? 'active' : ''}">
+              ${mediaHtml}
+              <div class="hero-video-overlay"></div>
+              <div class="hero-content">
+                <p class="hero-title-main">${p.name}</p>
+                <p class="hero-title-sub" style="font-size: 1.2rem; margin-top: 10px; color: #fff;">PKR ${Number(p.price).toLocaleString()}</p>
+                <a href="product.html?id=${p.id}" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        if (slides.length > 1) {
+          dotsContainer.innerHTML = slides.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></div>`).join('');
+          
+          let currentSlide = 0;
+          const slideElements = wrapper.querySelectorAll('.hero-slide');
+          const dotElements = dotsContainer.querySelectorAll('.dot');
+          
+          const goToSlide = (idx) => {
+            slideElements[currentSlide].classList.remove('active');
+            dotElements[currentSlide].classList.remove('active');
+            currentSlide = idx;
+            slideElements[currentSlide].classList.add('active');
+            dotElements[currentSlide].classList.add('active');
+          };
+          
+          dotElements.forEach(d => d.addEventListener('click', () => goToSlide(Number(d.dataset.idx))));
+          
+          setInterval(() => {
+            let next = (currentSlide + 1) % slides.length;
+            goToSlide(next);
+          }, 5000);
+        }
+      } catch(e) {
+        console.error("Hero load error:", e);
+        wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#2a2522;">Failed to load collections</div>';
+      }
     })();
   </script>
 </body>

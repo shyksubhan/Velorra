@@ -22,6 +22,8 @@ const store = {
   coupons:      [],   /* discount coupons — super_admin managed */
   invoices:     [],   /* generated invoices */
   spendings:    [],   /* tracked expenses/investments */
+  pinnedCollections: [], /* featured collections on homepage */
+  heroSlides:   [],   /* product IDs shown in the hero slideshow */
   settings: {
     company: {
       name: 'Golnisà',

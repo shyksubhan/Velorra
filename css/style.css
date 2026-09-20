@@ -4,35 +4,35 @@
    Fonts: Cormorant Garamond (headings) · Jost (body & UI)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@200;300;400;500;600;700&display=swap');
 
 /* ── Variables ── */
 :root {
-  --bg:          #faf7f2;
-  --bg-deep:     #f2ede4;
+  --bg:          #fdf9f5;
+  --bg-deep:     #f5efe6;
   --card:        #ffffff;
-  --card-warm:   #fdf9f4;
-  --gold:        #b8883a;
-  --gold-light:  #d4a855;
-  --gold-rose:   #c47e6a;
-  --gold-dim:    #8a6530;
-  --rose:        #c4766a;
-  --rose-light:  #d4907e;
-  --champagne:   #e8d5b0;
+  --card-warm:   #fefaf6;
+  --gold:        #c9956b;
+  --gold-light:  #daa97e;
+  --gold-rose:   #d4917d;
+  --gold-dim:    #9a7048;
+  --rose:        #c9847a;
+  --rose-light:  #daa090;
+  --champagne:   #edd8c3;
   --text:        #2c1f14;
   --text-mid:    #5a4030;
   --muted:       #9a8070;
-  --border:      rgba(184,136,58,0.20);
-  --border-soft: rgba(184,136,58,0.10);
+  --border:      rgba(201,149,107,0.22);
+  --border-soft: rgba(201,149,107,0.12);
   --shadow:      rgba(100,60,20,0.10);
-  --font-display: 'Cormorant Garamond', 'Cormorant', Georgia, serif;
-  --font-body:    'Jost', 'Segoe UI', sans-serif;
-  --font-ui:      'Jost', 'Segoe UI', sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', 'Segoe UI', sans-serif;
+  --font-ui:      'Inter', 'Segoe UI', sans-serif;
   --nav-h:       72px;
   --transition:  0.36s cubic-bezier(0.25,0.8,0.25,1);
   /* keep legacy var names working */
-  --black:       #faf7f2;
-  --deep:        #f2ede4;
+  --black:       #fdf9f5;
+  --deep:        #f5efe6;
   --white:       #2c1f14;
 }
 
@@ -67,7 +67,7 @@ body > nav, header > nav, .site-nav {
   transition: background var(--transition), box-shadow var(--transition);
 }
 body > nav.scrolled, header > nav.scrolled {
-  background: rgba(250,247,242,0.96);
+  background: rgba(253,249,245,0.96);
   backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--border), 0 4px 24px var(--shadow);
 }

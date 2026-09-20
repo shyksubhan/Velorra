@@ -116,8 +116,6 @@ app.get('/sitemap.xml', async (req, res) => {
     { loc: `${DOMAIN}/`,                  priority: '1.0', changefreq: 'weekly'  },
     { loc: `${DOMAIN}/shop`,              priority: '0.9', changefreq: 'daily'   },
     { loc: `${DOMAIN}/jewelry`,           priority: '0.9', changefreq: 'daily'   },
-    { loc: `${DOMAIN}/hair-accessories`,  priority: '0.9', changefreq: 'daily'   },
-    { loc: `${DOMAIN}/clothing`,          priority: '0.9', changefreq: 'daily'   },
     { loc: `${DOMAIN}/about`,             priority: '0.7', changefreq: 'monthly' },
     { loc: `${DOMAIN}/contact`,           priority: '0.6', changefreq: 'monthly' },
     { loc: `${DOMAIN}/policy`,            priority: '0.5', changefreq: 'monthly' },
@@ -125,12 +123,8 @@ app.get('/sitemap.xml', async (req, res) => {
   ];
 
   const categories = [
-    // Hair accessories
-    'scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items',
     // Jewelry
-    'bracelets','rings','earrings','necklace',
-    // Clothing
-    'winter-collection','daily-pret','unstitched','g-prints','new-arrivals','trending-now',
+    'bracelets','rings','earrings','necklace','bangles','jewelry-sets',
     // Shop
     'sale'
   ];

@@ -3,35 +3,19 @@
    ============================================================ */
 
 const GOLNISÀ_CAT_LABELS = {
-  'clips':       'Hair Clips',
-  'catchers':    'Hair Clips',
-  'scrunchies':  'Scrunchies',
-  'hair-bands':  'Hair Bands',
-  'pins':        'Pins',
-  'ponies':      'Ponies',
-  'fancy':       'Fancy Accessories',
   'bracelets':   'Bracelets',
   'rings':       'Rings',
   'earrings':    'Earrings',
   'necklace':    'Necklace',
+  'bangles':     'Bangles',
+  'jewelry-sets':'Jewelry Sets',
   'gift-items':  'Gift Items',
-  'fancy-wear':  'Fancy Wear',
-  'kaftan':      'Kaftan',
-  'casual':      'Casual',
-  'party-wear':  'Party Wear',
-  'summer-collection': 'Summer Collection',
-  'winter-collection': 'Winter Collection',
-  'daily-pret':  'Daily Pret Ready to Wear',
-  'unstitched':  'Unstitched',
-  'g-prints':    'G. Prints',
   'new-arrivals':'New Arrivals',
   'trending-now':'Trending Now'
 };
 
 const CATEGORY_HIERARCHY = {
-  'jewelry': ['bracelets', 'rings', 'earrings', 'necklace', 'bangles', 'jewelry-sets'],
-  'hair-accessories': ['scrunchies', 'clips', 'hair-bands', 'pins', 'ponies', 'fancy', 'gift-items'],
-  'clothing': ['fancy-wear', 'kaftan', 'casual', 'party-wear', 'summer-collection', 'winter-collection', 'daily-pret', 'unstitched', 'g-prints', 'new-arrivals', 'trending-now']
+  'jewelry': ['bracelets', 'rings', 'earrings', 'necklace', 'bangles', 'jewelry-sets']
 };
 
 function velorCatLabel(cat) {
@@ -79,10 +63,11 @@ function golnisaProductCardHTML(p) {
         <p class="product-cat">${velorCatLabel(subcat || cat)}</p>
         <h3 class="product-name"><a href="product.html?id=${p.id}">${p.name}</a></h3>
         <div class="product-price">PKR ${Number(p.price).toLocaleString()} ${oldPrice}</div>
-        <div class="product-action-row" style="display:flex;gap:8px;margin-top:12px;">
-          <button class="btn-primary product-add" style="flex:1;font-size:0.8rem;padding:8px;" onclick="addToCart('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}')">Add to Bag</button>
-          <button class="btn-outline product-buy" style="flex:1;font-size:0.8rem;padding:8px;" onclick="buyNow('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}')">Buy it Now</button>
+        <div class="product-action-row" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          <button class="btn-primary product-add" style="flex:1;font-size:0.8rem;padding:8px;min-width:80px;" onclick="addToCart('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}')">Add to Bag</button>
+          <button class="btn-outline product-buy" style="flex:1;font-size:0.8rem;padding:8px;min-width:80px;" onclick="buyNow('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}')">Buy it Now</button>
         </div>
+        <a href="https://wa.me/${window.GOLNISÀ_CONFIG?.whatsapp?.number || '923014617844'}?text=${encodeURIComponent('Hi! I\\'d like to order this item from Golnisà:\\n\\n📦 Product: ' + p.name + '\\n💰 Price: PKR ' + Number(p.price).toLocaleString() + '\\n🔗 Link: ' + window.location.origin + '/product.html?id=' + p.id + '\\n\\nPlease confirm availability and delivery details.')}" target="_blank" rel="noopener" class="wa-order-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;margin-top:4px;background:#25D366;color:#fff;border-radius:8px;font-size:0.78rem;font-weight:600;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'"><i class="fa-brands fa-whatsapp" style="font-size:1rem;"></i> Order on WhatsApp</a>
       </div>
     </div>
   `;
@@ -227,8 +212,6 @@ async function golnisaRenderHomepageGrids() {
 
           const catUrl = (() => {
             if (CATEGORY_HIERARCHY['jewelry'].includes(pin.id)) return `jewelry.html?cat=${pin.id}`;
-            if (CATEGORY_HIERARCHY['hair-accessories'].includes(pin.id)) return `hair-accessories.html?cat=${pin.id}`;
-            if (CATEGORY_HIERARCHY['clothing'].includes(pin.id)) return `clothing.html?cat=${pin.id}`;
             return `shop.html?cat=${pin.id}`;
           })();
 
@@ -281,25 +264,6 @@ async function golnisaRenderHomepageGrids() {
       const jProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['jewelry'].includes(p.subcategory || p.category));
       jewGrid.innerHTML = jProds.length ? jProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
       golnisaReInitCards(jewGrid);
-    }
-
-    // Hair Accessories
-    const hairGrid = document.getElementById('featured-hair-grid');
-    if (hairGrid) {
-      const hProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['hair-accessories'].includes(p.subcategory || p.category));
-      hairGrid.innerHTML = hProds.length ? hProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
-      golnisaReInitCards(hairGrid);
-    }
-
-    // Clothing
-    const clothGrid = document.getElementById('featured-clothing-grid');
-    if (clothGrid) {
-      const cProds = featuredProducts.filter(p => {
-        const additional = p.additionalCategories || [];
-        return CATEGORY_HIERARCHY['clothing'].includes(p.subcategory || p.category) || additional.some(a => CATEGORY_HIERARCHY['clothing'].includes(a));
-      });
-      clothGrid.innerHTML = cProds.length ? cProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
-      golnisaReInitCards(clothGrid);
     }
 
   } catch (err) {

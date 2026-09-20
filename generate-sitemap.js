@@ -16,9 +16,7 @@ const TODAY   = new Date().toISOString().slice(0, 10);
 const STATIC = [
   { loc: `${DOMAIN}/`,         changefreq: 'weekly',  priority: '1.0' },
   { loc: `${DOMAIN}/shop`,     changefreq: 'daily',   priority: '0.9' },
-  { loc: `${DOMAIN}/clothing`, changefreq: 'daily',   priority: '0.9' },
   { loc: `${DOMAIN}/jewelry`,  changefreq: 'daily',   priority: '0.9' },
-  { loc: `${DOMAIN}/hair-accessories`, changefreq: 'daily', priority: '0.9' },
   { loc: `${DOMAIN}/about`,    changefreq: 'monthly', priority: '0.7' },
   { loc: `${DOMAIN}/contact`,  changefreq: 'monthly', priority: '0.6' },
   { loc: `${DOMAIN}/policy`,   changefreq: 'monthly', priority: '0.5' },
@@ -27,9 +25,7 @@ const STATIC = [
 
 /* Category pages hierarchy */
 const CATEGORY_MAP = {
-  'jewelry': ['bracelets','rings','earrings','necklace'],
-  'hair-accessories': ['scrunchies','clips','hair-bands','pins','ponies','fancy','gift-items'],
-  'clothing': ['winter-collection','daily-pret','unstitched','g-prints','new-arrivals','trending-now'],
+  'jewelry': ['bracelets','rings','earrings','necklace','bangles','jewelry-sets'],
   'shop': ['sale']
 };
 

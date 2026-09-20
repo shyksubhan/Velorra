@@ -145,6 +145,62 @@ router.post('/pinned', requireRole('super_admin', 'admin', 'ceo'), async (req, r
   }
 });
 
+/* ── GET /api/admin/hero-slides — Public route to get hero slides ── */
+router.get('/hero-slides', async (req, res) => {
+  try {
+    if (store.heroSlides && store.heroSlides.length > 0) return res.json({ slides: store.heroSlides });
+    
+    if (isFirebaseAvailable()) {
+      const doc = await getDB().collection('settings').doc('heroSlides').get();
+      if (doc.exists) {
+        store.heroSlides = doc.data().slides || [];
+        return res.json({ slides: store.heroSlides });
+      }
+    }
+
+    const slidesPath = path.join(__dirname, '..', 'data', 'hero-slides.json');
+    if (fs.existsSync(slidesPath)) {
+      const data = JSON.parse(fs.readFileSync(slidesPath, 'utf8'));
+      store.heroSlides = data;
+      return res.json({ slides: data });
+    }
+    return res.json({ slides: [] });
+  } catch (err) {
+    return res.json({ slides: [] });
+  }
+});
+
+/* ── POST /api/admin/hero-slides — Save hero slides (admin only) ── */
+router.post('/hero-slides', requireRole('super_admin', 'admin', 'ceo'), async (req, res) => {
+  try {
+    const { slides } = req.body;
+    if (!Array.isArray(slides)) return res.status(400).json({ error: 'Expected array of slide product IDs' });
+    
+    store.heroSlides = slides;
+
+    if (isFirebaseAvailable()) {
+      try {
+        await getDB().collection('settings').doc('heroSlides').set({ slides: slides });
+      } catch (fbErr) {
+        console.warn('Firebase hero slides update failed:', fbErr.message);
+      }
+    }
+    
+    try {
+      const slidesPath = path.join(__dirname, '..', 'data', 'hero-slides.json');
+      if (!fs.existsSync(path.dirname(slidesPath))) fs.mkdirSync(path.dirname(slidesPath), { recursive: true });
+      fs.writeFileSync(slidesPath, JSON.stringify(slides, null, 2));
+    } catch (fsErr) {
+      console.warn('Could not save slides to local fs:', fsErr.message);
+    }
+    
+    return res.json({ message: 'Hero slides updated', slides });
+  } catch (err) {
+    console.error('Hero slides update error:', err);
+    return res.status(500).json({ error: 'Failed to update hero slides' });
+  }
+});
+
 /* ── GET /api/admin/stats — REAL stats from shared store (super_admin + admin only) ── */
 
 router.get('/stats', requireRole('super_admin', 'admin'), async (req, res) => {
