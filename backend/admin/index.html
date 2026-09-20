@@ -946,7 +946,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <h3>Instagram Highlights (Our Happy Customers)</h3>
         <div class="ml-auto" style="display:flex; gap:10px; align-items:center;">
           <input type="file" id="highlight-upload" accept="image/*" style="display:none;" onchange="uploadHighlight(this)" />
-          <button class="btn btn-gold" onclick="document.getElementById(`'highlight-upload`').click()"><i class="fa-solid fa-plus"></i> Upload Highlight</button>
+          <button class="btn btn-gold" onclick="document.getElementById('highlight-upload').click()"><i class="fa-solid fa-plus"></i> Upload Highlight</button>
           <span id="hl-status" style="font-size:0.8rem; color:var(--muted)"></span>
         </div>
       </div>
@@ -5546,11 +5546,11 @@ function bktConfirm({ title = 'Are you sure?', message = 'This action cannot be 
     try {
       const res = await fetch("/api/highlights");
       const hls = await res.json();
-      if (hls.length === 0) { c.innerHTML = "<div style=`"color:var(--muted)`">No highlights uploaded yet.</div>"; return; }
+      if (hls.length === 0) { c.innerHTML = "<div style='color:var(--muted)'>No highlights uploaded yet.</div>"; return; }
       c.innerHTML = hls.map(h => `
         <div style="position:relative; width:80px; height:80px; flex: 0 0 auto;">
           <img src="${h.url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid var(--gold);" />
-          <button onclick="deleteHighlight(` + "'${h.id}'" + `)" style="position:absolute; top:-5px; right:-5px; background:var(--red); color:#fff; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:0.7rem;">&times;</button>
+          <button onclick="deleteHighlight('${h.id}')" style="position:absolute; top:-5px; right:-5px; background:var(--red); color:#fff; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:0.7rem;">&times;</button>
         </div>
       `).join("");
     } catch(e) { c.innerHTML = "Error loading highlights."; }
