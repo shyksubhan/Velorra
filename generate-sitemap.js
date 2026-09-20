@@ -25,7 +25,7 @@ const STATIC = [
 
 /* Category pages hierarchy */
 const CATEGORY_MAP = {
-  'jewelry': ['bracelets','rings','earrings','necklace','bangles','jewelry-sets'],
+  'jewelry': ['bracelets','rings','earrings','necklace','couple-items','jewelry-sets'],
   'shop': ['sale']
 };
 

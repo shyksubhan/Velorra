@@ -532,10 +532,10 @@ router.post('/cleanup-products', requireRole('super_admin', 'admin'), async (req
     }
     
     // Also clean local store memory
+    const store = require('../utils/store');
     const initialLen = store.products.length;
     store.products = store.products.filter(p => p.category !== 'hair-accessories' && p.category !== 'clothing');
     deletedCount = Math.max(deletedCount, initialLen - store.products.length);
-    store.saveAllData();
 
     store.logActivity({
       staffId: req.user.uid, staffName: req.user.email || 'Unknown',

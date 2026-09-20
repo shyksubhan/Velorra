@@ -124,7 +124,7 @@ app.get('/sitemap.xml', async (req, res) => {
 
   const categories = [
     // Jewelry
-    'bracelets','rings','earrings','necklace','bangles','jewelry-sets',
+    'bracelets','rings','earrings','necklace','couple-items','jewelry-sets',
     // Shop
     'sale'
   ];
