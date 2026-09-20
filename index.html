@@ -391,7 +391,8 @@ src="https://www.facebook.com/tr?id=4331926033691657&ev=PageView&noscript=1"
             const hasImage = p.images && p.images.length > 0;
             let mediaHtml = '';
             if (hasVideo) {
-              mediaHtml = `<video src="${p.video}" autoplay muted loop playsinline></video>`;
+              let blurBg = hasImage ? `<div style="position:absolute;inset:0;background:url('${p.images[0]}') center/cover;filter:blur(30px);transform:scale(1.1);opacity:0.6;z-index:0;"></div>` : '';
+              mediaHtml = `${blurBg}<video src="${p.video}" autoplay muted loop playsinline></video>`;
             } else if (hasImage) {
               mediaHtml = `<div style="position:absolute;inset:0;background:url('${p.images[0]}') center/cover;filter:blur(30px);transform:scale(1.1);opacity:0.6;z-index:0;"></div><img src="${p.images[0]}" alt="${p.name}" style="object-fit:contain;z-index:0;" />`;
             } else {
