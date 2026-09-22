@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getDB }       = require('../utils/firebase');
 const { requireAdmin } = require('../middleware/auth');
 const store            = require('../utils/store');
+const { autoGenerateAndEmailInvoice } = require('../utils/autoInvoice');
 const { sendOrderConfirmation, sendNewOrderNotification } = require('../utils/email');
 
 const router = express.Router();
@@ -52,7 +53,7 @@ router.post('/', async (req, res) => {
        Bank Deposit → always FREE delivery.
        COD          → PKR 200, waived once subtotal reaches PKR 5,000. */
     const deliveryFee = payMethod === 'bank_deposit'
-      ? (subtotal >= 1000 ? 0 : 200)
+      ? (subtotal >= 2000 ? 0 : 200)
       : (subtotal >= 5000 ? 0 : 200);
 
     /* ── Coupon (optional) ──
@@ -186,7 +187,7 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
 
     const subtotal   = enrichedItems.reduce((s, i) => s + (i.price * i.qty), 0);
     const payMethod  = delivery.paymentMethod || 'cod';
-    const deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 1000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
+    const deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 2000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
     const total      = subtotal + deliveryFee;
     const orderRef   = 'VLR-' + uuidv4().replace(/-/g, '').toUpperCase().slice(0, 8);
 
@@ -349,6 +350,9 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
     });
 
     store.emit('order_status_changed', { id: req.params.id, status });
+    if (status === 'Confirmed') {
+      autoGenerateAndEmailInvoice(req.params.id).catch(e => console.error(e));
+    }
     return res.json({ message: `Order updated to "${status}".`, status });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to update order.' });

@@ -8,6 +8,7 @@ const { v4: uuidv4 }   = require('uuid');
 const { getDB }        = require('../utils/firebase');
 const { requireAdmin } = require('../middleware/auth');
 const store            = require('../utils/store');
+const { autoGenerateAndEmailInvoice } = require('../utils/autoInvoice');
 
 const router  = express.Router();
 const STATUSES = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
@@ -69,7 +70,7 @@ router.post('/', requireAdmin, async (req, res) => {
     } else if (deliveryOverride === 'custom' && deliveryCustomVal != null) {
       deliveryFee = Math.max(0, Number(deliveryCustomVal) || 0);
     } else {
-      deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 1000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
+      deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 2000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
     }
 
     /* ── Coupon (optional) — same rule set as website checkout ── */
@@ -255,7 +256,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     } else if (deliveryOverride === 'custom' && deliveryCustomVal != null) {
       deliveryFee = Math.max(0, Number(deliveryCustomVal) || 0);
     } else {
-      deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 1000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
+      deliveryFee = payMethod === 'bank_deposit' ? (subtotal >= 2000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
     }
 
     let discount = 0;

@@ -3086,7 +3086,7 @@ function recalcSocialTotal() {
     delFee = Number(document.getElementById('soc-delivery-custom-val')?.value) || 0;
   } else {
     // Auto: bank_deposit = 200 (free >= 1000), COD = 200 (free >= 5000)
-    delFee = pay === 'bank_deposit' ? (subtotal >= 1000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
+    delFee = pay === 'bank_deposit' ? (subtotal >= 2000 ? 0 : 200) : (subtotal >= 5000 ? 0 : 200);
   }
 
   let discount = 0;
@@ -4746,7 +4746,25 @@ function esc(s) {
 }
 
 /* ═══════════════════ USERS & ROLES ═══════════════════ */
-async function loadRoles() {
+function updatePinnedProductsDropdown() {
+    const sel = document.getElementById('pinned-sel');
+    if (!sel) return;
+    let optgroup = sel.querySelector('optgroup[label="Spotlight Products"]');
+    if (!optgroup) {
+      optgroup = document.createElement('optgroup');
+      optgroup.label = "Spotlight Products";
+      sel.appendChild(optgroup);
+    }
+    optgroup.innerHTML = '';
+    allProducts.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = 'Spotlight: ' + p.name;
+      optgroup.appendChild(opt);
+    });
+  }
+  
+  async function loadRoles() {
   if (!['ceo', 'super_admin'].includes(currentUser?.role)) {
     document.getElementById('roles-restricted').style.display = 'flex';
     document.getElementById('roles-table-wrap').style.display = 'none';

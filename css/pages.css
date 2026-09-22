@@ -89,7 +89,7 @@
 }
 #whatsapp-float:hover .wa-tooltip { opacity: 1; transform: translateX(0); }
 /* ── Checkout Page ── */
-.checkout-main { padding: calc(var(--nav-h) + 40px) 0 80px; min-height: 100vh; }
+.checkout-main { padding: 60px 0 80px; min-height: 100vh; }
 .checkout-steps {
   display: flex; align-items: center; justify-content: center;
   gap: 0; margin-bottom: 52px;
@@ -287,7 +287,7 @@
 .confirm-section h4 { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
 .confirm-section p  { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
 /* ── Account Page ── */
-.account-main { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: calc(var(--nav-h) + 40px) 24px 80px; }
+.account-main { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 60px 24px 80px; }
 .account-card-wrap {
   width: 100%; max-width: 480px;
   background: var(--bg-deep); border: 1px solid var(--border);
@@ -315,11 +315,11 @@
 .acc-dash-card strong { color: var(--text); font-size: 0.75rem; letter-spacing: 0.1em; }
 .acc-dash-card span:last-child { color: var(--muted); font-size: 0.65rem; }
 /* ── Policy Pages ── */
-.policy-main { padding: calc(var(--nav-h) + 40px) 0 80px; min-height: 100vh; }
+.policy-main { padding: 60px 0 80px; min-height: 100vh; }
 .policy-layout { display: grid; grid-template-columns: 240px 1fr; gap: 56px; align-items: start; }
 @media(max-width:768px) { .policy-layout { grid-template-columns: 1fr; } }
 .policy-sidebar {
-  position: sticky; top: calc(var(--nav-h) + 24px);
+  position: sticky; top: 150px;
   background: var(--card); border: 1px solid var(--border);
   padding: 24px;
 }

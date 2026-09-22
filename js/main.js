@@ -358,3 +358,23 @@ window.proceedToCheckout = () => {
   }
   window.location.href = 'checkout';
 };
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const headerSearchInput = document.getElementById('header-search-input');
+  const headerSearchBtn = document.getElementById('header-search-btn');
+  if (headerSearchInput) {
+    headerSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        window.location.href = 'shop.html?q=' + encodeURIComponent(this.value.trim());
+      }
+    });
+  }
+  if (headerSearchBtn && headerSearchInput) {
+    headerSearchBtn.addEventListener('click', function() {
+      const val = headerSearchInput.value.trim();
+      if (val) window.location.href = 'shop.html?q=' + encodeURIComponent(val);
+    });
+  }
+});
+
