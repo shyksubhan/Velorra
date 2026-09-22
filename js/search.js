@@ -31,7 +31,8 @@ let VELORRA_SEARCH_INDEX = [
         title: p.name,
         keywords: `${p.name} ${p.category} ${p.subcategory} ${p.additionalCategories?.join(' ')} PKR ${p.price}`,
         url: `product.html?id=${p.id}`,
-        badge: `PKR ${Number(p.price).toLocaleString()}`
+        badge: `PKR ${Number(p.price).toLocaleString()}`,
+        image: p.images && p.images.length > 0 ? p.images[0] : null
       }));
       VELORRA_SEARCH_INDEX = [...productIndex, ...VELORRA_SEARCH_INDEX];
     }
@@ -73,14 +74,20 @@ document.addEventListener('DOMContentLoaded', () => {
       resultsContainer.innerHTML = `<div class="search-no-results">No results for "<em>${q}</em>"</div>`;
       return;
     }
-    resultsContainer.innerHTML = matches.map(item => `
-      <a href="${item.url}" class="search-result-item" onclick="closeSearchOverlay()">
-        <span class="sr-icon">${TYPE_ICON[item.type] || '🔍'}</span>
-        <span class="sr-info">
-          <span class="sr-title">${highlight(item.title, q)}</span>
-          <span class="sr-badge">${item.badge}</span>
+    resultsContainer.innerHTML = matches.map(item => {
+      let iconHtml = `<span class="sr-icon">${TYPE_ICON[item.type] || '🔍'}</span>`;
+      if (item.image) {
+        iconHtml = `<img src="${item.image}" alt="${item.title}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; margin-right:12px;" />`;
+      }
+      return `
+      <a href="${item.url}" class="search-result-item" onclick="closeSearchOverlay()" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; text-decoration:none; color:inherit;">
+        ${iconHtml}
+        <span class="sr-info" style="flex:1; display:flex; justify-content:space-between; align-items:center;">
+          <span class="sr-title" style="font-weight:500;">${highlight(item.title, q)}</span>
+          <span class="sr-badge" style="font-size:0.75rem; color:#888;">${item.badge}</span>
         </span>
-      </a>`).join('');
+      </a>`
+    }).join('');
   };
 
   if (input && results) {

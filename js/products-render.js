@@ -228,8 +228,43 @@ async function golnisaRenderHomepageGrids() {
     const pinnedContainer = document.getElementById('pinned-collections-wrapper');
     if (pinnedContainer && pinnedData.length > 0) {
       pinnedContainer.innerHTML = '';
-      pinnedData.forEach(pin => {
-        const pinProducts = allProducts.filter(p => {
+      
+        pinnedData.forEach(pin => {
+          const singleProduct = allProducts.find(prod => prod.id === pin.id);
+
+          if (singleProduct) {
+            // Render Spotlight Product Block
+            const section = document.createElement('section');
+            section.className = 'pinned-spotlight-section';
+            section.style.cssText = 'padding:80px 0; border-bottom:1px solid rgba(0,0,0,0.03);';
+            
+            const mainImg = singleProduct.images?.[0] || 'images/placeholder.jpg';
+            const priceHtml = singleProduct.price < singleProduct.comparePrice 
+              ? `<del style="color:var(--muted);font-size:1rem;margin-right:8px">PKR ${Number(singleProduct.comparePrice).toLocaleString()}</del> PKR ${Number(singleProduct.price).toLocaleString()}`
+              : `PKR ${Number(singleProduct.price).toLocaleString()}`;
+
+            section.innerHTML = `
+              <div class="container" style="display:flex; flex-wrap:wrap; gap:40px; align-items:center;">
+                <div style="flex:1; min-width:300px;">
+                  <a href="product.html?id=${singleProduct.id}" style="display:block; overflow:hidden; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.06);">
+                    <img src="${mainImg}" style="width:100%; display:block; transition:transform 0.5s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                  </a>
+                </div>
+                <div style="flex:1; min-width:300px; display:flex; flex-direction:column; justify-content:center;">
+                  <div style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; font-weight:700;">Featured Spotlight</div>
+                  <h2 style="font-family:var(--font-display); font-size:clamp(2rem, 3vw, 2.8rem); line-height:1.2; margin-bottom:16px; color:var(--text);">${singleProduct.name}</h2>
+                  <div style="font-size:1.2rem; font-weight:600; margin-bottom:24px; color:var(--text);">${priceHtml}</div>
+                  <p style="color:var(--text-mid); line-height:1.6; margin-bottom:32px; font-size:0.95rem; max-width:90%;">${singleProduct.description || 'Discover elegance with this exclusive piece, crafted to perfection.'}</p>
+                  <a href="product.html?id=${singleProduct.id}" class="btn-primary" style="align-self:flex-start; text-decoration:none; display:inline-block; padding:16px 40px; border-radius:4px;">Shop Now</a>
+                </div>
+              </div>
+            `;
+            pinnedContainer.appendChild(section);
+            return;
+          }
+
+          const pinProducts = allProducts.filter(p => {
+
           const c = p.category === 'catchers' ? 'clips' : p.category;
           const s = p.subcategory === 'catchers' ? 'clips' : p.subcategory;
           const additional = p.additionalCategories || [];
@@ -237,22 +272,21 @@ async function golnisaRenderHomepageGrids() {
         });
         if (pinProducts.length > 0) {
           const section = document.createElement('section');
-          section.className = 'collection-section';
-          section.style.padding = '40px 0 10px 0';
+          section.className = 'pinned-collection-section';
+          section.style.cssText = 'padding:80px 0; border-bottom:1px solid rgba(0,0,0,0.03);';
 
-          const catUrl = (() => {
-            if (CATEGORY_HIERARCHY['jewelry'].includes(pin.id)) return `jewelry.html?cat=${pin.id}`;
-            return `jewelry.html?cat=${pin.id}`;
-          })();
+          const catUrl = (pin.id === 'sale' || pin.id === 'new-arrivals' || pin.id === 'trending-now') 
+            ? `jewelry.html?cat=${pin.id}` 
+            : `jewelry.html?cat=${pin.id}`;
 
           const limitedProducts = pinProducts.slice(0, 8);
           section.innerHTML = `
             <div class="container">
-              <h2 class="section-title" style="text-align:center;margin-bottom:24px;">${pin.name}</h2>
+              <h2 class="section-title" style="text-align:center;margin-bottom:32px;">${pin.name}</h2>
               <div class="products-grid" style="grid-template-columns: repeat(4, 1fr);">
                 ${limitedProducts.map(p => golnisaProductCardHTML(p)).join('')}
               </div>
-              ${pinProducts.length > 8 ? `<div style="text-align:center;margin-top:20px;"><a href="${catUrl}" class="btn-see-all">See All →</a></div>` : ''}
+              ${pinProducts.length > 8 ? `<div style="text-align:center;margin-top:30px;"><a href="${catUrl}" class="btn-see-all">See All →</a></div>` : ''}
             </div>
           `;
           pinnedContainer.appendChild(section);

@@ -5115,7 +5115,7 @@ async function exportExcel(type) {
         Status:         o.status,
         'Order Date':   fmtDate(o.createdAt),
         'Updated':      fmtDate(o.updatedAt),
-        Items:          (o.items||[]).map(i => `${i.name}×${i.qty}`).join(', '),
+        Items:          (o.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty})`).join(', '),
       }));
     } else if (type === 'messages') {
       rows = allMessages.length ? allMessages : (await (await apiFetch('/contact')).json()).messages || [];
@@ -5330,7 +5330,7 @@ function exportAbandonedExcel() {
       Address: d.address || '',
       City:    d.city || '',
       Province:d.province || '',
-      Items:   (a.items||[]).map(i => `${i.name} x${i.qty}`).join(' | '),
+      Items:   (a.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty})`).join(' | '),
       Total:   a.total || 0,
       Status:  a.status || '',
       Date:    a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',

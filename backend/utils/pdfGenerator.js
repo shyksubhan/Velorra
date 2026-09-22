@@ -136,12 +136,13 @@ async function buildPdf(pdfPath, invId, snapshot, liveOrder, company) {
     (order.items || []).forEach(item => {
       const itemTotal = (item.price * item.qty);
       doc.fillColor(C_TEXT).fontSize(9);
-      const nameHeight = doc.heightOfString(item.name, { width: 230 });
+      const displayName = item.name + (item.variant && item.variant !== 'Standard' ? ' (' + item.variant + ')' : '');
+      const nameHeight = doc.heightOfString(displayName, { width: 230 });
       const rowHeight = Math.max(40, nameHeight + 25);
       
       doc.rect(50, y, 495, rowHeight).fillAndStroke('#ffffff', '#ffffff');
       doc.fillColor(C_TEXT);
-      doc.text(item.name, 60, y + 10, { width: 230 });
+      doc.text(displayName, 60, y + 10, { width: 230 });
       doc.fillColor(C_MUTED).fontSize(8).text(`SKU: ${item.sku || 'N/A'}`, 60, y + 10 + nameHeight + 4);
       doc.fillColor(C_TEXT).fontSize(9);
       doc.text(`PKR ${item.price.toLocaleString()}`, 300, y + 15, { width: 80, align: 'right' });

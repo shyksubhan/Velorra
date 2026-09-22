@@ -15,7 +15,7 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
   const resend = getResend();
   const itemRows = items.map(i =>
     `<tr>
-      <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;">${i.emoji || '🛍️'} ${i.name} × ${i.qty}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;">${i.emoji || '🛍️'} ${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty})</td>
       <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;text-align:right;">PKR ${(i.price * i.qty).toLocaleString()}</td>
     </tr>`
   ).join('');
@@ -50,7 +50,7 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
 async function sendNewOrderNotification({ orderRef, items, delivery, total, paymentMethod }) {
   if (!TO) return;
   const resend = getResend();
-  const itemList = items.map(i => `<li>${i.name} × ${i.qty} — PKR ${(i.price * i.qty).toLocaleString()}</li>`).join('');
+  const itemList = items.map(i => `<li>${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty}) — PKR ${(i.price * i.qty).toLocaleString()}</li>`).join('');
 
   await resend.emails.send({
     from: FROM,
