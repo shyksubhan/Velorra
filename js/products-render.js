@@ -102,6 +102,9 @@ function golnisaSetupShopFilters(products, grid, mainCat) {
       b.classList.add('active');
       const f = b.getAttribute('data-filter');
       
+      const urlParams = new URLSearchParams(window.location.search);
+      const maxPrice = urlParams.get('maxprice');
+      
       const cards = grid.querySelectorAll('.product-card');
       let visibleCount = 0;
       cards.forEach(card => {
@@ -123,6 +126,14 @@ function golnisaSetupShopFilters(products, grid, mainCat) {
           show = (c === f) || additional.includes(f);
         }
 
+        // Apply price filter if present in URL
+        if (show && maxPrice) {
+           const priceText = card.querySelector('.product-price')?.innerText.replace(/[^0-9]/g, '');
+           if (priceText && Number(priceText) > Number(maxPrice)) {
+               show = false;
+           }
+        }
+
         card.style.display = show ? '' : 'none';
         if (show) visibleCount++;
       });
@@ -134,7 +145,11 @@ function golnisaSetupShopFilters(products, grid, mainCat) {
         if (emptyMsg) emptyMsg.remove();
       }
       
-      window.history.replaceState(null, '', f === 'all' ? window.location.pathname : window.location.pathname + '?cat=' + f);
+      let newUrl = f === 'all' ? window.location.pathname : window.location.pathname + '?cat=' + f;
+      if (maxPrice) {
+         newUrl = newUrl.includes('?') ? newUrl + '&maxprice=' + maxPrice : newUrl + '?maxprice=' + maxPrice;
+      }
+      window.history.replaceState(null, '', newUrl);
     });
   });
 
@@ -193,10 +208,9 @@ async function golnisaRenderHomepageGrids() {
     const data = await apiGet('/products');
     let allProducts = data.products || [];
 
-    // --- 1. Render Pinned Collections ---
+    // --- 1. Render Pinned Collections as GRID ---
     const pinnedRes = await apiGet('/admin/pinned').catch(e => null);
     let pinnedData = pinnedRes && pinnedRes.pinned ? pinnedRes.pinned : [];
-    // Filter out old categories like clothing or hair-accessories
     pinnedData = pinnedData.filter(pin => typeof GOLNISÀ_CAT_LABELS !== 'undefined' && GOLNISÀ_CAT_LABELS[pin.id]);
     
     const pinnedContainer = document.getElementById('pinned-collections-wrapper');
@@ -212,61 +226,36 @@ async function golnisaRenderHomepageGrids() {
         if (pinProducts.length > 0) {
           const section = document.createElement('section');
           section.className = 'collection-section';
-          section.style.padding = '40px 0 0 0';
+          section.style.padding = '40px 0 10px 0';
 
           const catUrl = (() => {
             if (CATEGORY_HIERARCHY['jewelry'].includes(pin.id)) return `jewelry.html?cat=${pin.id}`;
-            return `shop.html?cat=${pin.id}`;
+            return `jewelry.html?cat=${pin.id}`;
           })();
 
-          const rowId = `pinrow-${pin.id}`;
+          const limitedProducts = pinProducts.slice(0, 8);
           section.innerHTML = `
             <div class="container">
-              <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <h2 style="font-size:1.6rem;margin:0;">${pin.name}</h2>
-                <a href="${catUrl}" style="font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);text-decoration:none;font-family:var(--font-ui);">View All →</a>
+              <h2 class="section-title" style="text-align:center;margin-bottom:24px;">${pin.name}</h2>
+              <div class="products-grid" style="grid-template-columns: repeat(4, 1fr);">
+                ${limitedProducts.map(p => golnisaProductCardHTML(p)).join('')}
               </div>
-              <div class="pinned-scroll-track" id="${rowId}" style="display:flex;overflow-x:auto;gap:12px;padding-bottom:20px;scroll-snap-type:x mandatory;cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;">
-                ${pinProducts.map(p => {
-                  let html = golnisaProductCardHTML(p);
-                  return html.replace('class="product-card"', 'class="product-card pin-card" style="flex:0 0 220px;min-width:220px;scroll-snap-align:start;"');
-                }).join('')}
-              </div>
+              ${pinProducts.length > 8 ? `<div style="text-align:center;margin-top:20px;"><a href="${catUrl}" class="btn-see-all">See All →</a></div>` : ''}
             </div>
           `;
           pinnedContainer.appendChild(section);
           golnisaReInitCards(section);
-
-          /* ── Mouse drag-to-scroll ── */
-          const track = section.querySelector(`#${rowId}`);
-          if (track) {
-            let isDown = false, startX, scrollLeft;
-            track.addEventListener('mousedown', e => {
-              isDown = true; track.style.cursor = 'grabbing';
-              startX = e.pageX - track.offsetLeft;
-              scrollLeft = track.scrollLeft;
-            });
-            track.addEventListener('mouseleave', () => { isDown = false; track.style.cursor = 'grab'; });
-            track.addEventListener('mouseup',    () => { isDown = false; track.style.cursor = 'grab'; });
-            track.addEventListener('mousemove',  e => {
-              if (!isDown) return;
-              e.preventDefault();
-              const x = e.pageX - track.offsetLeft;
-              track.scrollLeft = scrollLeft - (x - startX) * 1.5;
-            });
-          }
         }
       });
     }
 
-    // --- 2. Render Featured Rows (grouped by Main Category) ---
+    // --- 2. Render Featured Products as GRID ---
     const featuredProducts = allProducts.filter(p => p.featured);
-    
-    // Jewelry
     const jewGrid = document.getElementById('featured-jewelry-grid');
     if (jewGrid) {
       const jProds = featuredProducts.filter(p => CATEGORY_HIERARCHY['jewelry'].includes(p.subcategory || p.category));
-      jewGrid.innerHTML = jProds.length ? jProds.map(p => golnisaProductCardHTML(p).replace('class="product-card"', 'class="product-card" style="flex: 0 0 280px; scroll-snap-align: start;"')).join('') : golnisaEmptyState('More coming soon.');
+      const limitedFeatured = jProds.slice(0, 8);
+      jewGrid.innerHTML = limitedFeatured.length ? limitedFeatured.map(p => golnisaProductCardHTML(p)).join('') : golnisaEmptyState('More coming soon.');
       golnisaReInitCards(jewGrid);
     }
 

@@ -1,39 +1,39 @@
 /* ============================================================
    Golnisà — Global Styles
-   Theme: Warm Ivory × Rose Gold × Champagne
-   Fonts: Cormorant Garamond (headings) · Jost (body & UI)
+   Theme: Clean White × Gold Accents
+   Fonts: Playfair Display (headings) · Inter (body & UI)
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@200;300;400;500;600;700&display=swap');
 
 /* ── Variables ── */
 :root {
-  --bg:          #fdf9f5;
-  --bg-deep:     #f5efe6;
+  --bg:          #ffffff;
+  --bg-deep:     #f9f9f9;
   --card:        #ffffff;
-  --card-warm:   #fefaf6;
+  --card-warm:   #ffffff;
   --gold:        #c9956b;
   --gold-light:  #daa97e;
   --gold-rose:   #d4917d;
   --gold-dim:    #9a7048;
   --rose:        #c9847a;
   --rose-light:  #daa090;
-  --champagne:   #edd8c3;
-  --text:        #2c1f14;
-  --text-mid:    #5a4030;
-  --muted:       #9a8070;
-  --border:      rgba(201,149,107,0.22);
-  --border-soft: rgba(201,149,107,0.12);
-  --shadow:      rgba(100,60,20,0.10);
+  --champagne:   #e8e0d8;
+  --text:        #1a1a1a;
+  --text-mid:    #444444;
+  --muted:       #888888;
+  --border:      rgba(0,0,0,0.08);
+  --border-soft: rgba(0,0,0,0.05);
+  --shadow:      rgba(0,0,0,0.08);
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body:    'Inter', 'Segoe UI', sans-serif;
   --font-ui:      'Inter', 'Segoe UI', sans-serif;
-  --nav-h:       72px;
+  --nav-h:       auto;
   --transition:  0.36s cubic-bezier(0.25,0.8,0.25,1);
   /* keep legacy var names working */
-  --black:       #fdf9f5;
-  --deep:        #f5efe6;
-  --white:       #2c1f14;
+  --black:       #ffffff;
+  --deep:        #f9f9f9;
+  --white:       #1a1a1a;
 }
 
 /* ── Reset ── */
@@ -56,7 +56,125 @@ button { border: none; background: none; font-family: inherit; cursor: pointer; 
 ::-webkit-scrollbar-track { background: var(--bg-deep); }
 ::-webkit-scrollbar-thumb { background: var(--champagne); border-radius: 2px; }
 
-/* ── Navigation ── */
+/* ═══ NEW 3-LINE HEADER ═══ */
+.site-header {
+  position: sticky; top: 0; z-index: 1000;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.header-row { border-bottom: 1px solid rgba(0,0,0,0.06); }
+.header-top-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; gap: 20px;
+}
+.header-search {
+  display: flex; align-items: center;
+  background: #f5f5f5; border-radius: 6px;
+  max-width: 420px; flex: 1; margin: 0 30px;
+}
+.header-search input {
+  border: none; background: transparent; padding: 10px 16px;
+  font-size: 0.88rem; flex: 1; outline: none; color: var(--text);
+  font-family: var(--font-body);
+}
+.header-search button {
+  background: var(--text); color: #fff; border: none;
+  padding: 10px 16px; border-radius: 0 6px 6px 0; cursor: pointer;
+  font-size: 0.9rem; transition: background 0.2s;
+}
+.header-search button:hover { background: var(--gold); }
+.header-actions {
+  display: flex; align-items: center; gap: 18px;
+}
+.header-actions a, .header-actions button {
+  color: var(--text); font-size: 1rem; text-decoration: none;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.2s;
+}
+.header-actions a:hover, .header-actions button:hover { color: var(--gold); }
+.header-action-label {
+  font-size: 0.8rem; font-family: var(--font-ui);
+}
+.header-nav-main {
+  background: #f9f9f9;
+}
+.header-nav-main a {
+  font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); font-family: var(--font-ui); font-weight: 500;
+  padding: 8px 0; transition: color 0.2s;
+}
+.header-nav-main a:hover { color: var(--gold); }
+.header-categories {
+  background: #fff;
+}
+.header-cats-inner {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 20px; padding: 10px 0;
+}
+.header-cats-inner a {
+  font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-mid); font-family: var(--font-ui); font-weight: 600;
+  transition: color 0.2s; white-space: nowrap;
+}
+.header-cats-inner a:hover { color: var(--gold); }
+
+/* Hide old nav on homepage when header exists */
+body.page-home > nav { display: none !important; }
+/* Homepage hero no longer needs nav-h offset */
+body.page-home .hero-slideshow-container { margin-top: 0; }
+
+/* Mobile header adjustments */
+@media (max-width: 768px) {
+  .header-search { margin: 0 10px; max-width: 200px; }
+  .header-action-label { display: none; }
+  .header-nav-main { display: none; }
+  .header-cats-inner { gap: 12px; overflow-x: auto; flex-wrap: nowrap; padding: 8px 10px; -webkit-overflow-scrolling: touch; }
+  .header-cats-inner::-webkit-scrollbar { display: none; }
+  .header-cats-inner a { font-size: 0.6rem; }
+  .site-header .hamburger { display: flex; }
+}
+@media (min-width: 769px) {
+  .site-header .hamburger { display: none; }
+}
+
+/* ═══ PRICE FILTER TABS ═══ */
+.price-tab {
+  font-family: var(--font-ui); font-size: 0.85rem; font-weight: 500;
+  color: var(--muted); background: none; border: none;
+  padding: 8px 4px; cursor: pointer; position: relative;
+  transition: color 0.2s;
+}
+.price-tab::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px; background: var(--text); transform: scaleX(0);
+  transition: transform 0.3s;
+}
+.price-tab.active { color: var(--text); font-weight: 600; }
+.price-tab.active::after { transform: scaleX(1); }
+.price-tab:hover { color: var(--text); }
+.btn-see-all {
+  display: inline-block; font-family: var(--font-ui);
+  font-size: 0.85rem; color: var(--text); font-weight: 500;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.btn-see-all:hover { color: var(--gold); }
+
+/* ═══ INSTAGRAM FOLLOW BUTTON ═══ */
+.instagram-follow-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 14px 36px; border-radius: 30px; font-size: 1rem;
+  font-weight: 600; font-family: var(--font-ui); color: #fff;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+}
+.instagram-follow-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(225, 48, 108, 0.3);
+}
+.instagram-follow-btn i { font-size: 1.3rem; }
+
+/* ── Navigation (kept for non-homepage pages) ── */
 body > nav, header > nav, .site-nav {
   position: fixed; top: 0; left: 0; right: 0;
   height: var(--nav-h);
