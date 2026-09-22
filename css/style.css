@@ -493,7 +493,7 @@ body.page-home nav:not(.scrolled) .hamburger span { background: #fff; }
   font-size: 0.65rem; font-weight: 700;
   letter-spacing: 0.28em; text-transform: uppercase;
   transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  border-radius: 4px;
 }
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
@@ -508,7 +508,7 @@ body.page-home nav:not(.scrolled) .hamburger span { background: #fff; }
   font-size: 0.65rem; font-weight: 600;
   letter-spacing: 0.28em; text-transform: uppercase;
   transition: background var(--transition), color var(--transition), transform var(--transition);
-  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  border-radius: 4px;
 }
 .btn-outline:hover {
   background: rgba(184,136,58,0.08);
