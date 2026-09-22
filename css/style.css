@@ -65,7 +65,8 @@ button { border: none; background: none; font-family: inherit; cursor: pointer; 
 .header-row { border-bottom: 1px solid rgba(0,0,0,0.06); }
 .header-top-inner {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 0; gap: 20px;
+  padding: 12px 48px; gap: 20px;
+  max-width: 100%; margin: 0 auto;
 }
 .header-search {
   display: flex; align-items: center;

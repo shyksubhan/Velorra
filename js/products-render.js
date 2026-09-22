@@ -171,11 +171,23 @@ async function golnisaRenderShopGrid() {
   if (!grid) return;
 
   const mainCat = grid.getAttribute('data-main-cat');
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQ = urlParams.get('q');
 
   try {
     const data = await apiGet('/products');
     let products = data.products || [];
     
+    // Search query filtering
+    if (searchQ) {
+      const qLower = searchQ.toLowerCase();
+      products = products.filter(p => 
+        (p.name && p.name.toLowerCase().includes(qLower)) || 
+        (p.category && p.category.toLowerCase().includes(qLower)) ||
+        (p.subcategory && p.subcategory.toLowerCase().includes(qLower))
+      );
+    }
+
     if (mainCat && CATEGORY_HIERARCHY[mainCat]) {
       const allowed = CATEGORY_HIERARCHY[mainCat];
       products = products.filter(p => {
@@ -187,7 +199,7 @@ async function golnisaRenderShopGrid() {
     }
 
     if (!products.length) {
-      grid.innerHTML = golnisaEmptyState('No products available right now. Please check back soon.');
+      grid.innerHTML = golnisaEmptyState('No products found matching your criteria.');
       return;
     }
     grid.innerHTML = products.map(golnisaProductCardHTML).join('');

@@ -2,18 +2,11 @@
    VELORRA — Search System
    Searches all products, pages, categories, keywords
    ============================================================ */
-const VELORRA_SEARCH_INDEX = [
-  /* Products */
-  { type: 'product', id: 'ivory-silk-maxi-gown',       title: 'Ivory Silk Maxi Gown',       keywords: 'women dress silk maxi gown ivory formal PKR 12500 VLR-001', url: 'product?id=ivory-silk-maxi-gown',        badge: 'PKR 12,500' },
-  { type: 'product', id: 'noir-rose-gold-timepiece',   title: 'Noir Rose Gold Timepiece',   keywords: 'watch timepiece rose gold noir unisex PKR 28000 VLR-002', url: 'product?id=noir-rose-gold-timepiece',    badge: 'PKR 28,000' },
-  { type: 'product', id: 'obsidian-slim-suit',         title: 'Obsidian Slim Suit',         keywords: 'men suit slim formal obsidian black PKR 35000 VLR-003',   url: 'product?id=obsidian-slim-suit',          badge: 'PKR 35,000' },
-  { type: 'product', id: 'aurora-gold-necklace',       title: 'Aurora Gold Necklace',       keywords: 'jewellery necklace gold aurora women accessories PKR 8500 VLR-004', url: 'product?id=aurora-gold-necklace', badge: 'PKR 8,500' },
-  { type: 'product', id: 'velvet-noir-lip-kit',        title: 'Velvet Noir Lip Kit',        keywords: 'cosmetics lips lipstick velvet noir beauty PKR 3500 VLR-005', url: 'product?id=velvet-noir-lip-kit',      badge: 'PKR 3,500' },
-  { type: 'product', id: 'champagne-leather-tote',     title: 'Champagne Leather Tote',     keywords: 'women bags handbag tote champagne leather PKR 18000 VLR-006 sale', url: 'product?id=champagne-leather-tote', badge: 'PKR 18,000' },
+let VELORRA_SEARCH_INDEX = [
   /* Categories */
   { type: 'category', title: 'All Collections',                 keywords: 'all shop products catalog', url: 'shop',     badge: 'Category' },
-  { type: 'category', title: 'Jewelry',                         keywords: 'jewelry rings bracelets necklaces earrings bangles sets', url: 'collections?main=jewelry', badge: 'Category' },
-  { type: 'category', title: 'Sale Items',                      keywords: 'sale discount offer reduced price',        url: 'shop?cat=sale',      badge: 'Sale' },
+  { type: 'category', title: 'Jewelry',                         keywords: 'jewelry rings bracelets necklaces earrings bangles sets', url: 'jewelry', badge: 'Category' },
+  { type: 'category', title: 'Sale Items',                      keywords: 'sale discount offer reduced price',        url: 'jewelry.html?cat=sale',      badge: 'Sale' },
   /* Pages */
   { type: 'page', title: 'Our Story',        keywords: 'about velorra story brand lahore founded history',   url: 'about',                    badge: 'Page' },
   { type: 'page', title: 'Contact Us',       keywords: 'contact email phone whatsapp address location',     url: 'contact',                  badge: 'Page' },
@@ -22,44 +15,65 @@ const VELORRA_SEARCH_INDEX = [
   { type: 'page', title: 'Size Guide',       keywords: 'size guide xs s m l xl xxl measurements chart fit', url: 'policy?page=sizeguide',    badge: 'Guide'  },
   { type: 'page', title: 'FAQs',            keywords: 'faq questions answers help support',                 url: 'policy?page=faqs',         badge: 'Help'   },
   { type: 'page', title: 'Track Your Order', keywords: 'track order tracking status delivery shipment',     url: 'policy?page=track',        badge: 'Tool'   },
-  { type: 'page', title: 'My Account',       keywords: 'account login signin signup register profile',      url: 'account',                  badge: 'Account'},
+  { type: 'page', title: 'My Account',       keywords: 'account login signin signup register profile',      url: 'account',                  badge: 'Account'}
 ];
+
+// Fetch real products dynamically
+(async function() {
+  try {
+    const res = await fetch('/api/products');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.products && data.products.length > 0) {
+      const productIndex = data.products.map(p => ({
+        type: 'product',
+        id: p.id,
+        title: p.name,
+        keywords: `${p.name} ${p.category} ${p.subcategory} ${p.additionalCategories?.join(' ')} PKR ${p.price}`,
+        url: `product.html?id=${p.id}`,
+        badge: `PKR ${Number(p.price).toLocaleString()}`
+      }));
+      VELORRA_SEARCH_INDEX = [...productIndex, ...VELORRA_SEARCH_INDEX];
+    }
+  } catch (e) {
+    console.error("Search index failed to load products", e);
+  }
+})();
 /* ── Icons per type ── */
 const TYPE_ICON = { product: '🛍️', category: '✦', page: '📄' };
 document.addEventListener('DOMContentLoaded', () => {
-  const toggle    = document.getElementById('search-toggle');
   const overlay   = document.getElementById('search-overlay');
   const closeBtn  = document.getElementById('search-close');
   const input     = document.getElementById('search-input');
   const results   = document.getElementById('search-results');
-  if (!toggle || !overlay) return;
-  /* open */
-  toggle.addEventListener('click', () => {
-    overlay.classList.add('active');
-    setTimeout(() => input?.focus(), 120);
-  });
+  
+  // Also hook up the new header search input
+  const headerInput = document.getElementById('header-search-input');
+  
+  if (!overlay && !headerInput) return;
+
   /* close */
   const closeSearch = () => {
-    overlay.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
     if (input) input.value = '';
     if (results) results.innerHTML = '';
   };
-  closeBtn?.addEventListener('click', closeSearch);
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+  if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+  if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
-  /* search */
-  input?.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
-    if (!q || q.length < 2) { results.innerHTML = ''; return; }
+
+  /* search logic */
+  const performSearch = (q, resultsContainer) => {
+    if (!q || q.length < 2) { resultsContainer.innerHTML = ''; return; }
     const matches = VELORRA_SEARCH_INDEX.filter(item =>
       item.title.toLowerCase().includes(q) ||
       item.keywords.toLowerCase().includes(q)
     );
     if (matches.length === 0) {
-      results.innerHTML = `<div class="search-no-results">No results for "<em>${q}</em>"</div>`;
+      resultsContainer.innerHTML = `<div class="search-no-results">No results for "<em>${q}</em>"</div>`;
       return;
     }
-    results.innerHTML = matches.map(item => `
+    resultsContainer.innerHTML = matches.map(item => `
       <a href="${item.url}" class="search-result-item" onclick="closeSearchOverlay()">
         <span class="sr-icon">${TYPE_ICON[item.type] || '🔍'}</span>
         <span class="sr-info">
@@ -67,14 +81,44 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="sr-badge">${item.badge}</span>
         </span>
       </a>`).join('');
-  });
-  /* Enter key navigation */
-  input?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const first = results.querySelector('.search-result-item');
-      if (first) first.click();
-    }
-  });
+  };
+
+  if (input && results) {
+    input.addEventListener('input', () => performSearch(input.value.trim().toLowerCase(), results));
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const first = results.querySelector('.search-result-item');
+        if (first) first.click();
+      }
+    });
+  }
+
+  // Header search suggestions dropdown logic
+  if (headerInput) {
+    // Create a container for header search results
+    const headerResults = document.createElement('div');
+    headerResults.className = 'header-search-results';
+    headerResults.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,0.1);z-index:1001;max-height:400px;overflow-y:auto;display:none;margin-top:8px;';
+    headerInput.parentNode.style.position = 'relative';
+    headerInput.parentNode.appendChild(headerResults);
+
+    headerInput.addEventListener('input', () => {
+      const q = headerInput.value.trim().toLowerCase();
+      if (q.length < 2) {
+        headerResults.style.display = 'none';
+        return;
+      }
+      headerResults.style.display = 'block';
+      performSearch(q, headerResults);
+    });
+
+    headerInput.addEventListener('blur', () => {
+      setTimeout(() => headerResults.style.display = 'none', 200);
+    });
+    headerInput.addEventListener('focus', () => {
+      if (headerInput.value.trim().length >= 2) headerResults.style.display = 'block';
+    });
+  }
 });
 /* highlight matched text */
 function highlight(text, query) {

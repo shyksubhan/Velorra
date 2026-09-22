@@ -70,7 +70,7 @@ fbq('track', 'PageView');
         <button id="header-search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
       </div>
       <div class="header-actions">
-        <a href="account" aria-label="Account"><i class="fa-regular fa-user"></i> <span class="header-action-label">Login</span></a>
+        <a href="account" aria-label="Account"><i class="fa-regular fa-user"></i> <span class="header-action-label">Login / Signup</span></a>
         <button data-open-cart aria-label="Bag" style="position:relative;">
           <i class="fa-solid fa-bag-shopping"></i>
           <span class="cart-count" style="display:none">0</span>
@@ -192,6 +192,18 @@ fbq('track', 'PageView');
   </div>
 </section>
 
+<!-- ═══════════════════ OUR INSTAGRAM ═══════════════════ -->
+<section id="instagram-section" style="padding:60px 0;text-align:center;">
+  <div class="container">
+    <h2 class="section-title" style="margin-bottom:20px;">Our <em style="color:var(--gold);">Instagram</em></h2>
+    <p style="color:var(--muted);margin-bottom:30px;font-size:0.95rem;">Follow us for daily inspiration & new drops</p>
+    <a href="https://www.instagram.com/golnisa_/" target="_blank" rel="noopener" class="instagram-follow-btn">
+      <i class="fa-brands fa-instagram"></i>
+      <span>Follow @golnisa_</span>
+    </a>
+  </div>
+</section>
+
 <!-- ═══════════════════ HIGHLIGHTS / REVIEWS ═══════════════════ -->
 <section id="highlights" style="padding:30px 0;">
   <div class="container">
@@ -205,18 +217,6 @@ fbq('track', 'PageView');
   <div style="position:absolute;top:20px;right:20px;cursor:pointer;color:#fff;font-size:2rem;z-index:10001;padding:10px;" onclick="document.getElementById('highlight-modal').style.display='none'">&times;</div>
   <img id="highlight-modal-img" src="" style="max-width:100%;max-height:100vh;object-fit:contain;border-radius:12px;" />
 </div>
-
-<!-- ═══════════════════ OUR INSTAGRAM ═══════════════════ -->
-<section id="instagram-section" style="padding:60px 0;text-align:center;">
-  <div class="container">
-    <h2 class="section-title" style="margin-bottom:20px;">Our <em style="color:var(--gold);">Instagram</em></h2>
-    <p style="color:var(--muted);margin-bottom:30px;font-size:0.95rem;">Follow us for daily inspiration & new drops</p>
-    <a href="https://www.instagram.com/golnisa_/" target="_blank" rel="noopener" class="instagram-follow-btn">
-      <i class="fa-brands fa-instagram"></i>
-      <span>Follow @golnisa_</span>
-    </a>
-  </div>
-</section>
 
 <!-- ═══════════════════ FOOTER ═══════════════════ -->
 <footer>
@@ -371,7 +371,7 @@ fbq('track', 'PageView');
         const filtered = allProducts.filter(p => Number(p.price) <= maxPrice).slice(0, 25);
         if (!filtered.length) { grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">No products found in this price range.</p>'; return; }
         grid.innerHTML = filtered.map(p => golnisaProductCardHTML(p)).join('');
-        golnisaReInitCards();
+        golnisaReInitCards(grid);
         seeAllLink.href = 'jewelry.html?maxprice=' + maxPrice;
       }
 
