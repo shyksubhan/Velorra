@@ -209,17 +209,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Hamburger Mobile Menu ── */
   const ham = document.querySelector('.hamburger');
-  const navLinks = document.querySelector('.nav-links');
+  const navLinks = document.querySelector('.header-nav-main');
   ham?.addEventListener('click', () => {
     navLinks.classList.toggle('mobile-open');
+    ham.classList.toggle('open');
   });
   /* Close mobile menu after a link is tapped, or on outside click */
   navLinks?.addEventListener('click', (e) => {
-    if (e.target.tagName === 'A') navLinks.classList.remove('mobile-open');
+    if (e.target.tagName === 'A') { navLinks.classList.remove('mobile-open'); ham.classList.remove('open'); }
   });
   document.addEventListener('click', (e) => {
     if (navLinks?.classList.contains('mobile-open') && !navLinks.contains(e.target) && !ham.contains(e.target)) {
-      navLinks.classList.remove('mobile-open');
+      navLinks.classList.remove('mobile-open'); ham.classList.remove('open');
     }
   });
 
