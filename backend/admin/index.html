@@ -4207,6 +4207,7 @@ async function loadProducts() {
       return p;
     });
     filterProductsTable();
+    updatePinnedProductsDropdown();
   } catch { toast('Failed to load products', 'error'); }
 }
 
