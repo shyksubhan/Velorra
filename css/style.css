@@ -539,7 +539,7 @@ body.page-home nav:not(.scrolled) .hamburger span { background: #fff; }
 /* ── Section Shared ── */
 section { padding: 100px 0; }
 .section-label {
-  font-size: 0.6rem; letter-spacing: 0.4em; text-transform: uppercase;
+  font-size: 0.85rem; letter-spacing: 0.25em; text-transform: uppercase;
   color: var(--gold); margin-bottom: 12px;
   font-family: var(--font-ui); font-weight: 700;
 }
