@@ -207,7 +207,7 @@
   if (ogTitle) ogTitle.setAttribute('content', `${product.name} — Golnisà Pakistan`);
   const ogDesc = document.querySelector('meta[property="og:description"]');
   if (ogDesc) ogDesc.setAttribute('content',
-    `${product.name} — PKR ${Number(product.price).toLocaleString()}. ${product.description ? product.description.slice(0,120) + '…' : 'Shop hair accessories & jewelry online in Pakistan.'}`
+    `${product.name} — PKR ${Number(product.price).toLocaleString()}. ${product.description ? product.description.slice(0,120) + '…' : 'Shop Premium Jewelry online in Pakistan.'}`
   );
   const ogImg = document.querySelector('meta[property="og:image"]');
   if (ogImg && product.images && product.images[0]) ogImg.setAttribute('content', product.images[0]);
