@@ -1438,7 +1438,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 /* 🔸 Premium Categories Grid (Home) 🔸 */
 .premium-cat-grid {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 30px;
   flex-wrap: nowrap;
