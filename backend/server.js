@@ -568,7 +568,8 @@ app.use((err, req, res, next) => {
       if (doc.exists) {
         const data = doc.data();
         if (data.siteLaunchDate) store.setSiteLaunchDate(data.siteLaunchDate);
-        if (data.company) store.settings = { ...store.settings, company: data.company };
+                if (data.company) store.settings = { ...store.settings, company: data.company };
+        if (data.highlights) store.settings = { ...store.settings, highlights: data.highlights };
         console.log(`✅ Loaded global settings from Firestore.`);
       }
 
