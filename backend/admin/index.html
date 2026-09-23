@@ -945,7 +945,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <div class="table-header">
         <h3>Instagram Highlights (Our Happy Customers)</h3>
         <div class="ml-auto" style="display:flex; gap:10px; align-items:center;">
-          <input type="file" id="highlight-upload" accept="image/*" style="display:none;" onchange="uploadHighlight(this)" />
+          <input type="file" id="highlight-upload" accept="image/*" multiple style="display:none;" onchange="uploadHighlight(this)" />
           <button class="btn btn-gold" onclick="document.getElementById('highlight-upload').click()"><i class="fa-solid fa-plus"></i> Upload Highlight</button>
           <span id="hl-status" style="font-size:0.8rem; color:var(--muted)"></span>
         </div>
