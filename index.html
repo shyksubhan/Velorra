@@ -384,8 +384,7 @@ fbq('track', 'PageView');
 <script>
   (async () => {
     try {
-      const res = await fetch("/api/highlights");
-      const highlights = await res.json();
+      const highlights = await apiGet('/highlights');
       const hc = document.getElementById("highlights-container");
       if (!highlights || highlights.length === 0) { document.getElementById("highlights").style.display = "none"; return; }
       hc.innerHTML = highlights.map(h => `

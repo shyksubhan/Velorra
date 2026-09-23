@@ -5569,7 +5569,7 @@ function bktConfirm({ title = 'Are you sure?', message = 'This action cannot be 
     const c = document.getElementById("highlights-admin-container");
     if (!c) return;
     try {
-      const res = await fetch("/api/highlights");
+      const res = await apiFetch("/highlights");
       const hls = await res.json();
       if (hls.length === 0) { c.innerHTML = "<div style='color:var(--muted)'>No highlights uploaded yet.</div>"; return; }
       c.innerHTML = hls.map(h => `
