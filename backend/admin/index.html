@@ -1316,7 +1316,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
 
 <!-- PINNED COLLECTIONS MODAL -->
 <div class="modal-overlay" id="modal-pinned">
-  <div class="modal" style="max-width:520px;">
+  <div class="modal" style="max-width:700px; width: 95%;">
     <div class="modal-header">
       <h2>Pinned Collections</h2>
       <button class="btn btn-outline btn-sm" onclick="closePinnedModal()">✕</button>
@@ -3595,7 +3595,7 @@ function renderPinnedList() {
     <tr style="border-bottom:1px solid var(--border);">
       <td style="padding:10px 8px;vertical-align:middle;">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;font-size:0.7rem;font-weight:700;margin-right:10px;">${i + 1}</span>
-        <strong style="font-size:0.9rem;">${p.name}</strong>
+        <strong style="font-size:0.9rem; display: inline-block; max-width: 100%; white-space: normal; word-wrap: break-word;">${p.name}</strong>
         <span style="margin-left:8px;font-size:0.7rem;color:var(--muted);font-family:monospace;">${p.id}</span>
       </td>
       <td style="text-align:right;padding:10px 8px;white-space:nowrap;">

@@ -223,7 +223,7 @@ async function golnisaRenderHomepageGrids() {
     // --- 1. Render Pinned Collections as GRID ---
     const pinnedRes = await apiGet('/admin/pinned').catch(e => null);
     let pinnedData = pinnedRes && pinnedRes.pinned ? pinnedRes.pinned : [];
-    pinnedData = pinnedData.filter(pin => typeof GOLNISÀ_CAT_LABELS !== 'undefined' && GOLNISÀ_CAT_LABELS[pin.id]);
+    pinnedData = pinnedData.filter(pin => true); // keep all
     
     const pinnedContainer = document.getElementById('pinned-collections-wrapper');
     if (pinnedContainer && pinnedData.length > 0) {
