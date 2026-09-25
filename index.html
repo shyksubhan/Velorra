@@ -105,7 +105,7 @@ fbq('track', 'PageView');
 <!-- ═══════════════════ HERO SLIDESHOW ═══════════════════ -->
 <section id="hero" class="hero-slideshow-container">
   <div id="hero-slides-wrapper">
-    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#1a1a1a;">Loading collections...</div>
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#000000;background:#ffffff;">Loading collections...</div>
   </div>
   <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Golnisà — Premium Jewelry Online Pakistan</h1>
   <div class="hero-dots" id="hero-dots"></div>
@@ -214,7 +214,7 @@ fbq('track', 'PageView');
   </div>
 </section>
 <div id="highlight-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;flex-direction:column;justify-content:center;align-items:center;">
-  <div style="position:absolute;top:20px;right:20px;cursor:pointer;color:#fff;font-size:2rem;z-index:10001;padding:10px;" onclick="document.getElementById('highlight-modal').style.display='none'">&times;</div>
+  <div style="position:absolute;top:20px;right:20px;cursor:pointer;color:#000000;font-size:2rem;z-index:10001;padding:10px;" onclick="document.getElementById('highlight-modal').style.display='none'">&times;</div>
   <img id="highlight-modal-img" src="" style="max-width:100%;max-height:100vh;object-fit:contain;border-radius:12px;" />
 </div>
 
@@ -299,11 +299,11 @@ fbq('track', 'PageView');
     try {
       const res = await apiGet('/admin/hero-slides');
       const ids = res.slides || [];
-      if (!ids.length) { wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#1a1a1a;">No collections pinned</div>'; return; }
+      if (!ids.length) { wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#000000;background:#ffffff;">No collections pinned</div>'; return; }
       const data = await apiGet('/products');
       const allProds = data.products || [];
       const slides = ids.map(id => allProds.find(p => p.id === id)).filter(Boolean);
-      if (!slides.length) { wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#1a1a1a;">No collections pinned</div>'; return; }
+      if (!slides.length) { wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#000000;background:#ffffff;">No collections pinned</div>'; return; }
       wrapper.innerHTML = slides.map((p, i) => {
         const hasVideo = !!p.video;
         const hasImage = p.images && p.images.length > 0;
@@ -319,7 +319,7 @@ fbq('track', 'PageView');
             <div class="hero-layout">
               <div class="hero-text-side">
                 <p class="hero-title-main">${p.name}</p>
-                <p class="hero-title-sub" style="margin-top:10px;color:#fff;">PKR ${Number(p.price).toLocaleString()}</p>
+                <p class="hero-title-sub" style="margin-top:10px;color:#000000;">PKR ${Number(p.price).toLocaleString()}</p>
                 <a href="product.html?id=${p.id}" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
               </div>
               <div class="hero-visual-side">${visualHtml}</div>
@@ -343,7 +343,7 @@ fbq('track', 'PageView');
       }
     } catch(e) {
       console.error("Hero load error:", e);
-      wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#1a1a1a;">Failed to load</div>';
+      wrapper.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#000000;background:#ffffff;">Failed to load</div>';
     }
   })();
 </script>

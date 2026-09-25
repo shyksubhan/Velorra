@@ -1863,3 +1863,28 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
     bottom: 15px !important;
   }
 }
+/* ====== USER REVISION 8: Perfect Vertical Alignment & Bold Nav Links ====== */
+.header-top-inner {
+  align-items: center !important;
+}
+.header-search, .header-actions {
+  align-self: center !important;
+}
+.nav-logo {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+}
+.header-nav-main a {
+  font-weight: 600 !important; /* Boldish */
+}
+/* Live Search Results UI Polish */
+.header-search-results {
+  width: 320px !important; /* Wider dropdown */
+}
+@media (max-width: 768px) {
+  .header-search-results {
+    width: 100% !important;
+  }
+}

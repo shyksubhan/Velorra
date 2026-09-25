@@ -77,14 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsContainer.innerHTML = matches.map(item => {
       let iconHtml = `<span class="sr-icon">${TYPE_ICON[item.type] || '🔍'}</span>`;
       if (item.image) {
-        iconHtml = `<img src="${item.image}" alt="${item.title}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; margin-right:12px;" />`;
+        iconHtml = `<img src="${item.image}" alt="${item.title}" style="width:50px; height:50px; object-fit:cover; border-radius:4px; margin-right:12px;" />`;
       }
       return `
-      <a href="${item.url}" class="search-result-item" onclick="closeSearchOverlay()" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; text-decoration:none; color:inherit;">
+      <a href="${item.url}" class="search-result-item" onclick="closeSearchOverlay()" style="display:flex; align-items:center; padding:14px; border-bottom:1px solid #eee; text-decoration:none; color:inherit;">
         ${iconHtml}
         <span class="sr-info" style="flex:1; display:flex; justify-content:space-between; align-items:center;">
-          <span class="sr-title" style="font-weight:500;">${highlight(item.title, q)}</span>
-          <span class="sr-badge" style="font-size:0.75rem; color:#888;">${item.badge}</span>
+          <span class="sr-title" style="font-weight:500; font-family:var(--font-display); font-size:1rem; line-height:1.2;">${highlight(item.title, q)}</span>
+          <span class="sr-badge" style="font-size:0.85rem; color:var(--gold); font-weight:600; font-family:var(--font-ui);">${item.badge}</span>
         </span>
       </a>`
     }).join('');
