@@ -2283,3 +2283,12 @@ footer .nav-logo, footer .nav-logo-link {
     left: 63% !important;
   }
 }
+/* ====== USER REVISION 20: Fix Black Flash on Videos ====== */
+@media (min-width: 769px) {
+  .desktop-3d-card {
+    background-color: #ffffff !important; 
+  }
+  .desktop-3d-card video {
+    background-color: #ffffff !important; 
+  }
+}
