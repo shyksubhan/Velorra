@@ -2214,3 +2214,38 @@ footer .nav-logo, footer .nav-logo-link {
     background: transparent !important; /* No more black flashes */
   }
 }
+/* ====== USER REVISION 18: Wide Layout, Extreme Left Text & Smooth Z-Sorting ====== */
+@media (min-width: 769px) {
+  /* 1. Stretch layout to absolute full width with tiny margins */
+  .hero-desktop-only .hero-layout {
+    max-width: 100% !important; /* Full width */
+    padding: 60px 4% !important; /* Extremely close to the left/right edges */
+  }
+  
+  /* 2. Text locked to the left, taking up 40% of the screen */
+  .hero-desktop-only .desktop-text-wrapper {
+    flex: 0 0 40% !important;
+    padding-right: 20px !important;
+  }
+  
+  /* Make text a bit larger since we have so much room */
+  .hero-desktop-only .hero-title-main {
+    
+  }
+
+  /* 3. Carousel takes the remaining 60%, stretching all the way to the text */
+  .hero-visual-side-3d {
+    flex: 1 !important; 
+    height: 650px !important; /* Taller */
+    perspective: 1500px !important;
+    transform-style: preserve-3d !important; /* Critical for smooth 3D intersection */
+  }
+  
+  /* 4. Increase Video Card Size */
+  .desktop-3d-card {
+    width: 400px !important; /* Much wider video */
+    height: 600px !important; /* Much taller video */
+    background: transparent !important; /* Remove black background to stop black flashes */
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease, filter 0.8s ease !important; /* Removed instant z-index jumping */
+  }
+}
