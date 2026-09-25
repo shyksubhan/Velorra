@@ -2019,3 +2019,35 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
     background: transparent !important;
   }
 }
+/* ====== USER REVISION 13: Fix Flexbox Order & Add Super Heading ====== */
+
+@media (min-width: 769px) {
+  .header-search {
+    order: -1 !important; /* Forces Search to the far left */
+  }
+  .nav-logo, .nav-logo-link {
+    order: 1 !important;  /* Forces Logo to the center */
+  }
+  .header-actions {
+    order: 2 !important;  /* Forces Icons to the far right */
+  }
+}
+
+/* Beautiful Super Heading */
+.hero-super-heading {
+  font-family: 'Playfair Display', serif !important;
+  font-style: italic !important;
+  font-size: 1.6rem !important;
+  color: var(--gold) !important;
+  margin-bottom: 16px !important;
+  letter-spacing: 0.1em !important;
+  font-weight: 400 !important;
+}
+
+@media (max-width: 768px) {
+  .hero-super-heading {
+    color: #ffffff !important;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.8) !important;
+    font-size: 1.3rem !important;
+  }
+}
