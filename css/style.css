@@ -1651,3 +1651,19 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   .product-price { font-size: 1rem !important; }
   .product-info { padding: 12px !important; }
 }
+/* ====== USER REVISION 3: Video Bigger, Text Smaller ====== */
+@media (min-width: 769px) {
+  .hero-visual-side {
+    flex: 0 0 450px !important; /* Increase width from 340px */
+    height: 550px !important;  /* Increase height */
+  }
+  .hero-title-main {
+    font-size: clamp(2.5rem, 4vw, 3.5rem) !important; /* Decrease text size */
+  }
+  .hero-title-sub {
+    font-size: 1.1rem !important; /* Decrease subtext size slightly */
+  }
+  .hero-layout {
+    gap: 60px !important; /* Adjust gap to balance the larger video */
+  }
+}
