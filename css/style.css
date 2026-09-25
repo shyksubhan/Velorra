@@ -1798,22 +1798,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   margin-top: 20px !important;
 }
 
-/* 3. Stacked Mobile Layout for Hero (Fixes Text Visibility) */
-@media (max-width: 768px) {
-  .hero-slideshow-container {
-    height: auto !important;
-    min-height: auto !important;
-    padding-bottom: 50px !important; /* Space for dots */
-  }
-  
-  /* Change slides from absolute overlapping to relative blocking */
-  .hero-slide {
-    position: absolute !important;
-    /* We keep absolute so crossfade works, but the container height must be managed.
-       Wait, if it's absolute, container height collapses to 0 if height is auto. 
-       Let's set a fixed height for mobile container. */
-  }
-}
+
 
 /* ====== USER REVISION 8: Perfect Vertical Alignment & Bold Nav Links ====== */
 .header-top-inner {
