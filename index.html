@@ -379,22 +379,20 @@ fbq('track', 'PageView');
               if (offset < -Math.floor(total / 2)) offset += total;
               
               if (offset === 0) {
-                card.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                card.style.transform = 'translate(-50%, -50%) scale(1.2)';
                 card.style.zIndex = 10;
                 card.style.opacity = 1;
                 card.style.filter = 'blur(0px) brightness(1)';
               } else if (offset === 1) {
-                card.style.transform = 'translate(10%, -50%) scale(0.85)';
+                card.style.transform = 'translate(35%, -50%) scale(0.8)';
                 card.style.zIndex = 5;
                 card.style.opacity = 0.8;
-                card.style.filter = 'blur(2px) brightness(0.7)';
+                card.style.filter = 'blur(2px) brightness(0.6)';
               } else if (offset === -1 || (total === 2 && offset === 1)) {
-                // If only 2 items, the other is treated as right side. 
-                // But generally for left:
-                card.style.transform = 'translate(-110%, -50%) scale(0.85)';
+                card.style.transform = 'translate(-135%, -50%) scale(0.8)';
                 card.style.zIndex = 5;
                 card.style.opacity = 0.8;
-                card.style.filter = 'blur(2px) brightness(0.7)';
+                card.style.filter = 'blur(2px) brightness(0.6)';
               } else {
                 card.style.transform = `translate(${offset > 0 ? '100%' : '-200%'}, -50%) scale(0.7)`;
                 card.style.zIndex = 1;
@@ -404,26 +402,30 @@ fbq('track', 'PageView');
           };
 
           const goToSlide = (idx) => {
-            // Mobile
             mobileSlides[currentSlide]?.classList.remove('active');
             dotElements[currentSlide]?.classList.remove('active');
             textCards[currentSlide]?.classList.remove('active');
-            
             currentSlide = idx;
-            
             mobileSlides[currentSlide]?.classList.add('active');
             dotElements[currentSlide]?.classList.add('active');
             textCards[currentSlide]?.classList.add('active');
-            
-            // Desktop 3D
             update3DCarousel(currentSlide);
           };
 
-          // Init 3D
           update3DCarousel(0);
 
           dotElements.forEach(d => d.addEventListener('click', () => goToSlide(Number(d.dataset.idx))));
-          setInterval(() => { goToSlide((currentSlide + 1) % slides.length); }, 4000);
+          
+          let heroInterval = setInterval(() => { goToSlide((currentSlide + 1) % slides.length); }, 4000);
+          
+          // Pause on hover
+          const desktopVisualWrapper = document.getElementById('desktop-visual-wrapper');
+          if (desktopVisualWrapper) {
+            desktopVisualWrapper.addEventListener('mouseenter', () => clearInterval(heroInterval));
+            desktopVisualWrapper.addEventListener('mouseleave', () => {
+              heroInterval = setInterval(() => { goToSlide((currentSlide + 1) % slides.length); }, 4000);
+            });
+          }
         }
       } catch(e) {
         console.error("Hero load error:", e);
