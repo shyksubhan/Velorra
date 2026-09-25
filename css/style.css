@@ -2181,3 +2181,29 @@ footer .nav-logo, footer .nav-logo-link {
   flex: 1 !important;
   padding-right: 40px !important; /* give breathing room */
 }
+/* ====== USER REVISION 17: Hero Carousel Size & Position Tweaks ====== */
+@media (min-width: 769px) {
+  /* Move text to the left by making the container wider */
+  .hero-desktop-only .hero-layout {
+    max-width: 1500px !important; /* Stretch layout out more */
+    margin: 0 auto !important;
+    padding: 60px 40px !important;
+  }
+  
+  /* Make the text section taller and more spacious */
+  .desktop-text-wrapper {
+    height: 450px !important;
+  }
+
+  /* Widen and heighten the 3D Carousel */
+  .hero-visual-side-3d {
+    flex: 0 0 650px !important; /* Wider area for the cards to breathe */
+    height: 580px !important;
+  }
+  
+  .desktop-3d-card {
+    width: 360px !important; /* Larger video size */
+    height: 540px !important;
+    background: #111 !important; /* Slightly lighter than pitch black just in case */
+  }
+}
