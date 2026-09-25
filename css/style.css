@@ -1785,3 +1785,81 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
   letter-spacing: 0.15em !important;
   text-transform: capitalize !important; /* Not all caps, just first letter */
 }
+/* ====== USER REVISION 7: Mobile Stacked Hero & Premium Text Styling ====== */
+
+/* 1. Prettier Desktop Hero Text (Handles long product names better) */
+.hero-title-main {
+  font-family: 'Playfair Display', serif !important;
+  font-size: clamp(2rem, 3vw, 3rem) !important; /* Smaller max size so long titles look elegant, not clunky */
+  font-weight: 400 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* 2. Premium Price Text Styling */
+.hero-title-sub {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.25em !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  color: var(--gold) !important; /* Gold price */
+  margin-top: 20px !important;
+}
+
+/* 3. Stacked Mobile Layout for Hero (Fixes Text Visibility) */
+@media (max-width: 768px) {
+  .hero-slideshow-container {
+    height: auto !important;
+    min-height: auto !important;
+    padding-bottom: 50px !important; /* Space for dots */
+  }
+  
+  /* Change slides from absolute overlapping to relative blocking */
+  .hero-slide {
+    position: absolute !important;
+    /* We keep absolute so crossfade works, but the container height must be managed.
+       Wait, if it's absolute, container height collapses to 0 if height is auto. 
+       Let's set a fixed height for mobile container. */
+  }
+}
+/* 4. Complete Mobile Layout Rewrite (Stacked: Video Top, Text Bottom) */
+@media (max-width: 768px) {
+  .hero-slideshow-container {
+    height: 85vh !important;
+    min-height: 600px !important;
+  }
+  .hero-layout {
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+  .hero-visual-side {
+    position: relative !important; 
+    width: 100% !important;
+    height: 55% !important; 
+    max-height: 55% !important;
+    z-index: 1 !important;
+    border-radius: 0 0 24px 24px !important;
+  }
+  .hero-text-side {
+    position: relative !important;
+    padding: 24px 20px !important;
+    height: 45% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    background: #ffffff !important;
+  }
+  .hero-title-main {
+    font-size: 1.7rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 12px !important;
+  }
+  .hero-dots {
+    bottom: 15px !important;
+  }
+}
