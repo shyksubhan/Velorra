@@ -283,7 +283,7 @@ async function golnisaRenderHomepageGrids() {
           section.innerHTML = `
             <div class="container">
               <h2 class="section-title" style="text-align:center;margin-bottom:32px;">${pin.name}</h2>
-              <div class="products-grid" style="grid-template-columns: repeat(4, 1fr);">
+              <div class="products-grid" >
                 ${limitedProducts.map(p => golnisaProductCardHTML(p)).join('')}
               </div>
               ${pinProducts.length > 8 ? `<div style="text-align:center;margin-top:30px;"><a href="${catUrl}" class="btn-see-all">See All →</a></div>` : ''}

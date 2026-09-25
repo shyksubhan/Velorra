@@ -58,7 +58,7 @@ button { border: none; background: none; font-family: inherit; cursor: pointer; 
 
 /* ═══ NEW 3-LINE HEADER ═══ */
 .site-header {
-  position: sticky; top: 0; z-index: 1000;
+  position: relative; z-index: 1000;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
@@ -1599,4 +1599,55 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
     height: 650px !important;
     max-height: 80vh !important;
   }
+}
+/* ====== USER REVISIONS: Header, Hero, Mobile Product Page ====== */
+
+/* 1. Stop Navbar from scrolling down */
+.site-header, body > nav, header > nav, .site-nav {
+  position: relative !important;
+}
+
+/* 2. Make Hero Section Shorter */
+@media (min-width: 769px) {
+  .hero-layout { 
+    padding: 60px 40px !important; /* Reduced from 100px */
+  }
+  .hero-visual-side {
+    height: 480px !important; /* Reduced from 650px */
+  }
+}
+
+/* 3. Navbar Text (Home, About, Contact): Much bigger, bolder, premium font */
+.header-nav-main a {
+  font-family: var(--font-ui) !important; text-transform: uppercase !important;
+  font-size: 1.15rem !important; 
+  font-weight: 600 !important;
+  letter-spacing: 0.25em !important;
+  color: var(--text) !important;
+}
+
+/* Extra whitespace around the links */
+.header-nav-main {
+  padding: 30px 0 !important; /* Even more padding */
+}
+
+/* 4. Fix Product Page Title on Mobile */
+@media (max-width: 768px) {
+  .pd-title {
+    font-size: 1.6rem !important;
+    line-height: 1.25 !important;
+  }
+}
+@media (max-width: 768px) {
+  .pd-price { font-size: 1.4rem !important; margin-bottom: 16px !important; }
+}
+/* 5. Force 2 columns on ALL mobile screens up to 768px */
+@media (max-width: 768px) {
+  .products-grid { 
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 12px !important; 
+  }
+  .product-name { font-size: 0.95rem !important; }
+  .product-price { font-size: 1rem !important; }
+  .product-info { padding: 12px !important; }
 }
