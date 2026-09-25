@@ -2051,3 +2051,44 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
     font-size: 1.3rem !important;
   }
 }
+/* ====== USER REVISION 14: Perfect Logo Centering & Top Spacing ====== */
+
+@media (min-width: 769px) {
+  /* Add more white space at the top */
+  .site-header {
+    padding-top: 25px !important; 
+  }
+  
+  .header-top-inner {
+    position: relative !important;
+    padding-top: 10px !important; /* Fine tune spacing */
+  }
+
+  /* Mathematical Absolute Centering for Logo */
+  .header-search {
+    flex: 1 1 0% !important;
+  }
+  .header-actions {
+    flex: 1 1 0% !important;
+  }
+  .nav-logo, .nav-logo-link {
+    flex: 0 0 auto !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
+/* Ensure inactive slides are strictly hidden to prevent double-text ghosting */
+.hero-slide:not(.active) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+.hero-slide.active {
+  z-index: 5 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
