@@ -1667,3 +1667,38 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
     gap: 60px !important; /* Adjust gap to balance the larger video */
   }
 }
+/* ====== USER REVISION 4: White Background Hero, Dark Text, More Gaps ====== */
+
+/* 1. White Background for Hero */
+.hero-slideshow-container {
+  background: #ffffff !important;
+}
+.hero-bg-layer {
+  display: none !important; /* Remove dark blurred background */
+}
+
+/* 2. Adjust Text Colors for White Background */
+.hero-title-main, .hero-title-sub, .hero-eyebrow {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+/* 3. Navbar Link Spacing */
+.header-nav-main .container {
+  gap: 80px !important; /* Wide gap between links */
+}
+
+/* 4. Increase Gap Between Nav and Hero (Top Padding) */
+@media (min-width: 769px) {
+  .hero-layout {
+    padding-top: 140px !important; /* Much larger gap at the top */
+    padding-bottom: 80px !important;
+  }
+}
+/* 5. Fix Hero Dots for White Background */
+.hero-dots .dot {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+.hero-dots .dot.active {
+  background: var(--text) !important;
+}
