@@ -310,57 +310,57 @@ fbq('track', 'PageView');
           const hasImage = p.images && p.images.length > 0;
           const bgImg = hasImage ? p.images[0] : '';
           let visualHtml = '';
-          if (hasVideo) { visualHtml = \<video src="\" autoplay muted loop playsinline></video>\; }
-          else if (hasImage) { visualHtml = \<img src="\" alt="\" />\; }
-          else { visualHtml = \<div class="no-visual">\</div>\; }
-          return \
-            <div class="hero-slide \">
-              <div class="hero-bg-layer" style="background-image: url('\');"></div>
+          if (hasVideo) { visualHtml = `<video src="${p.video}" autoplay muted loop playsinline></video>`; }
+          else if (hasImage) { visualHtml = `<img src="${bgImg}" alt="${p.name}" />`; }
+          else { visualHtml = `<div class="no-visual">${p.emoji || '?'}</div>`; }
+          return `
+            <div class="hero-slide ${i === 0 ? 'active' : ''}">
+              <div class="hero-bg-layer" style="background-image: url('${bgImg}');"></div>
               <div class="hero-video-overlay"></div>
               <div class="hero-layout">
                 <div class="hero-text-side"><h2 class="hero-super-heading">Elegance in Motion</h2>
-                  <p class="hero-title-main">\</p>
-                  <p class="hero-title-sub" style="margin-top:10px;color:#000000;">PKR \</p>
-                  <a href="product.html?id=\" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
+                  <p class="hero-title-main">${p.name}</p>
+                  <p class="hero-title-sub" style="margin-top:10px;color:#000000;">PKR ${Number(p.price).toLocaleString()}</p>
+                  <a href="product.html?id=${p.id}" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
                 </div>
-                <div class="hero-visual-side">\</div>
+                <div class="hero-visual-side">${visualHtml}</div>
               </div>
-            </div>\;
+            </div>`;
         }).join('');
 
-        const desktopTexts = slides.map((p, i) => \
-          <div class="desktop-text-card \" data-idx="\">
+        const desktopTexts = slides.map((p, i) => `
+          <div class="desktop-text-card ${i === 0 ? 'active' : ''}" data-idx="${i}">
             <h2 class="hero-super-heading">Elegance in Motion</h2>
-            <p class="hero-title-main">\</p>
-            <p class="hero-title-sub" style="margin-top:10px;color:#000000;">PKR \</p>
-            <a href="product.html?id=\" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
+            <p class="hero-title-main">${p.name}</p>
+            <p class="hero-title-sub" style="margin-top:10px;color:#000000;">PKR ${Number(p.price).toLocaleString()}</p>
+            <a href="product.html?id=${p.id}" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Shop Now</a>
           </div>
-        \).join('');
+        `).join('');
 
         const desktopVisuals = slides.map((p, i) => {
           const hasVideo = !!p.video;
           const hasImage = p.images && p.images.length > 0;
           let visualHtml = '';
-          if (hasVideo) { visualHtml = \<video src="\" autoplay muted loop playsinline></video>\; }
-          else if (hasImage) { visualHtml = \<img src="\" alt="\" />\; }
-          else { visualHtml = \<div class="no-visual">\</div>\; }
-          return \<div class="desktop-3d-card" data-idx="\">\</div>\;
+          if (hasVideo) { visualHtml = `<video src="${p.video}" autoplay muted loop playsinline></video>`; }
+          else if (hasImage) { visualHtml = `<img src="${p.images[0]}" alt="${p.name}" />`; }
+          else { visualHtml = `<div class="no-visual">${p.emoji || '?'}</div>`; }
+          return `<div class="desktop-3d-card" data-idx="${i}">${visualHtml}</div>`;
         }).join('');
 
-        const desktopHtml = \
+        const desktopHtml = `
           <div class="hero-layout">
-             <div class="hero-text-side desktop-text-wrapper" style="position:relative;">\</div>
-             <div class="hero-visual-side-3d" id="desktop-visual-wrapper">\</div>
+             <div class="hero-text-side desktop-text-wrapper" style="position:relative;">${desktopTexts}</div>
+             <div class="hero-visual-side-3d" id="desktop-visual-wrapper">${desktopVisuals}</div>
           </div>
-        \;
+        `;
 
-        wrapper.innerHTML = \
-          <div class="hero-mobile-only">\</div>
-          <div class="hero-desktop-only">\</div>
-        \;
+        wrapper.innerHTML = `
+          <div class="hero-mobile-only">${mobileHtml}</div>
+          <div class="hero-desktop-only">${desktopHtml}</div>
+        `;
 
         if (slides.length > 1) {
-          dotsContainer.innerHTML = slides.map((_, i) => \<div class="dot \" data-idx="\"></div>\).join('');
+          dotsContainer.innerHTML = slides.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></div>`).join('');
           let currentSlide = 0;
           
           // Mobile Elements
@@ -396,7 +396,7 @@ fbq('track', 'PageView');
                 card.style.opacity = 0.8;
                 card.style.filter = 'blur(2px) brightness(0.7)';
               } else {
-                card.style.transform = \	ranslate(\, -50%) scale(0.7)\;
+                card.style.transform = `translate(${offset > 0 ? '100%' : '-200%'}, -50%) scale(0.7)`;
                 card.style.zIndex = 1;
                 card.style.opacity = 0;
               }
