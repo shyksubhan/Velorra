@@ -1702,3 +1702,16 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 .hero-dots .dot.active {
   background: var(--text) !important;
 }
+/* ====== USER REVISION 5: Complete White Hero, Hide Dark Overlay, Huge Video ====== */
+.hero-video-overlay {
+  display: none !important; /* Removes the grey gradient! */
+}
+.hero-slideshow-container {
+  background: var(--bg) !important; /* Or #ffffff */
+}
+@media (min-width: 769px) {
+  .hero-visual-side {
+    flex: 0 0 500px !important; /* Video is even wider now */
+    height: 650px !important;   /* Video is even taller */
+  }
+}
