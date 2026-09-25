@@ -79,14 +79,7 @@ fbq('track', 'PageView');
       </div>
     </div>
   </div>
-  <!-- LINE 2: Home | About | Contact -->
-  <div class="header-row header-nav-main">
-    <div class="container" style="display:flex;justify-content:center;gap:30px;">
-      <a href="/">Home</a>
-      <a href="about">About</a>
-      <a href="contact">Contact</a>
-    </div>
-  </div>
+  
   <!-- LINE 3: All subcategories -->
   </header>
 
@@ -105,7 +98,10 @@ fbq('track', 'PageView');
 <!-- ═══════════════════ HERO SLIDESHOW ═══════════════════ -->
 <section id="hero" class="hero-slideshow-container">
   <div id="hero-slides-wrapper">
-    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#000000;background:#ffffff;">Loading collections...</div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#ffffff;">
+      <img src="images/logo.svg" alt="Loading" style="height:40px;animation:pulse 1.5s infinite ease-in-out;" />
+      <style>@keyframes pulse { 0% { opacity: 0.4; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.4; transform: scale(0.95); } }</style>
+    </div>
   </div>
   <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Golnisà — Premium Jewelry Online Pakistan</h1>
   <div class="hero-dots" id="hero-dots"></div>
@@ -242,7 +238,8 @@ fbq('track', 'PageView');
       <div class="footer-col">
         <h4>Help</h4>
         <ul>
-          <li><a href="contact">Contact Us</a></li>
+          <li><a href="about">About Us</a></li>
+            <li><a href="contact">Contact Us</a></li>
           <li><a href="policy?page=shipping">Shipping Info</a></li>
           <li><a href="policy?page=returns">Returns Policy</a></li>
           <li><a href="policy?page=faqs">FAQs</a></li>

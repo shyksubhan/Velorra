@@ -2249,3 +2249,15 @@ footer .nav-logo, footer .nav-logo-link {
     transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease, filter 0.8s ease !important; /* Removed instant z-index jumping */
   }
 }
+/* ====== USER REVISION 18: Card Height Boost ====== */
+@media (min-width: 769px) {
+  .hero-visual-side-3d {
+    height: 650px !important; /* Increased from 580px */
+  }
+  
+  .desktop-3d-card {
+    height: 600px !important; /* Increased from 540px */
+  }
+}
+/* Hide hamburger since nav is removed */
+.hamburger { display: none !important; }

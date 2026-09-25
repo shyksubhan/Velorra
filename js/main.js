@@ -211,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ham = document.querySelector('.hamburger');
   const navLinks = document.querySelector('.header-nav-main');
   ham?.addEventListener('click', () => {
+      if(!navLinks) return;
     navLinks.classList.toggle('mobile-open');
     ham.classList.toggle('open');
   });
