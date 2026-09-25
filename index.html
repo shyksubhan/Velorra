@@ -415,14 +415,14 @@ fbq('track', 'PageView');
           
           let heroInterval = setInterval(() => { goToSlide((currentSlide + 1) % slides.length); }, 4000);
           
-          // Pause on hover
-          const desktopVisualWrapper = document.getElementById('desktop-visual-wrapper');
-          if (desktopVisualWrapper) {
-            desktopVisualWrapper.addEventListener('mouseenter', () => clearInterval(heroInterval));
-            desktopVisualWrapper.addEventListener('mouseleave', () => {
-              heroInterval = setInterval(() => { goToSlide((currentSlide + 1) % slides.length); }, 4000);
+          // Pause on hover (only on cards)
+            visualCards.forEach(card => {
+              card.addEventListener('mouseenter', () => clearInterval(heroInterval));
+              card.addEventListener('mouseleave', () => {
+                clearInterval(heroInterval);
+                heroInterval = setInterval(() => { goToSlide((currentSlide + 1) % slides.length); }, 4000);
+              });
             });
-          }
         }
       } catch(e) {
         console.error("Hero load error:", e);
