@@ -1942,3 +1942,75 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
     background: #ffffff !important;
   }
 }
+/* ====== USER REVISION 10: Header Exact Positioning & Full Width ====== */
+
+/* 1. Make Header Full Width like the Reference Image */
+.site-header .container {
+  max-width: 100% !important;
+  padding: 0 4% !important; /* Pushes items to the extreme edges */
+}
+
+/* 2. Fix Grid Alignment Perfectly */
+@media (min-width: 769px) {
+  .header-top-inner {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    padding: 30px 0 10px 0 !important; /* Removed left/right padding so it hits the container edges */
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Extreme Left for Search */
+  .header-search {
+    grid-column: 1 !important;
+    justify-self: start !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Perfect Center for Logo */
+  .nav-logo, .nav-logo-link {
+    grid-column: 2 !important;
+    justify-self: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  /* Fix logo image alignment */
+  .nav-logo img {
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  /* Extreme Right for Actions */
+  .header-actions {
+    grid-column: 3 !important;
+    justify-self: end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  /* Fix input alignment within search */
+  .header-search input {
+    margin: 0 !important;
+    vertical-align: middle !important;
+  }
+  .header-search button {
+    margin: 0 !important;
+    vertical-align: middle !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+/* 3. Make Nav Links Bolder */
+.header-nav-main a {
+  font-weight: 700 !important;
+  color: #000000 !important; /* Ensure it's deep black for contrast */
+}
