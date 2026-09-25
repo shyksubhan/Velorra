@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create a container for header search results
     const headerResults = document.createElement('div');
     headerResults.className = 'header-search-results';
-    headerResults.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,0.1);z-index:1001;max-height:400px;overflow-y:auto;display:none;margin-top:8px;';
+    headerResults.style.cssText = 'position:absolute;top:100%;left:0;width:500px;max-width:90vw;background:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,0.1);z-index:1001;max-height:400px;overflow-y:auto;display:none;margin-top:8px;';
     headerInput.parentNode.style.position = 'relative';
     headerInput.parentNode.appendChild(headerResults);
 
