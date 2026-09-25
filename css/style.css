@@ -2252,11 +2252,11 @@ footer .nav-logo, footer .nav-logo-link {
 /* ====== USER REVISION 18: Card Height Boost ====== */
 @media (min-width: 769px) {
   .hero-visual-side-3d {
-    height: 650px !important; /* Increased from 580px */
+    height: 680px !important; /* Increased from 650px */
   }
   
   .desktop-3d-card {
-    height: 600px !important; /* Increased from 540px */
+    height: 630px !important; /* Increased from 600px */
   }
 }
 /* Hide hamburger since nav is removed */
@@ -2280,6 +2280,6 @@ footer .nav-logo, footer .nav-logo-link {
 
   .desktop-3d-card {
     /* Cluster center is pushed right enough to not bleed into text, but left enough to fill empty space */
-    left: 60% !important;
+    left: 63% !important;
   }
 }
