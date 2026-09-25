@@ -1610,7 +1610,7 @@ footer, footer p, footer a, footer li, footer .footer-col p { color: #c8b49a; }
 /* 2. Make Hero Section Shorter */
 @media (min-width: 769px) {
   .hero-layout { 
-    padding: 60px 40px !important; /* Reduced from 100px */
+    padding: 60px 20px !important; /* Reduced from 100px */
   }
   .hero-visual-side {
     height: 480px !important; /* Reduced from 650px */
@@ -2185,9 +2185,9 @@ footer .nav-logo, footer .nav-logo-link {
 @media (min-width: 769px) {
   /* Move text to the left by making the container wider */
   .hero-desktop-only .hero-layout {
-    max-width: 1500px !important; /* Stretch layout out more */
-    margin: 0 auto !important;
-    padding: 60px 40px !important;
+    max-width: 100% !important; /* Stretch layout out more */
+    margin: 0 !important;
+    padding: 60px 20px !important;
   }
   
   /* Make the text section taller and more spacious */
@@ -2204,6 +2204,6 @@ footer .nav-logo, footer .nav-logo-link {
   .desktop-3d-card {
     width: 360px !important; /* Larger video size */
     height: 540px !important;
-    background: #111 !important; /* Slightly lighter than pitch black just in case */
+    background: transparent !important; /* Slightly lighter than pitch black just in case */
   }
 }
