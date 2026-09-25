@@ -2261,3 +2261,21 @@ footer .nav-logo, footer .nav-logo-link {
 }
 /* Hide hamburger since nav is removed */
 .hamburger { display: none !important; }
+/* ====== USER REVISION 19: Push Videos to Right Side ====== */
+@media (min-width: 769px) {
+  .hero-desktop-only .hero-layout {
+    /* Push items apart */
+    justify-content: space-between !important;
+  }
+  
+  .hero-visual-side-3d {
+    /* Stop it from stretching all the way to text, force it to the right */
+    flex: 0 0 700px !important; 
+    margin-left: auto !important;
+  }
+
+  .desktop-3d-card {
+    /* Shift the center point of the 3D stack more to the right */
+    left: 65% !important;
+  }
+}
