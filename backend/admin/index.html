@@ -1141,7 +1141,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     <h1>Users &amp; Roles</h1>
     <div class="ml-auto">
       <button class="btn btn-outline" id="activity-btn" onclick="loadStaffActivity()"><i class="fa-solid fa-chart-bar"></i> Staff Activity</button>
-      <button class="btn btn-gold" onclick="openRoleModal()"><i class="fa-solid fa-user-plus"></i> Add User</button>
+      <button id="add-user-btn" class="btn btn-gold" onclick="openRoleModal()"><i class="fa-solid fa-user-plus"></i> Add User</button>
     </div>
   </div>
 
@@ -1744,27 +1744,28 @@ function onLoginSuccess() {
   /* Supervisors don't have dashboard access (server blocks /admin/stats for
      them) — they're redirected to the Orders page by applyRolePermissions,
      so skip the dashboard fetch entirely for them. */
-  if (currentUser.role !== 'supervisor' && currentUser.role !== 'support_staff' && currentUser.role !== 'Support Staff') loadDashboard();
+  const isSupportStaff = currentUser.role === 'supervisor' || currentUser.role === 'support_staff' || (currentUser.role || '').toLowerCase().trim().replace(/_/g, ' ') === 'support staff';
+    if (!isSupportStaff) loadDashboard();
 
   connectSSE();
 }
 
 function applyRolePermissions(role) {
-    const isSupportStaff = role === 'supervisor' || role === 'support_staff' || role === 'Support Staff';
+    const isSupportStaff = role === 'supervisor' || role === 'support_staff' || (role || '').toLowerCase().trim().replace(/_/g, ' ') === 'support staff';
 
     const existingStyle = document.getElementById('investor-styles');
     if (existingStyle) existingStyle.remove();
 
     /* Super Admin & CEO sees everything */
     if (['ceo', 'super_admin'].includes(role)) {
-      document.getElementById('activity-btn').style.display = 'inline-flex';
-      document.getElementById('nav-spendings').style.display = 'flex';
-      document.getElementById('card-spendings').style.display = 'flex';
+      document.getElementById('activity-btn')?.style.setProperty('display', 'inline-flex');
+      document.getElementById('nav-spendings')?.style.setProperty('display', 'flex');
+      document.getElementById('card-spendings')?.style.setProperty('display', 'flex');
       return;
     }
 
     /* Hide Add User button for non-super admins */
-    document.getElementById('add-user-btn').style.display = 'none';
+    document.getElementById('add-user-btn')?.style.setProperty('display', 'none');
 
     /* Admin */
     if (role === 'admin') {
@@ -1803,7 +1804,15 @@ function applyRolePermissions(role) {
       const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
       if (totalProfitCard) totalProfitCard.style.display = 'none';
 
-      document.querySelectorAll('.cost-cell, .profit-col').forEach(el => el.style.display = 'none');
+      
+      // Add global CSS to permanently hide these columns even when tables dynamically re-render
+      if (!document.getElementById('support-staff-styles')) {
+        const style = document.createElement('style');
+        style.id = 'support-staff-styles';
+        style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
+        document.head.appendChild(style);
+      }
+
       document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
       document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
       document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
@@ -1818,7 +1827,7 @@ function applyRolePermissions(role) {
     document.getElementById('card-spendings').style.display = 'flex';
   }
   /* Hide Add User button for non-super admins */
-  document.getElementById('add-user-btn').style.display = 'none';
+  document.getElementById('add-user-btn')?.style.setProperty('display', 'none');
 
   /* Admin — hide earnings stats + Excel export buttons */
   if (role === 'admin') {
@@ -1838,7 +1847,15 @@ function applyRolePermissions(role) {
     /* Hide Excel export buttons */
     document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
     /* Hide cost/purchase-price column in products table — only super admin sees margins */
-    document.querySelectorAll('.cost-cell, .profit-col').forEach(el => el.style.display = 'none');
+    
+      // Add global CSS to permanently hide these columns even when tables dynamically re-render
+      if (!document.getElementById('support-staff-styles')) {
+        const style = document.createElement('style');
+        style.id = 'support-staff-styles';
+        style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
+        document.head.appendChild(style);
+      }
+
       document.getElementById('nav-spendings')?.style.setProperty('display', 'none');
       document.getElementById('nav-invoices')?.style.setProperty('display', 'none');
       document.getElementById('nav-abandoned')?.style.setProperty('display', 'none');
@@ -1867,7 +1884,15 @@ function applyRolePermissions(role) {
     if (profitCard) profitCard.style.display = 'none';
     const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
     if (totalProfitCard) totalProfitCard.style.display = 'none';
-      document.querySelectorAll('.cost-cell, .profit-col').forEach(el => el.style.display = 'none');
+      
+      // Add global CSS to permanently hide these columns even when tables dynamically re-render
+      if (!document.getElementById('support-staff-styles')) {
+        const style = document.createElement('style');
+        style.id = 'support-staff-styles';
+        style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
+        document.head.appendChild(style);
+      }
+
       document.getElementById('nav-spendings')?.style.setProperty('display', 'none');
       document.getElementById('nav-invoices')?.style.setProperty('display', 'none');
       document.getElementById('nav-abandoned')?.style.setProperty('display', 'none');
