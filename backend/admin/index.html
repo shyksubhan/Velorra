@@ -372,7 +372,8 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <div class="notif-dot" id="notif-dot"></div>
         <div id="notif-panel"></div>
       </div>
-      <a href="/" target="_blank" class="btn btn-outline"><i class="fa-solid fa-arrow-up-right-from-square"></i> View Site</a>
+      <button class="btn btn-outline" onclick="resyncDatabase()" id="sync-db-btn" style="display:none;margin-right:8px;"><i class="fa-solid fa-arrows-rotate"></i> Sync DB</button>
+        <a href="/" target="_blank" class="btn btn-outline"><i class="fa-solid fa-arrow-up-right-from-square"></i> View Site</a>
     </div>
   </div>
   <div id="demo-banner" class="demo-banner" style="display:none">
@@ -1797,6 +1798,7 @@ function applyRolePermissions(role) {
 
   /* Super Admin & CEO sees everything */
   if (['ceo', 'super_admin'].includes(role)) {
+    document.getElementById('sync-db-btn')?.style.setProperty('display', 'inline-flex');
     document.getElementById('activity-btn')?.style.setProperty('display', 'inline-flex');
     return;
   }
@@ -2100,7 +2102,30 @@ function showPage(name) {
 }
 
 /* ═══════════════════ DASHBOARD ═══════════════════ */
-async function loadDashboard() {
+async function resyncDatabase() {
+    const btn = document.getElementById('sync-db-btn');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> Syncing...';
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/admin/resync', { method: 'POST' });
+      if (res.ok) {
+        toast('Database synced successfully!', 'success');
+        if (typeof showPage === 'function') {
+          loadDashboard();
+          if (document.getElementById('page-social-orders').style.display === 'block') loadSocialOrders();
+        }
+      } else {
+        toast('Failed to sync.', 'error');
+      }
+    } catch {
+      toast('Network error during sync.', 'error');
+    }
+    btn.innerHTML = oldHtml;
+    btn.disabled = false;
+  }
+
+  async function loadDashboard() {
   /* Run these concurrently without waiting for all to finish before rendering each */
   loadStats();
   loadRecentOrders();

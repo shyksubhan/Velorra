@@ -556,7 +556,7 @@ router.post('/resync', requireRole('super_admin', 'admin'), async (req, res) => 
     const db = getDB();
     const [ordersSnap, socialSnap, spendingsSnap, invoicesSnap, productsSnap] = await Promise.all([
       db.collection('orders').get(),
-      db.collection('socialOrders').get(),
+      db.collection('social_orders').get(),
       db.collection('spendings').get(),
       db.collection('invoices').get(),
       db.collection('products').get()

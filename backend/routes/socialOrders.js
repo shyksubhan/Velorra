@@ -181,12 +181,7 @@ router.get('/', requireAdmin, async (req, res) => {
       const snap   = await q.get();
       let orders = snap.docs.map(d => ({ ...d.data(), id: d.id }));
       orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-      if (orders.length === 0 && store.socialOrders.length > 0) {
-        orders = [...store.socialOrders];
-        orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        if (status) orders = orders.filter(o => o.status === status);
-        if (source) orders = orders.filter(o => o.source === source);
-      }
+      /* Removed fallback to memory when Firebase returns 0, so deletions reflect properly */
 
       if (lim)    orders = orders.slice(0, parseInt(lim));
       return res.json({ orders, total: orders.length });

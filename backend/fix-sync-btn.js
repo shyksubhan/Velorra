@@ -1,31 +1,43 @@
 const fs = require('fs');
 let html = fs.readFileSync('admin/index.html', 'utf8');
 
-const targetBtn = `<button class="btn btn-outline" onclick="openSettingsModal()"><i class="fa-solid fa-gear"></i> Settings</button>`;
-const newBtn = `<button class="btn btn-outline" onclick="syncFirebase()"><i class="fa-solid fa-rotate"></i> Sync Data</button>
-      <button class="btn btn-outline" onclick="openSettingsModal()"><i class="fa-solid fa-gear"></i> Settings</button>`;
+const regexHeader = /<a href="\/" target="_blank" class="btn btn-outline">/;
+html = html.replace(regexHeader, `<button class="btn btn-outline" onclick="resyncDatabase()" id="sync-db-btn" style="display:none;margin-right:8px;"><i class="fa-solid fa-arrows-rotate"></i> Sync DB</button>\n        <a href="/" target="_blank" class="btn btn-outline">`);
 
-html = html.replace(targetBtn, newBtn);
-
-const scriptToAdd = `
-async function syncFirebase() {
-  const ok = await bktConfirm({ title: 'Sync with Firebase?', message: 'This will force the server to reload all data from Firebase. Use this if you manually deleted collections.', confirmText: 'Sync Now', icon: 'fa-rotate' });
-  if (!ok) return;
-  try {
-    const res = await apiFetch('/admin/resync', { method: 'POST' });
-    if (res.ok) {
-      toast('Server successfully synced with Firebase.', 'success');
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      toast('Failed to sync.', 'error');
+const jsRegex = /async function loadDashboard\(\) \{/;
+const newJS = `async function resyncDatabase() {
+    const btn = document.getElementById('sync-db-btn');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> Syncing...';
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/admin/resync', { method: 'POST' });
+      if (res.ok) {
+        toast('Database synced successfully!', 'success');
+        if (typeof showPage === 'function') {
+          loadDashboard();
+          if (document.getElementById('page-social-orders').style.display === 'block') loadSocialOrders();
+        }
+      } else {
+        toast('Failed to sync.', 'error');
+      }
+    } catch {
+      toast('Network error during sync.', 'error');
     }
-  } catch (e) { toast('Network error.', 'error'); }
-}
-`;
+    btn.innerHTML = oldHtml;
+    btn.disabled = false;
+  }
 
-if (!html.includes('function syncFirebase')) {
-  html = html.replace('function renderSettings', scriptToAdd + '\nfunction renderSettings');
-}
+  async function loadDashboard() {`;
+
+html = html.replace(jsRegex, newJS);
+
+// Show the button for CEO / Super Admin
+const applyRolesRegex = /if \(\['ceo', 'super_admin'\]\.includes\(role\)\) \{/;
+const newApplyRoles = `if (['ceo', 'super_admin'].includes(role)) {
+    document.getElementById('sync-db-btn')?.style.setProperty('display', 'inline-flex');`;
+
+html = html.replace(applyRolesRegex, newApplyRoles);
 
 fs.writeFileSync('admin/index.html', html);
-console.log('Added Sync Button');
+console.log('Added Sync DB button and logic');
