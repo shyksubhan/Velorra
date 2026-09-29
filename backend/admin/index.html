@@ -1265,11 +1265,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <button class="btn btn-gold" onclick="openSpendingModal()"><i class="fa-solid fa-plus"></i> Add Spending</button>
       <button class="btn btn-outline" onclick="loadSpendings()" style="margin-left:8px"><i class="fa-solid fa-rotate"></i> Refresh</button>
     </div>
-<div id="page-locked" class="page" style="display:none; text-align:center; padding: 150px 20px;">
-  <i class="fa-solid fa-lock" style="font-size:4rem; color:#dcdcdc; margin-bottom: 20px;"></i>
-  <h2 style="color:var(--muted)">Access Denied</h2>
-  <p style="color:var(--muted)">You do not have permission to view this section.</p>
-</div>
+
 
   </div>
   <div class="table-wrap" style="width: 100%;">
@@ -1763,13 +1759,38 @@ function isSupportStaff() {
 }
 
 function applyRolePermissions(role) {
+  role = String(role || '').toLowerCase().trim();
   const existingStyle = document.getElementById('investor-styles');
   if (existingStyle) existingStyle.remove();
 
   if (!document.getElementById('support-staff-styles')) {
     const style = document.createElement('style');
     style.id = 'support-staff-styles';
-    style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
+    style.innerHTML = `
+      .cost-cell, .profit-col { display: none !important; }
+      #page-settings .settings-section:not(#my-profile-section) {
+          position: relative;
+          pointer-events: none;
+          opacity: 0.5;
+      }
+      #page-settings .settings-section:not(#my-profile-section)::after {
+          content: "\f023 Access Denied";
+          font-family: "Font Awesome 6 Free";
+          font-weight: 900;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 1.5rem;
+          color: var(--muted);
+          background: var(--bg);
+          padding: 15px 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          border: 1px solid var(--border);
+          z-index: 10;
+      }
+    `;
     document.head.appendChild(style);
   }
   document.getElementById('support-staff-styles').disabled = !isSupportStaff();
@@ -2042,7 +2063,7 @@ document.addEventListener('click', (e) => {
 /* ═══════════════════ PAGE NAVIGATION ═══════════════════ */
 function showPage(name) {
     if (typeof isSupportStaff === 'function' && isSupportStaff()) {
-      const lockedPages = ['dashboard', 'subscribers', 'roles', 'settings', 'coupons', 'spendings', 'invoices', 'abandoned', 'visitors', 'reviews', 'stock', 'stock-needed'];
+      const lockedPages = ['dashboard', 'roles', 'spendings'];
       if (lockedPages.includes(name)) {
         name = 'locked';
       }
@@ -2085,7 +2106,8 @@ async function loadDashboard() {
   loadRecentOrders();
   loadVisitors();
   loadAbandoned();
-  if (['ceo', 'super_admin', 'investor'].includes(currentUser?.role)) {
+  const roleId = String(currentUser?.role || '').toLowerCase().trim();
+  if (['ceo', 'super_admin', 'investor'].includes(roleId)) {
     loadLifetimeEarnings();
     loadDailyStatements();
     loadMonthlyStatements();
@@ -4434,11 +4456,14 @@ function openProductModal(product = null) {
   document.getElementById('p-featured').value   = product?.featured ? 'true' : 'false';
   document.getElementById('p-instock').value    = product?.inStock !== false ? 'true' : 'false';
   document.getElementById('p-desc').value       = product?.description || '';
-  productSizes  = [...(product?.sizes  || [])];
+  productVariants = [...(product?.variants || [])];
+    productSizes  = [...(product?.sizes  || [])];
   productColors = [...(product?.colors || [])];
-  document.getElementById('p-sizes-text').value  = '';
+  document.getElementById('p-variants-text').value = '';
+    document.getElementById('p-sizes-text').value  = '';
   document.getElementById('p-colors-text').value = '';
-  renderTagChips('sizes');
+  renderTagChips('variants');
+    renderTagChips('sizes');
   renderTagChips('colors');
   productImages = Array.isArray(product?.images) ? [...product.images] : [];
   productVideo  = product?.video || null;
@@ -4451,6 +4476,7 @@ function openProductModal(product = null) {
 
 
 /* ── Sizes / Colors tag chip state ── */
+let productVariants = [];
 let productSizes = [];
 let productColors = [];
 
@@ -4552,7 +4578,8 @@ async function saveProduct() {
     featured:    document.getElementById('p-featured').value === 'true',
     inStock:     document.getElementById('p-instock').value !== 'false',
     description: document.getElementById('p-desc').value,
-    sizes:       (() => { const t=document.getElementById('p-sizes-text').value.trim(); if(t) addTag('sizes',t); return productSizes; })(),
+    variants: (() => { const t=document.getElementById('p-variants-text')?.value.trim(); if(t) addTag('variants',t); return productVariants; })(),
+      sizes:       (() => { const t=document.getElementById('p-sizes-text')?.value.trim(); if(t) addTag('sizes',t); return productSizes; })(),
     colors:      (() => { const t=document.getElementById('p-colors-text').value.trim(); if(t) addTag('colors',t); return productColors; })(),
     images:      productImages,
     video:       productVideo,
@@ -4808,7 +4835,8 @@ function updatePinnedProductsDropdown() {
   }
   
   async function loadRoles() {
-  if (!['ceo', 'super_admin'].includes(currentUser?.role)) {
+  const r = String(currentUser?.role || '').toLowerCase().trim();
+  if (!['ceo', 'super_admin'].includes(r)) {
     document.getElementById('roles-restricted').style.display = 'flex';
     document.getElementById('roles-table-wrap').style.display = 'none';
     return;
@@ -5110,7 +5138,8 @@ async function loadSystemInfo() {
       Server Time: ${new Date(data.timestamp).toLocaleString()}
     `;
   } catch {}
-  if (['ceo', 'super_admin'].includes(currentUser?.role)) loadLaunchDate();
+  const r2 = String(currentUser?.role || '').toLowerCase().trim();
+  if (['ceo', 'super_admin'].includes(r2)) loadLaunchDate();
 }
 
 /* ═══════════════════ SITE LAUNCH DATE (super_admin only) ═══════════════════ */
@@ -5240,7 +5269,7 @@ function fmtDate(iso) {
 }
 
 function formatRole(role) {
-  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff', support_staff:'Support Staff', investor: 'Investor' }[role] || role;
+  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff', support_staff:'Support Staff', investor: 'Investor' }[String(role||'').toLowerCase().trim()] || role;
 }
 
 function today() {
