@@ -470,7 +470,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
     </div>
   </div>
   <div class="table-wrap">
-    <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Profit</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+    <table><thead><tr><th>Order Ref</th><th>Customer</th><th>Items</th><th>Total</th><th class="profit-col">Profit</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
     <tbody id="orders-body"></tbody></table>
   </div>
 </div>
@@ -731,7 +731,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <div style="display:grid;grid-template-columns:2.2fr 55px 75px 75px 90px 36px 36px;gap:8px;margin-bottom:6px;">
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Product</span>
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Qty</span>
-          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Cost</span>
+          <span class="cost-cell" style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Cost</span>
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Sale</span>
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase">Total</span>
           <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase" title="Toggle custom item">✏️</span>
@@ -1744,23 +1744,76 @@ function onLoginSuccess() {
   /* Supervisors don't have dashboard access (server blocks /admin/stats for
      them) — they're redirected to the Orders page by applyRolePermissions,
      so skip the dashboard fetch entirely for them. */
-  if (currentUser.role !== 'supervisor') loadDashboard();
+  if (currentUser.role !== 'supervisor' && currentUser.role !== 'support_staff' && currentUser.role !== 'Support Staff') loadDashboard();
 
   connectSSE();
 }
 
 function applyRolePermissions(role) {
-  const existingStyle = document.getElementById('investor-styles');
-  if (existingStyle) existingStyle.remove();
-  /* Super Admin & CEO — sees everything */
-  if (['ceo', 'super_admin'].includes(role)) {
-    document.getElementById('activity-btn').style.display = 'inline-flex';
-    document.getElementById('nav-spendings').style.display = 'flex';
-    document.getElementById('card-spendings').style.display = 'flex';
-    return;
-  }
-  /* Investor — sees everything (read-only), including spendings */
-  if (role === 'investor') {
+    const isSupportStaff = role === 'supervisor' || role === 'support_staff' || role === 'Support Staff';
+
+    const existingStyle = document.getElementById('investor-styles');
+    if (existingStyle) existingStyle.remove();
+
+    /* Super Admin & CEO sees everything */
+    if (['ceo', 'super_admin'].includes(role)) {
+      document.getElementById('activity-btn').style.display = 'inline-flex';
+      document.getElementById('nav-spendings').style.display = 'flex';
+      document.getElementById('card-spendings').style.display = 'flex';
+      return;
+    }
+
+    /* Hide Add User button for non-super admins */
+    document.getElementById('add-user-btn').style.display = 'none';
+
+    /* Admin */
+    if (role === 'admin') {
+      document.getElementById('nav-settings')?.style.setProperty('display', 'none');
+      document.getElementById('nav-coupons')?.style.setProperty('display', 'none');
+      document.getElementById('launch-date-section')?.style.setProperty('display', 'none');
+      
+      const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
+      if (revenueCard) revenueCard.style.display = 'none';
+      const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
+      if (profitCard) profitCard.style.display = 'none';
+      const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
+      if (totalProfitCard) totalProfitCard.style.display = 'none';
+
+      document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
+      document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
+      document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
+      document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
+      document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
+    }
+
+    /* Support Staff */
+    if (isSupportStaff) {
+      ['nav-dashboard','nav-subscribers','nav-roles','nav-settings','nav-coupons','nav-spendings','nav-invoices','nav-abandoned','nav-live','nav-reviews'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+      const socBtn = document.getElementById('add-social-order-btn');
+      if (socBtn) socBtn.style.display = 'none';
+
+      const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
+      if (revenueCard) revenueCard.style.display = 'none';
+      const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
+      if (profitCard) profitCard.style.display = 'none';
+      const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
+      if (totalProfitCard) totalProfitCard.style.display = 'none';
+
+      document.querySelectorAll('.cost-cell, .profit-col').forEach(el => el.style.display = 'none');
+      document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
+      document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
+      document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
+
+      /* Redirect to orders page since dashboard is hidden */
+      showPage('orders');
+    }
+
+    /* Investor - 100% read-only */
+    if (role === 'investor') {
     document.getElementById('nav-spendings').style.display = 'flex';
     document.getElementById('card-spendings').style.display = 'flex';
   }
@@ -1785,7 +1838,12 @@ function applyRolePermissions(role) {
     /* Hide Excel export buttons */
     document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
     /* Hide cost/purchase-price column in products table — only super admin sees margins */
-    document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.cost-cell, .profit-col').forEach(el => el.style.display = 'none');
+      document.getElementById('nav-spendings')?.style.setProperty('display', 'none');
+      document.getElementById('nav-invoices')?.style.setProperty('display', 'none');
+      document.getElementById('nav-abandoned')?.style.setProperty('display', 'none');
+      document.getElementById('nav-live')?.style.setProperty('display', 'none');
+      document.getElementById('nav-reviews')?.style.setProperty('display', 'none');
     /* Hide lifetime earnings + daily statements sections — super admin only */
     document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
     document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
@@ -1793,9 +1851,9 @@ function applyRolePermissions(role) {
   }
 
   /* Supervisor — restrict to only Orders + Messages in sidebar */
-  if (role === 'supervisor') {
+  if (isSupportStaff) {
     /* Hide sidebar items not allowed */
-    ['nav-dashboard','nav-products','nav-subscribers','nav-roles','nav-settings','nav-coupons'].forEach(id => {
+    ['nav-dashboard','nav-subscribers','nav-roles','nav-settings','nav-coupons'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
@@ -1809,7 +1867,12 @@ function applyRolePermissions(role) {
     if (profitCard) profitCard.style.display = 'none';
     const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
     if (totalProfitCard) totalProfitCard.style.display = 'none';
-    document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.cost-cell, .profit-col').forEach(el => el.style.display = 'none');
+      document.getElementById('nav-spendings')?.style.setProperty('display', 'none');
+      document.getElementById('nav-invoices')?.style.setProperty('display', 'none');
+      document.getElementById('nav-abandoned')?.style.setProperty('display', 'none');
+      document.getElementById('nav-live')?.style.setProperty('display', 'none');
+      document.getElementById('nav-reviews')?.style.setProperty('display', 'none');
     document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
     document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
     document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
@@ -2677,7 +2740,7 @@ function renderSocialOrders(orders) {
       <td><strong>${esc(o.customerName || '—')}</strong><br><small style="color:var(--muted)">${esc(o.phone || '')}</small></td>
       <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
       <td style="color:var(--gold);font-weight:600">PKR ${(o.total || 0).toLocaleString()}</td>
-      <td style="color:${profitColor};font-weight:600">${profitLabel}</td>
+      <td class="profit-col" style="color:${profitColor};font-weight:600">${profitLabel}</td>
       <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
       <td style="color:var(--blue);font-weight:600">PKR ${Number(o.advanceAmount || 0).toLocaleString()}</td>
       <td>
@@ -2895,7 +2958,7 @@ function addSocialItem(prefill = null) {
           <div class="soc-search-results" id="si-results-${idx}"></div>
         </div>
         <input type="number" min="1" id="si-qty-${idx}" value="${qty}" oninput="recalcSocialTotal()" style="width:55px" />
-        <input type="number" min="0" id="si-cost-${idx}" value="${cost}" style="width:75px" />
+        <input type="number" min="0" id="si-cost-${idx}" class="cost-cell" value="${cost}" style="width:75px" />
         <input type="number" min="0" id="si-price-${idx}" value="${sale}" oninput="recalcSocialTotal()" style="width:75px" />
         <div style="width:90px;font-size:0.8rem;text-align:right" id="si-row-total-${idx}">PKR ${total.toLocaleString()}</div>
         <button type="button" class="btn btn-outline btn-sm" onclick="toggleSocCustomItem(${idx})" title="Toggle custom item" style="width:36px;padding:0"><i class="fa-solid fa-cube"></i></button>
@@ -3398,7 +3461,7 @@ function renderOrders(orders) {
       <td>${o.delivery?.fname} ${o.delivery?.lname}<br><small style="color:var(--muted)">${o.delivery?.email}</small></td>
       <td style="color:var(--muted)">${(o.items || []).length} item(s)</td>
       <td>PKR ${(o.total || 0).toLocaleString()}</td>
-      <td style="color:${profitColor};font-weight:600">${profitLabel}</td>
+      <td class="profit-col" style="color:${profitColor};font-weight:600">${profitLabel}</td>
       <td>${(o.paymentMethod || 'cod').toUpperCase()}</td>
       <td>
         <select class="status-select" onchange="updateOrderStatus('${o.id}', this.value)">
@@ -4274,7 +4337,7 @@ function renderProducts(products) {
         <div class="pac-price">PKR ${(p.price||0).toLocaleString()}${p.priceOld ? `<s>PKR ${p.priceOld.toLocaleString()}</s>` : ''}</div>
         <div class="pac-meta">
           ${stockBadge}
-          ${p.purchasePrice != null ? `<span style="color:var(--muted);font-size:0.72rem">Cost: PKR ${p.purchasePrice.toLocaleString()}</span>` : ''}
+          ${p.purchasePrice != null ? `<span class="cost-cell" style="color:var(--muted);font-size:0.72rem">Cost: PKR ${p.purchasePrice.toLocaleString()}</span>` : ''}
         </div>
         <div class="pac-actions">
           <button class="btn btn-outline btn-sm" onclick="editProductById('${p.id}')" title="Edit"><i class="fa-solid fa-pen"></i> Edit</button>
@@ -5221,7 +5284,7 @@ function fmtDate(iso) {
 }
 
 function formatRole(role) {
-  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff', investor: 'Investor' }[role] || role;
+  return { ceo: 'CEO', super_admin:'Super Admin', admin:'Admin', supervisor:'Support Staff', support_staff:'Support Staff', investor: 'Investor' }[role] || role;
 }
 
 function today() {
