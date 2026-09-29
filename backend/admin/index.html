@@ -1265,6 +1265,12 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
       <button class="btn btn-gold" onclick="openSpendingModal()"><i class="fa-solid fa-plus"></i> Add Spending</button>
       <button class="btn btn-outline" onclick="loadSpendings()" style="margin-left:8px"><i class="fa-solid fa-rotate"></i> Refresh</button>
     </div>
+<div id="page-locked" class="page" style="display:none; text-align:center; padding: 150px 20px;">
+  <i class="fa-solid fa-lock" style="font-size:4rem; color:#dcdcdc; margin-bottom: 20px;"></i>
+  <h2 style="color:var(--muted)">Access Denied</h2>
+  <p style="color:var(--muted)">You do not have permission to view this section.</p>
+</div>
+
   </div>
   <div class="table-wrap" style="width: 100%;">
     <table style="width: 100%;">
@@ -1750,162 +1756,71 @@ function onLoginSuccess() {
   connectSSE();
 }
 
+
+function isSupportStaff() {
+  const role = currentUser?.role || '';
+  return role === 'supervisor' || role === 'support_staff' || role.toLowerCase().trim().replace(/_/g, ' ') === 'support staff';
+}
+
 function applyRolePermissions(role) {
-    const isSupportStaff = role === 'supervisor' || role === 'support_staff' || (role || '').toLowerCase().trim().replace(/_/g, ' ') === 'support staff';
+  const existingStyle = document.getElementById('investor-styles');
+  if (existingStyle) existingStyle.remove();
 
-    const existingStyle = document.getElementById('investor-styles');
-    if (existingStyle) existingStyle.remove();
-
-    /* Super Admin & CEO sees everything */
-    if (['ceo', 'super_admin'].includes(role)) {
-      document.getElementById('activity-btn')?.style.setProperty('display', 'inline-flex');
-      document.getElementById('nav-spendings')?.style.setProperty('display', 'flex');
-      document.getElementById('card-spendings')?.style.setProperty('display', 'flex');
-      return;
-    }
-
-    /* Hide Add User button for non-super admins */
-    document.getElementById('add-user-btn')?.style.setProperty('display', 'none');
-
-    /* Admin */
-    if (role === 'admin') {
-      document.getElementById('nav-settings')?.style.setProperty('display', 'none');
-      document.getElementById('nav-coupons')?.style.setProperty('display', 'none');
-      document.getElementById('launch-date-section')?.style.setProperty('display', 'none');
-      
-      const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
-      if (revenueCard) revenueCard.style.display = 'none';
-      const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
-      if (profitCard) profitCard.style.display = 'none';
-      const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
-      if (totalProfitCard) totalProfitCard.style.display = 'none';
-
-      document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
-      document.querySelectorAll('.cost-cell').forEach(el => el.style.display = 'none');
-      document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
-      document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
-      document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
-    }
-
-    /* Support Staff */
-    if (isSupportStaff) {
-      ['nav-dashboard','nav-subscribers','nav-roles','nav-settings','nav-coupons','nav-spendings','nav-invoices','nav-abandoned','nav-live','nav-reviews'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-
-      const socBtn = document.getElementById('add-social-order-btn');
-      if (socBtn) socBtn.style.display = 'none';
-
-      const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
-      if (revenueCard) revenueCard.style.display = 'none';
-      const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
-      if (profitCard) profitCard.style.display = 'none';
-      const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
-      if (totalProfitCard) totalProfitCard.style.display = 'none';
-
-      
-      // Add global CSS to permanently hide these columns even when tables dynamically re-render
-      if (!document.getElementById('support-staff-styles')) {
-        const style = document.createElement('style');
-        style.id = 'support-staff-styles';
-        style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
-        document.head.appendChild(style);
-      }
-
-      document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
-      document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
-      document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
-
-      /* Redirect to orders page since dashboard is hidden */
-      showPage('orders');
-    }
-
-    /* Investor - 100% read-only */
-    if (role === 'investor') {
-    document.getElementById('nav-spendings').style.display = 'flex';
-    document.getElementById('card-spendings').style.display = 'flex';
+  if (!document.getElementById('support-staff-styles')) {
+    const style = document.createElement('style');
+    style.id = 'support-staff-styles';
+    style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
+    document.head.appendChild(style);
   }
-  /* Hide Add User button for non-super admins */
+  document.getElementById('support-staff-styles').disabled = !isSupportStaff();
+
+  /* Super Admin & CEO sees everything */
+  if (['ceo', 'super_admin'].includes(role)) {
+    document.getElementById('activity-btn')?.style.setProperty('display', 'inline-flex');
+    return;
+  }
+
+  /* Non-CEO/SuperAdmins don't see the Add User button */
   document.getElementById('add-user-btn')?.style.setProperty('display', 'none');
 
-  /* Admin — hide earnings stats + Excel export buttons */
+  /* Admin */
   if (role === 'admin') {
-    /* Hide Settings nav entirely — Change Password access is super_admin only now */
     document.getElementById('nav-settings')?.style.setProperty('display', 'none');
-    /* Coupons are super_admin-only — discount decisions stay with the owner */
     document.getElementById('nav-coupons')?.style.setProperty('display', 'none');
     document.getElementById('launch-date-section')?.style.setProperty('display', 'none');
-    /* Hide revenue stat card */
+    
+    document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
+    document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
+    
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
     if (revenueCard) revenueCard.style.display = 'none';
-    /* Hide daily profit stat card */
     const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
     if (profitCard) profitCard.style.display = 'none';
     const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
     if (totalProfitCard) totalProfitCard.style.display = 'none';
-    /* Hide Excel export buttons */
-    document.querySelectorAll('[onclick*="exportExcel"]').forEach(btn => btn.style.display = 'none');
-    /* Hide cost/purchase-price column in products table — only super admin sees margins */
-    
-      // Add global CSS to permanently hide these columns even when tables dynamically re-render
-      if (!document.getElementById('support-staff-styles')) {
-        const style = document.createElement('style');
-        style.id = 'support-staff-styles';
-        style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
-        document.head.appendChild(style);
-      }
-
-      document.getElementById('nav-spendings')?.style.setProperty('display', 'none');
-      document.getElementById('nav-invoices')?.style.setProperty('display', 'none');
-      document.getElementById('nav-abandoned')?.style.setProperty('display', 'none');
-      document.getElementById('nav-live')?.style.setProperty('display', 'none');
-      document.getElementById('nav-reviews')?.style.setProperty('display', 'none');
-    /* Hide lifetime earnings + daily statements sections — super admin only */
-    document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
-    document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
-    document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
   }
 
-  /* Supervisor — restrict to only Orders + Messages in sidebar */
-  if (isSupportStaff) {
-    /* Hide sidebar items not allowed */
-    ['nav-dashboard','nav-subscribers','nav-roles','nav-settings','nav-coupons'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    /* Hide Add Social Order button */
+  /* Support Staff */
+  if (isSupportStaff()) {
     const socBtn = document.getElementById('add-social-order-btn');
     if (socBtn) socBtn.style.display = 'none';
-    /* Hide revenue stat card */
+    
+    document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
+    document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
+
     const revenueCard = document.getElementById('s-revenue')?.closest('.stat-card');
     if (revenueCard) revenueCard.style.display = 'none';
     const profitCard = document.getElementById('s-profit')?.closest('.stat-card');
     if (profitCard) profitCard.style.display = 'none';
     const totalProfitCard = document.getElementById('s-total-profit')?.closest('.stat-card');
     if (totalProfitCard) totalProfitCard.style.display = 'none';
-      
-      // Add global CSS to permanently hide these columns even when tables dynamically re-render
-      if (!document.getElementById('support-staff-styles')) {
-        const style = document.createElement('style');
-        style.id = 'support-staff-styles';
-        style.innerHTML = '.cost-cell, .profit-col { display: none !important; }';
-        document.head.appendChild(style);
-      }
-
-      document.getElementById('nav-spendings')?.style.setProperty('display', 'none');
-      document.getElementById('nav-invoices')?.style.setProperty('display', 'none');
-      document.getElementById('nav-abandoned')?.style.setProperty('display', 'none');
-      document.getElementById('nav-live')?.style.setProperty('display', 'none');
-      document.getElementById('nav-reviews')?.style.setProperty('display', 'none');
-    document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
-    document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
-    document.getElementById('monthly-statements-wrap')?.style.setProperty('display', 'none');
-    /* Redirect to orders page */
     showPage('orders');
   }
 
-  /* Investor — 100% read-only. Hide all action buttons using a global style injection */
+  /* Investor - 100% read-only */
   if (role === 'investor') {
     const style = document.createElement('style');
     style.id = 'investor-styles';
@@ -2126,10 +2041,18 @@ document.addEventListener('click', (e) => {
 
 /* ═══════════════════ PAGE NAVIGATION ═══════════════════ */
 function showPage(name) {
+    if (typeof isSupportStaff === 'function' && isSupportStaff()) {
+      const lockedPages = ['dashboard', 'subscribers', 'roles', 'settings', 'coupons', 'spendings', 'invoices', 'abandoned', 'visitors', 'reviews', 'stock', 'stock-needed'];
+      if (lockedPages.includes(name)) {
+        name = 'locked';
+      }
+    }
+
   document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).style.display = 'block';
-  document.getElementById('nav-' + name).classList.add('active');
+    const navItem = document.getElementById('nav-' + name);
+    if (navItem) navItem.classList.add('active');
 
   if (name === 'dashboard') loadDashboard();
   if (name === 'orders')    loadOrders();
@@ -4489,6 +4412,10 @@ function selectEmoji(e) {
 }
 
 function openProductModal(product = null) {
+    if (typeof isSupportStaff === 'function' && isSupportStaff()) {
+      toast('Access Denied. You do not have permission to add or edit products.', 'error');
+      return;
+    }
   document.getElementById('product-modal-title').textContent = product ? 'Edit Product' : 'Add Product';
   document.getElementById('product-edit-id').value = product?.id || '';
   document.getElementById('p-name').value       = product?.name || '';
@@ -4651,6 +4578,10 @@ async function saveProduct() {
 }
 
 async function deleteProduct(id) {
+    if (typeof isSupportStaff === 'function' && isSupportStaff()) {
+      toast('Access Denied. You do not have permission to delete products.', 'error');
+      return;
+    }
   const ok = await bktConfirm({ title: 'Delete Product?', message: 'This product will be permanently removed. This cannot be undone.', confirmText: 'Delete Product', icon: '🗑️' });
   if (!ok) return;
   try {
