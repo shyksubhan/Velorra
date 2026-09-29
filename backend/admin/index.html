@@ -1457,7 +1457,14 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         </div>
       </div>
       <div class="form-group"><label>Description</label><textarea id="p-desc" rows="3" placeholder="Product description…"></textarea></div>
-      <div class="form-row">
+      <div class="form-group">
+          <label>Variants (Design Types) <span style="color:var(--muted);font-weight:400">(press Enter)</span></label>
+          <div class="tag-input-wrap" id="p-variants-wrap">
+            <div class="tag-chips" id="p-variants-chips"></div>
+            <input id="p-variants-text" placeholder="e.g. Design 1" onkeydown="handleTagKeydown(event,'variants')"/>
+          </div>
+        </div>
+        <div class="form-row">
         <div class="form-group">
           <label>Sizes <span style="color:var(--muted);font-weight:400">(type a size, press Enter to add)</span></label>
           <div class="tag-input-wrap" id="p-sizes-wrap">
@@ -2728,7 +2735,7 @@ function viewSocialOrder(id) {
       ${o.notes ? `<div style="grid-column:1/-1"><small style="color:var(--muted)">Notes</small><p style="font-size:0.85rem;color:var(--muted)">${esc(o.notes)}</p></div>` : ''}
     </div>
     <h4 style="margin-bottom:10px;font-size:0.88rem;color:var(--muted)">Items</h4>
-    ${(o.items||[]).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>🛍️ ${esc(i.name)} (×${i.qty})</span><span>PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}
+    ${(o.items||[]).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>?? ${esc(i.name)}${i.variant && i.variant !== 'Standard' ? ' ('+esc(i.variant)+')' : ''} (x${i.qty})</span><span>PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}}
     <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--muted)">Subtotal</span><span>PKR ${(o.subtotal||0).toLocaleString()}</span></div>
     ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
@@ -4433,12 +4440,13 @@ let productSizes = [];
 let productColors = [];
 
 function renderTagChips(field) {
-  const wrap = document.getElementById(`p-${field}-chips`);
-  const arr  = field === 'sizes' ? productSizes : productColors;
-  wrap.innerHTML = arr.map((val, i) => `
-    <span class="tag-chip">${val}<button type="button" onclick="removeTag('${field}',${i})">✕</button></span>
-  `).join('');
-}
+    const wrap = document.getElementById(`p-${field}-chips`);
+    if (!wrap) return;
+    const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
+    wrap.innerHTML = arr.map((val, i) => `
+      <span class="tag-chip" style="${val.includes('(OOS)') ? 'text-decoration:line-through;opacity:0.6' : ''}" onclick="toggleOOS('${field}', ${i})">${val.replace(' (OOS)', '')}${val.includes('(OOS)') ? ' (OOS)' : ''}<button type="button" onclick="event.stopPropagation(); removeTag('${field}',${i})">�</button></span>
+    `).join('');
+  }
 
 function addTag(field, value) {
   const val = value.trim();
@@ -5149,7 +5157,7 @@ async function exportExcel(type) {
         Status:         o.status,
         'Order Date':   fmtDate(o.createdAt),
         'Updated':      fmtDate(o.updatedAt),
-        Items:          (o.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty})`).join(', '),
+        Items:          (o.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} ${i.variant && i.variant !== 'Standard' ? ' ('+esc(i.variant)+')' : ''} (x${i.qty})`).join(', '),
       }));
     } else if (type === 'messages') {
       rows = allMessages.length ? allMessages : (await (await apiFetch('/contact')).json()).messages || [];
@@ -5364,7 +5372,7 @@ function exportAbandonedExcel() {
       Address: d.address || '',
       City:    d.city || '',
       Province:d.province || '',
-      Items:   (a.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty})`).join(' | '),
+      Items:   (a.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} ${i.variant && i.variant !== 'Standard' ? ' ('+esc(i.variant)+')' : ''} (x${i.qty})`).join(' | '),
       Total:   a.total || 0,
       Status:  a.status || '',
       Date:    a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',
