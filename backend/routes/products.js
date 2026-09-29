@@ -115,7 +115,7 @@ router.post('/', requireRole('super_admin', 'admin'), async (req, res) => {
       badge:       badge || null,
       description: description || '',
       variants:    Array.isArray(variants) ? variants : (variants || '').split(',').map(s => s.trim()).filter(Boolean),
-      sizes:       Array.isArray(sizes) ? sizes : (sizes || '').split(',').map(s => s.trim()).filter(Boolean),').map(s => s.trim()).filter(Boolean),
+      sizes:       Array.isArray(sizes) ? sizes : (sizes || '').split(',').map(s => s.trim()).filter(Boolean),
       colors:      Array.isArray(colors) ? colors : (colors || '').split(',').map(s => s.trim()).filter(Boolean),
       images:      Array.isArray(images) ? images.filter(Boolean) : [],
       video:       video || null,
