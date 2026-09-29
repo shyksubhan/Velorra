@@ -2857,43 +2857,49 @@ function addSocialItem(prefill = null) {
   const idx = _socItemCount++;
   const row = document.createElement('div');
   row.className = 'soc-item-row';
+  row.style.display = 'flex';
+  row.style.flexDirection = 'column';
+  row.style.gap = '4px';
+  row.style.borderBottom = '1px solid var(--border)';
+  row.style.paddingBottom = '8px';
+  row.style.marginBottom = '8px';
   const pid = prefill ? prefill.productId : '';
   const name = prefill ? prefill.name : '';
+  const variant = prefill ? prefill.variant : '';
   const qty = prefill ? prefill.qty : 1;
   const cost = prefill ? prefill.purchasePrice : 0;
   const sale = prefill ? prefill.price : 0;
   const total = qty * sale;
 
   row.id = `soc-item-row-${idx}`;
-  /* A row is custom if: it was explicitly saved as custom (productId==='custom'),
-     or it has no productId at all but has a name (old custom item saved as productId=''). 
-     Regular catalog products always have a real productId string. */
-  const isCustom = prefill
-    ? (prefill.productId === 'custom' || (prefill.productId === '' && !!prefill.name))
-    : false;
+  const isCustom = prefill ? (prefill.productId === 'custom' || (prefill.productId === '' && !!prefill.name)) : false;
+  
   row.innerHTML = `
-    <div class="soc-product-search-wrap" style="flex: 2;">
-      <input type="hidden" id="si-pid-${idx}" value="${pid}"/>
-      <input placeholder="Search product…" id="si-search-${idx}" value="${esc(name)}"
-             oninput="handleSocItemSearch(${idx})"
-             onfocus="handleSocItemSearch(${idx})"
-             autocomplete="off"
-             style="display:${isCustom ? 'none' : 'block'}"/>
-      <input placeholder="Custom item name" id="si-custom-name-${idx}" value="${esc(name)}"
-             style="display:${isCustom ? 'block' : 'none'}"
-             oninput="recalcSocialTotal()"/>
-      <div class="soc-product-dropdown" id="si-dropdown-${idx}" style="display:none"></div>
+    <div style="display:flex; gap:8px; align-items:center; width:100%;">
+      <div class="soc-product-search-wrap" style="flex: 2;">
+        <input type="hidden" id="si-pid-${idx}" value="${pid}"/>
+        <input placeholder="Search product..." id="si-search-${idx}" value="${esc(name)}"
+               oninput="handleSocItemSearch(${idx})"
+               onfocus="handleSocItemSearch(${idx})"
+               autocomplete="off"
+               style="display:${isCustom ? 'none' : 'block'}"/>
+        <input placeholder="Custom item name..." id="si-custom-name-${idx}" value="${esc(name)}"
+               style="display:${isCustom ? 'block' : 'none'}" oninput="recalcSocialTotal()"/>
+        <div class="soc-search-results" id="si-results-${idx}"></div>
+      </div>
+      <input type="number" min="1" id="si-qty-${idx}" value="${qty}" oninput="recalcSocialTotal()" style="width:55px" />
+      <input type="number" min="0" id="si-cost-${idx}" value="${cost}" style="width:75px" />
+      <input type="number" min="0" id="si-price-${idx}" value="${sale}" oninput="recalcSocialTotal()" style="width:75px" />
+      <div style="width:90px;font-size:0.8rem;text-align:right" id="si-row-total-${idx}">PKR ${total.toLocaleString()}</div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="toggleSocItemCustom(${idx})" title="Toggle custom item" style="width:36px;padding:0"><i class="fa-solid fa-cube"></i></button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="removeSocialItem(${idx})" style="color:var(--orange);width:36px;padding:0"><i class="fa-solid fa-trash"></i></button>
     </div>
-    <input type="number" placeholder="Qty" min="0.01" step="any" id="si-qty-${idx}" value="${qty}" oninput="recalcSocialTotal()" title="Quantity"/>
-    <input type="number" placeholder="Cost" id="si-cost-${idx}" value="${cost}" oninput="recalcSocialTotal()" title="Unit Purchase Price" ${isCustom ? '' : ''}/>
-    <input type="number" placeholder="Sale" id="si-price-${idx}" value="${sale}" oninput="recalcSocialTotal()" title="Unit Sale Price"/>
-    <div class="soc-price-display" id="si-row-total-${idx}">PKR ${total.toLocaleString()}</div>
-    <button class="soc-item-remove" onclick="toggleSocCustomItem(${idx})" title="Toggle custom item" id="si-custom-btn-${idx}" style="background:${isCustom ? 'rgba(184,136,58,0.2)' : 'rgba(100,100,120,0.12)'};border-color:${isCustom ? 'var(--gold)' : 'var(--border)'};color:${isCustom ? 'var(--gold)' : 'var(--muted)'};font-size:0.75rem;">✏️</button>
-    <button class="soc-item-remove" onclick="removeSocialItem(${idx})" title="Remove">✕</button>
+    <div style="width: 100%;">
+      <input placeholder="Variant, Size, Color (e.g. Design 1 - Large - Pink)" id="si-variant-${idx}" value="${esc(variant)}" style="width:100%; font-size:0.8rem; padding:6px; background:var(--bg); border:1px solid var(--border); border-radius:4px;" />
+    </div>
   `;
   document.getElementById('soc-items-container').appendChild(row);
-  if (isCustom) {
-    document.getElementById(`si-pid-${idx}`).value = 'custom';
+}`).value = 'custom';
   }
 }
 
@@ -4436,14 +4442,22 @@ function renderTagChips(field) {
 function addTag(field, value) {
   const val = value.trim();
   if (!val) return;
-  const arr = field === 'sizes' ? productSizes : productColors;
+  const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
   if (arr.some(v => v.toLowerCase() === val.toLowerCase())) return; /* no dupes */
   arr.push(val);
   renderTagChips(field);
 }
 
-function removeTag(field, idx) {
-  const arr = field === 'sizes' ? productSizes : productColors;
+function toggleOOS(field, idx) {
+    const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
+    if (typeof arr[idx] === 'string') {
+      if (arr[idx].endsWith(' (OOS)')) arr[idx] = arr[idx].replace(' (OOS)', '');
+      else arr[idx] += ' (OOS)';
+      renderTagChips(field);
+    }
+  }
+  function removeTag(field, idx) {
+  const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
   arr.splice(idx, 1);
   renderTagChips(field);
 }
@@ -4455,7 +4469,7 @@ function handleTagKeydown(event, field) {
     event.target.value = '';
   } else if (event.key === 'Backspace' && event.target.value === '') {
     /* Backspace on empty input removes the last chip */
-    const arr = field === 'sizes' ? productSizes : productColors;
+    const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
     if (arr.length) { arr.pop(); renderTagChips(field); }
   }
 }

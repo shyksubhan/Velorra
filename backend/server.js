@@ -581,18 +581,12 @@ app.use((err, req, res, next) => {
         db.collection('invoices').get(),
         db.collection('products').get()
       ]);
-        if (ordersSnap.docs.length > 0) {
-          store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        }
-        if (socialSnap.docs.length > 0) {
-          store.socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
-        }
+        store.orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        store.socialOrders = socialSnap.docs.map(d => ({ id: d.id, ...d.data(), isSocial: true }));
         if (spendingsSnap.docs.length > 0) {
           store.spendings = spendingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
-        if (invoicesSnap.docs.length > 0) {
-          store.invoices = invoicesSnap.docs.map(d => d.data());
-        }
+        store.invoices = invoicesSnap.docs.map(d => d.data());
         if (productsSnap.docs.length > 0) {
           store.products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
@@ -620,3 +614,5 @@ app.use((err, req, res, next) => {
 })();
 
 module.exports = app;
+T o u c h e d  
+ 

@@ -263,22 +263,27 @@
     ? `<span class="product-price-old" style="font-size:1.1rem;margin-left:12px;">PKR ${Number(product.priceOld).toLocaleString()}</span>`
     : '';
 
-  const sizesHTML = (product.sizes && product.sizes.length)
-    ? `<p class="pd-option-label">Size</p>
-       <div class="size-options">
-         ${product.sizes.map((s, i) => `<div class="size-opt${i === 0 ? ' active' : ''}" data-size="${s}">${s}</div>`).join('')}
-       </div>`
-    : '';
-
-  const colorsHTML = (product.colors && product.colors.length)
-    ? `<p class="pd-option-label">Color</p>
-       <div class="color-options">
-         ${product.colors.map((c, i) => {
-           const cName = (typeof c === 'string') ? c : c.name;
-           return `<div class="color-opt${i === 0 ? ' active' : ''}" data-color="${cName}">${cName}</div>`;
+  const parseOpts = (arr, type) => {
+    if (!arr || !arr.length) return '';
+    return `<p class="pd-option-label">${type}</p>
+       <div class="${type.toLowerCase()}-options">
+         ${arr.map(item => {
+           let name = typeof item === 'string' ? item : item.name;
+           let isOOS = false;
+           if (name.endsWith(' (OOS)')) {
+             isOOS = true;
+             name = name.replace(' (OOS)', '').trim();
+           }
+           const classes = [type.toLowerCase() + '-opt'];
+           if (isOOS) classes.push('disabled');
+           return `<div class="${classes.join(' ')}" data-${type.toLowerCase()}="${name}" ${isOOS ? 'style="opacity:0.4;cursor:not-allowed;text-decoration:line-through;"' : ''}>${name}</div>`;
          }).join('')}
-       </div>`
-    : '';
+       </div>`;
+  };
+
+  const sizesHTML = parseOpts(product.sizes, 'Size');
+  const colorsHTML = parseOpts(product.colors, 'Color');
+  const variantsHTML = parseOpts(product.variants, 'Variant');
 
   const stockHTML = product.inStock === false
     ? `<p style="color:#d96a6a;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Out of Stock</p>`
@@ -317,8 +322,9 @@
         <div class="pd-price">PKR ${Number(product.price).toLocaleString()}${oldPriceHTML}</div>
         ${stockHTML}
         <p class="pd-desc">${product.description || ''}</p>
-        ${sizesHTML}
-        ${colorsHTML}
+        ${variantsHTML}
+          ${sizesHTML}
+          ${colorsHTML}
         <div class="pd-add-row" style="flex-wrap:wrap;">
           <button class="btn-primary" id="pd-add-btn" ${product.inStock === false ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''} style="flex:1;">
             ${product.inStock === false ? 'Out of Stock' : 'Add to Bag'}

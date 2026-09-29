@@ -54,6 +54,7 @@ router.post('/', requireAdmin, async (req, res) => {
       return {
         productId:     String(i.productId || '').trim(),
         name:          String(i.name || '').trim(),
+        variant:       String(i.variant || '').trim(),
         qty:           Number(i.qty)   || 1,
         price:         Number(i.price) || 0,
         purchasePrice: pp,
@@ -241,6 +242,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
       return {
         productId:     String(i.productId || '').trim(),
         name:          String(i.name || '').trim(),
+        variant:       String(i.variant || '').trim(),
         qty:           Number(i.qty)   || 1,
         price:         Number(i.price) || 0,
         purchasePrice: pp,
