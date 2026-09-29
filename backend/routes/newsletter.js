@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
 });
 
 /* ── GET /api/newsletter (super_admin + admin only — not part of supervisor's job) ── */
-router.get('/', requireRole('super_admin', 'admin'), async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       const snap = await getDB().collection('subscribers').orderBy('subscribedAt', 'desc').get();
@@ -61,7 +61,7 @@ router.get('/', requireRole('super_admin', 'admin'), async (req, res) => {
 });
 
 /* ── DELETE /api/newsletter/:id (super_admin + admin only) ── */
-router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       await getDB().collection('subscribers').doc(req.params.id).delete();
@@ -76,7 +76,7 @@ router.delete('/:id', requireRole('super_admin', 'admin'), async (req, res) => {
 });
 
 /* ── POST /api/newsletter/send — Bulk promotional email to all active subscribers ── */
-router.post('/send', requireRole('super_admin', 'admin'), async (req, res) => {
+router.post('/send', requireAdmin, async (req, res) => {
   try {
     const { subject, body, promoCode } = req.body;
     if (!subject?.trim() || !body?.trim()) {

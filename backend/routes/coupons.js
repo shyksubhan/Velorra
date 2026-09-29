@@ -7,7 +7,7 @@
 const express          = require('express');
 const { v4: uuidv4 }   = require('uuid');
 const { getDB }        = require('../utils/firebase');
-const { requireRole }  = require('../middleware/auth');
+const { requireRole, requireAdmin } = require('../middleware/auth');
 const store             = require('../utils/store');
 
 const router = express.Router();
@@ -17,7 +17,7 @@ function isFirebaseAvailable() {
 }
 
 /* ── POST /api/coupons — Create a coupon (super_admin ONLY) ── */
-router.post('/', requireRole('super_admin'), async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const { code, type, value, minOrderAmount, maxUses, expiresAt, active } = req.body;
 
@@ -73,7 +73,7 @@ router.post('/', requireRole('super_admin'), async (req, res) => {
 });
 
 /* ── GET /api/coupons — List all coupons (super_admin ONLY) ── */
-router.get('/', requireRole('super_admin'), async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       try {
@@ -94,7 +94,7 @@ router.get('/', requireRole('super_admin'), async (req, res) => {
 
 /* ── PATCH /api/coupons/:id — Update a coupon (super_admin ONLY) ──
    Accepts any subset of: type, value, minOrderAmount, maxUses, expiresAt, active */
-router.patch('/:id', requireRole('super_admin'), async (req, res) => {
+router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { type, value, minOrderAmount, maxUses, expiresAt, active } = req.body;
     const updates = {};
@@ -130,7 +130,7 @@ router.patch('/:id', requireRole('super_admin'), async (req, res) => {
 });
 
 /* ── DELETE /api/coupons/:id — Delete a coupon (super_admin ONLY) ── */
-router.delete('/:id', requireRole('super_admin'), async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     if (isFirebaseAvailable()) {
       await getDB().collection('coupons').doc(req.params.id).delete();
