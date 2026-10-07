@@ -792,6 +792,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
         <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;border-top:1px solid var(--border);padding-top:8px;margin-top:2px"><span>Total</span><span id="soc-total-display" style="color:var(--gold)">PKR 200</span></div>
         <div style="display:none;justify-content:space-between;margin-top:6px" id="soc-advance-row"><span style="color:var(--muted)">Advance Paid</span><span id="soc-advance-display" style="color:var(--green)">− PKR 0</span></div>
         <div style="display:none;justify-content:space-between;font-weight:700;font-size:1rem;margin-top:6px" id="soc-due-row"><span>Amount Due</span><span id="soc-due-display" style="color:var(--red)">PKR 200</span></div>
+          <div class="profit-col" style="display:flex;justify-content:space-between;margin-top:6px;border-top:1px dashed var(--border);padding-top:6px"><span style="color:var(--muted)">Est. Profit</span><span id="soc-profit-display" style="color:var(--gold);font-weight:600">PKR 0</span></div>
         <p id="soc-delivery-note" style="font-size:0.72rem;color:var(--muted);margin-top:6px">COD: Free delivery for orders PKR 5,000+, otherwise PKR 200.</p>
       </div>
 
@@ -1464,7 +1465,7 @@ select.filter-sel{background:var(--bg);border:1px solid var(--border);border-rad
           <label>Variants (Design Types) <span style="color:var(--muted);font-weight:400">(press Enter)</span></label>
           <div class="tag-input-wrap" id="p-variants-wrap">
             <div class="tag-chips" id="p-variants-chips"></div>
-            <input id="p-variants-text" placeholder="e.g. Design 1" onkeydown="handleTagKeydown(event,'variants')"/>
+            <input id="p-variants-text" placeholder="e.g. Design 1" onkeydown="handleTagKeydown(event,'variants')" onblur="if(this.value.trim()){ addTag('variants', this.value); this.value=''; }"/>
           </div>
         </div>
         <div class="form-row">
@@ -1760,8 +1761,9 @@ function isSupportStaff() {
 }
 
 function applyRolePermissions(role) {
-  role = String(role || '').toLowerCase().trim();
-  const existingStyle = document.getElementById('investor-styles');
+    role = String(role || '').toLowerCase().trim();
+    document.getElementById('add-social-order-btn')?.style.removeProperty('display');
+    const existingStyle = document.getElementById('investor-styles');
   if (existingStyle) existingStyle.remove();
 
   if (!document.getElementById('support-staff-styles')) {
@@ -1827,8 +1829,7 @@ function applyRolePermissions(role) {
 
   /* Support Staff */
   if (isSupportStaff()) {
-    const socBtn = document.getElementById('add-social-order-btn');
-    if (socBtn) socBtn.style.display = 'none';
+    /* add-social-order-btn is now visible for support staff */
     
     document.getElementById('lifetime-earnings-wrap')?.style.setProperty('display', 'none');
     document.getElementById('daily-statements-wrap')?.style.setProperty('display', 'none');
@@ -4538,16 +4539,16 @@ function toggleOOS(field, idx) {
 }
 
 function handleTagKeydown(event, field) {
-  if (event.key === 'Enter' || event.key === ',') {
-    event.preventDefault();
-    addTag(field, event.target.value);
-    event.target.value = '';
-  } else if (event.key === 'Backspace' && event.target.value === '') {
-    /* Backspace on empty input removes the last chip */
-    const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
-    if (arr.length) { arr.pop(); renderTagChips(field); }
+    if (event.key === 'Enter' || event.keyCode === 13 || event.key === ',') {
+      event.preventDefault();
+      addTag(field, event.target.value);
+      event.target.value = '';
+    } else if (event.key === 'Backspace' && event.target.value === '') {
+      /* Backspace on empty input removes the last chip */
+      const arr = field === 'sizes' ? productSizes : (field === 'colors' ? productColors : productVariants);
+      if (arr.length) { arr.pop(); renderTagChips(field); }
+    }
   }
-}
 
 function editProduct(product) { openProductModal(product); }
 
