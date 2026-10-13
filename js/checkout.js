@@ -1,16 +1,10 @@
 /* ============================================================
-   GOLNISÀ — Checkout Logic
+   GOLNISÀ — Single-Page Checkout Logic
    ============================================================ */
-/* main.js defines window.showToast, but this file calls toast(...)
-   in several places — alias it here so those calls actually work. */
-function toast(msg) { window.showToast?.(msg); }
+
+function toast(msg, type) { window.showToast?.(msg, type); }
 
 document.addEventListener('DOMContentLoaded', () => {
-  let currentStep = 1;
-  let orderData   = {};
-  /* Coupon currently applied at checkout — null until the customer
-     successfully applies one. Re-checked against the live subtotal
-     every time renderSummary runs. */
   let appliedCoupon = null; /* { code, type, value } */
 
   const computeDiscount = (subtotal) => {
@@ -21,6 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return Math.min(d, subtotal);
   };
 
+  const getSelectedPayment = () =>
+    document.querySelector('input[name="payment"]:checked')?.value || 'cod';
+
+  const getDeliveryFee = (subtotal, paymentMethod) => {
+    if (paymentMethod === 'bank_deposit') return subtotal >= 2000 ? 0 : 200;
+    return subtotal >= 5000 ? 0 : 200;
+  };
+
   /* ── Populate summary sidebar ── */
   const renderSummary = () => {
     const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
@@ -29,13 +31,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalEl    = document.getElementById('ck-total');
     const delivEl    = document.getElementById('ck-delivery-fee');
     if (!itemsEl) return;
+
     if (cart.length === 0) {
       itemsEl.innerHTML = '<p style="color:var(--muted);font-size:.8rem">Your bag is empty.</p>';
+      if (subtotalEl) subtotalEl.textContent = 'PKR 0';
+      if (delivEl) delivEl.textContent = 'FREE';
+      if (totalEl) totalEl.textContent = 'PKR 0';
       return;
     }
+
     itemsEl.innerHTML = cart.map(item => `
       <div class="ck-item">
-        <span class="ck-item-emoji" style="${item.image ? 'display:flex;align-items:center;justify-content:center;' : ''}">${item.image ? `<img src="${item.image}" alt="${item.name.replace(/"/g, '&quot;')}" style="width:36px;height:45px;object-fit:cover;border-radius:4px;">` : (item.emoji || '🛍️')}</span>
+        <span class="ck-item-emoji" style="${item.image ? 'display:flex;align-items:center;justify-content:center;' : ''}">
+          ${item.image ? `<img src="${item.image}" alt="${item.name.replace(/"/g, '&quot;')}" style="width:36px;height:45px;object-fit:cover;border-radius:4px;">` : (item.emoji || '🛍️')}
+        </span>
         <div class="ck-item-info">
           <span class="ck-item-name">${item.name}</span>
           ${item.variant && item.variant !== 'Standard' ? `<span class="ck-item-variant" style="font-size:0.75rem;color:var(--gold);display:block;margin:1px 0;">${item.variant}</span>` : ''}
@@ -43,34 +52,40 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <span class="ck-item-price">PKR ${(item.price * item.qty).toLocaleString()}</span>
       </div>`).join('');
+
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const delivery = getDeliveryFee(subtotal, getSelectedPayment());
+    const payMethod = getSelectedPayment();
+    const delivery = getDeliveryFee(subtotal, payMethod);
     const discount = computeDiscount(subtotal);
+
     const discountRow = document.getElementById('ck-discount-row');
     if (discountRow) discountRow.style.display = discount > 0 ? 'flex' : 'none';
     const discountEl = document.getElementById('ck-discount');
     if (discountEl) discountEl.textContent = '− PKR ' + discount.toLocaleString();
+
     if (subtotalEl) subtotalEl.textContent  = 'PKR ' + subtotal.toLocaleString();
     if (delivEl)    delivEl.textContent     = delivery === 0 ? 'FREE' : 'PKR ' + delivery.toLocaleString();
     if (totalEl)    totalEl.textContent     = 'PKR ' + Math.max(0, subtotal - discount + delivery).toLocaleString();
   };
-  const getDeliveryFee = (subtotal, paymentMethod) => {
-    if (paymentMethod === 'bank_deposit') return subtotal >= 2000 ? 0 : 200;
-    return subtotal >= 5000 ? 0 : 200;
-  };
-  const getSelectedPayment = () =>
-    document.querySelector('input[name="payment"]:checked')?.value || 'cod';
+
   renderSummary();
 
+  /* ── Payment method toggle ── */
+  document.querySelectorAll('input[name="payment"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const bf = document.getElementById('bank-deposit-fields');
+      if (bf) bf.style.display = r.value === 'bank_deposit' ? 'block' : 'none';
+      renderSummary();
+    });
+  });
+
   /* ── Coupon apply/clear ── */
-  const couponInput  = document.getElementById('ck-coupon-input');
+  const couponInput    = document.getElementById('ck-coupon-input');
   const couponApplyBtn = document.getElementById('ck-coupon-apply-btn');
   const couponMsgEl    = document.getElementById('ck-coupon-msg');
 
   couponInput?.addEventListener('input', () => {
     couponInput.value = couponInput.value.toUpperCase();
-    /* Editing after a successful apply invalidates the old discount
-       until they click Apply again with the new code. */
     if (appliedCoupon) {
       appliedCoupon = null;
       if (couponMsgEl) couponMsgEl.style.display = 'none';
@@ -119,119 +134,57 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSummary();
   });
 
-  /* ── Auto-fill delivery form if user is logged in ── */
-  const loggedInUser = getCurrentUser();
+  /* ── Auto-fill form if customer is logged in ── */
+  const loggedInUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
   if (loggedInUser) {
-    const f = document.getElementById('delivery-form');
-    if (f) {
-      const set = (name, val) => { const el = f.querySelector(`[name="${name}"]`); if (el && val) el.value = val; };
-      set('fname', loggedInUser.fname);
-      set('lname', loggedInUser.lname);
-      set('email', loggedInUser.email);
-      set('phone', loggedInUser.phone);
+    const nameEl = document.getElementById('ck-name');
+    const emailEl = document.getElementById('ck-email');
+    const phoneEl = document.getElementById('ck-phone');
+    if (nameEl && !nameEl.value) {
+      nameEl.value = `${loggedInUser.fname || ''} ${loggedInUser.lname || ''}`.trim();
     }
+    if (emailEl && !emailEl.value && loggedInUser.email) emailEl.value = loggedInUser.email;
+    if (phoneEl && !phoneEl.value && loggedInUser.phone) phoneEl.value = loggedInUser.phone;
   }
 
-  /* Update fee when delivery option changes */
-  document.querySelectorAll('input[name="delivery"]').forEach(r =>
-    r.addEventListener('change', renderSummary)
-  );
-  /* ── Step navigation ── */
-  window.goToStep = (step) => {
-    document.querySelectorAll('.ck-panel').forEach(p => p.classList.add('hidden'));
-    const target = document.getElementById(`ck-panel-${step}`);
-    if (target) { target.classList.remove('hidden'); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    document.querySelectorAll('.ck-step').forEach((el, i) => {
-      el.classList.toggle('active',    i + 1 === step);
-      el.classList.toggle('complete',  i + 1 < step);
-    });
-    currentStep = step;
+  /* ── Real-time non-blocking abandoned checkout save ── */
+  const recordAbandoned = () => {
+    const name    = document.getElementById('ck-name')?.value.trim();
+    const phone   = document.getElementById('ck-phone')?.value.trim();
+    const email   = document.getElementById('ck-email')?.value.trim();
+    const address = document.getElementById('ck-address')?.value.trim();
+    const city    = document.getElementById('ck-city')?.value.trim();
+    if (!phone && !email) return;
+
+    const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
+    if (!cart.length) return;
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+    const parts = (name || '').split(/\s+/);
+    const fname = parts[0] || '';
+    const lname = parts.slice(1).join(' ') || '';
+
+    const existingId = sessionStorage.getItem('golnisa_abandoned_id');
+    fetch(`${GOLNISÀ_API}/abandoned`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: existingId || null,
+        delivery: { name, fname, lname, phone, email, address, city },
+        items: cart.map(i => ({ ...i })),
+        total: subtotal,
+      }),
+      keepalive: true,
+    }).then(r => r.json()).then(data => {
+      if (data?.id) sessionStorage.setItem('golnisa_abandoned_id', data.id);
+    }).catch(() => {});
   };
-  /* ── Step 1 submit ── */
-  document.getElementById('delivery-form')?.addEventListener('submit', e => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    orderData.delivery = Object.fromEntries(fd.entries());
 
-    /* ── Abandoned checkout tracking ──
-       Save immediately when delivery form is submitted — this guarantees
-       the record appears in admin no matter what happens next
-       (user goes back, closes tab, stays on Step 3 forever, etc.).
-       If the order is placed successfully, the record is marked "converted".
-    */
-    const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
-    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-
-    /* Save to backend immediately — fire and forget, non-blocking */
-    (async () => {
-      try {
-        const existingId = sessionStorage.getItem('golnisa_abandoned_id');
-        const res = await fetch(`${GOLNISÀ_API}/abandoned`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id:       existingId || null,
-            delivery: { ...orderData.delivery },
-            items:    cart.map(i => ({ ...i })),
-            total:    subtotal,
-          }),
-          keepalive: true,
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.id) sessionStorage.setItem('golnisa_abandoned_id', data.id);
-        }
-      } catch (e) {
-        /* Non-critical — don't block checkout */
-        console.warn('Abandoned save failed (non-blocking):', e);
-      }
-    })();
-
-    goToStep(2);
+  ['ck-name', 'ck-phone', 'ck-email', 'ck-city', 'ck-address'].forEach(id => {
+    document.getElementById(id)?.addEventListener('blur', recordAbandoned);
   });
-  /* ── Step 2 submit ── */
-  document.getElementById('payment-form')?.addEventListener('submit', e => {
-    e.preventDefault();
-    const method = document.querySelector('input[name="payment"]:checked')?.value;
-    orderData.payment = method;
-    /* build confirm summary */
-    const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
-    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const fee      = getDeliveryFee(subtotal, method);
-    const discount = computeDiscount(subtotal);
-    const d        = orderData.delivery || {};
-    document.getElementById('order-summary-full').innerHTML = `
-      <div class="confirm-section">
-        <h4>Deliver To</h4>
-        <p>${d.fname} ${d.lname}</p>
-        <p>${d.address}, ${d.city}</p>
-        <p>${d.phone} · ${d.email}</p>
-      </div>
-      <div class="confirm-section">
-        <h4>Items</h4>
-        ${cart.map(i => `<div class="ck-item" style="display:flex;align-items:flex-start;gap:8px;">
-          <span>${i.emoji || '🛍️'}</span>
-          <div style="flex:1">
-            <div>${i.name} × ${i.qty}</div>
-            ${i.variant && i.variant !== 'Standard' ? `<div style="font-size:0.75rem;color:var(--gold);margin-top:2px;">${i.variant}</div>` : ''}
-          </div>
-          <span>PKR ${(i.price*i.qty).toLocaleString()}</span>
-        </div>`).join('')}
-      </div>
-      <div class="confirm-section">
-        <h4>Payment</h4>
-        <p>${method === 'cod' ? '💵 Cash on Delivery' : method === 'bank_deposit' ? '🏦 Bank Deposit' : '📲 ' + method}</p>
-        ${method === 'bank_deposit' ? '<p style="font-size:.78rem;margin-top:6px">Remember to send your payment screenshot on WhatsApp after placing the order.</p>' : ''}
-      </div>
-      <div class="confirm-section">
-        <div class="ck-summary-row"><span>Subtotal</span><span>PKR ${subtotal.toLocaleString()}</span></div>
-        ${discount > 0 ? `<div class="ck-summary-row"><span>Discount${appliedCoupon ? ' (' + appliedCoupon.code + ')' : ''}</span><span>− PKR ${discount.toLocaleString()}</span></div>` : ''}
-        <div class="ck-summary-row"><span>Delivery</span><span>${fee === 0 ? 'FREE' : 'PKR ' + fee.toLocaleString()}</span></div>
-        <div class="ck-summary-row ck-total-row"><span>Total</span><span>PKR ${Math.max(0, subtotal - discount + fee).toLocaleString()}</span></div>
-      </div>`;
-    goToStep(3);
-  });
-  /* ── Show "send screenshot to WhatsApp" reminder on success screen ── */
+
+  /* ── Show "send screenshot to WhatsApp" note on success ── */
   const showBankDepositSuccessNote = (payMethod, orderRef) => {
     const note = document.getElementById('order-success-bank-note');
     if (!note) return;
@@ -247,64 +200,93 @@ document.addEventListener('DOMContentLoaded', () => {
       </a>`;
     note.style.display = 'block';
   };
-  /* ── Place order ── (real backend) */
-  window.placeOrder = async () => {
-    const btn = document.querySelector('[onclick="placeOrder()"]');
-    if (btn) { btn.disabled = true; btn.textContent = 'Placing Order…'; }
 
+  /* ── Single-Step Form Submission / Place Order ── */
+  const form = document.getElementById('single-checkout-form');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await window.placeOrder();
+  });
+
+  window.placeOrder = async () => {
+    const btn = document.getElementById('ck-place-order-btn');
     const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
     if (!cart.length) {
-      toast('Your cart is empty. Please add items before checking out.', 'error');
-      if (btn) { btn.disabled = false; btn.textContent = 'Place Order ✓'; }
+      toast('Your bag is empty. Please add items before checking out.', 'error');
       return;
     }
 
-    const subtotal   = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const delivMethod = orderData.delivery?.delivery || 'standard';
-    const payMethod  = orderData.payment || 'cod';
-    const fee        = getDeliveryFee(subtotal, payMethod);
+    const fullName = document.getElementById('ck-name')?.value.trim();
+    const phone    = document.getElementById('ck-phone')?.value.trim();
+    const email    = document.getElementById('ck-email')?.value.trim();
+    const address  = document.getElementById('ck-address')?.value.trim();
+    const city     = document.getElementById('ck-city')?.value.trim();
+    const notes    = document.getElementById('ck-notes')?.value.trim() || '';
+
+    if (!fullName) { toast('Please enter your full name.', 'error'); document.getElementById('ck-name')?.focus(); return; }
+    if (!phone)    { toast('Please enter your phone number.', 'error'); document.getElementById('ck-phone')?.focus(); return; }
+    if (!email)    { toast('Please enter your email address.', 'error'); document.getElementById('ck-email')?.focus(); return; }
+    if (!city)     { toast('Please enter your city.', 'error'); document.getElementById('ck-city')?.focus(); return; }
+    if (!address)  { toast('Please enter your complete street address.', 'error'); document.getElementById('ck-address')?.focus(); return; }
+
+    const nameParts = fullName.split(/\s+/);
+    const fname = nameParts[0] || fullName;
+    const lname = nameParts.slice(1).join(' ') || '';
+
+    const delivery = {
+      name: fullName,
+      fname: fname,
+      lname: lname,
+      phone: phone,
+      email: email,
+      city: city,
+      address: address,
+      notes: notes,
+      delivery: 'standard'
+    };
+
+    const payMethod = getSelectedPayment();
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;"></span> Placing Order…';
+    }
 
     try {
       const result = await apiPlaceOrder({
         items:          cart,
-        delivery:       orderData.delivery,
+        delivery:       delivery,
         paymentMethod:  payMethod,
-        deliveryMethod: delivMethod,
+        deliveryMethod: 'standard',
         couponCode:     appliedCoupon?.code || null,
       });
 
       if (result.ok) {
-        /* Cancel pending abandoned timer — order was placed successfully */
-        if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
-        window._abandonedSnapshot = null; /* prevent page-leave listener from re-firing */
-        sessionStorage.setItem('golnisa_order_placed', '1');
-
-        /* Order placed — mark abandoned record as converted (no auth needed) */
+        /* Order placed successfully — mark abandoned record converted */
         const abId = sessionStorage.getItem('golnisa_abandoned_id');
         if (abId) {
           fetch(`${GOLNISÀ_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {});
           sessionStorage.removeItem('golnisa_abandoned_id');
         }
-        /* Success */
+
         const ref = result.data.orderRef;
         document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
         showBankDepositSuccessNote(payMethod, ref);
         localStorage.removeItem('golnisa_cart');
         localStorage.removeItem('golnisa_cart_stashed');
-        document.querySelectorAll('.ck-panel').forEach(p => p.classList.add('hidden'));
+
+        document.getElementById('ck-main-panel')?.classList.add('hidden');
         document.getElementById('ck-panel-success')?.classList.remove('hidden');
-        document.querySelectorAll('.ck-step').forEach(el => el.classList.add('complete'));
-        document.getElementById('checkout-summary-sidebar').style.display = 'none';
+        const summaryCol = document.getElementById('checkout-summary-sidebar');
+        if (summaryCol) summaryCol.style.display = 'none';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        /* API returned an error */
-        toast(result.data.error || 'Failed to place order. Please try again.');
-        if (btn) { btn.disabled = false; btn.textContent = 'Place Order ✓'; }
+        toast(result.data?.error || 'Failed to place order. Please try again.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span>Place Order ✓</span>'; }
       }
     } catch (err) {
-      /* Backend not available — graceful fallback */
-      console.warn('Backend unavailable, using offline fallback:', err);
-      if (window._abandonedTimer) { clearTimeout(window._abandonedTimer); window._abandonedTimer = null; }
-      sessionStorage.setItem('golnisa_order_placed', '1');
+      console.warn('Backend unavailable, using fallback:', err);
       const abId = sessionStorage.getItem('golnisa_abandoned_id');
       if (abId) { fetch(`${GOLNISÀ_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('golnisa_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
@@ -312,43 +294,40 @@ document.addEventListener('DOMContentLoaded', () => {
       showBankDepositSuccessNote(payMethod, ref);
       localStorage.removeItem('golnisa_cart');
       localStorage.removeItem('golnisa_cart_stashed');
-      document.querySelectorAll('.ck-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('ck-main-panel')?.classList.add('hidden');
       document.getElementById('ck-panel-success')?.classList.remove('hidden');
-      document.querySelectorAll('.ck-step').forEach(el => el.classList.add('complete'));
-      document.getElementById('checkout-summary-sidebar').style.display = 'none';
+      const summaryCol = document.getElementById('checkout-summary-sidebar');
+      if (summaryCol) summaryCol.style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-  /* ── Payment method toggle ── */
-  document.querySelectorAll('input[name="payment"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const bf = document.getElementById('bank-deposit-fields');
-      const cf = document.getElementById('cod-advance-fields');
-      if (bf) bf.style.display = r.value === 'bank_deposit' ? 'block' : 'none';
-      if (cf) cf.style.display = r.value === 'cod' ? 'block' : 'none';
-      renderSummary();
-    });
-  });
-  /* ── Bank Deposit: copy-to-clipboard for account number / IBAN ── */
+
+  /* ── Bank Deposit: copy to clipboard ── */
   document.querySelectorAll('.bank-copy-val').forEach(el => {
     el.addEventListener('click', () => {
       const val = el.dataset.copy;
       if (!val) return;
       navigator.clipboard?.writeText(val).then(() => {
-        toast('Copied: ' + val);
+        toast('Copied: ' + val, 'success');
       }).catch(() => {});
     });
   });
-  /* ── Bank Deposit: WhatsApp "send screenshot" link ── */
+
+  /* ── Bank Deposit: WhatsApp screenshot link ── */
   const waBtn = document.getElementById('bank-whatsapp-btn');
   if (waBtn && window.GOLNISÀ_CONFIG) {
-    const num = window.GOLNISÀ_CONFIG.whatsapp.number;
+    const num = window.GOLNISÀ_CONFIG.whatsapp?.number;
     const msg = encodeURIComponent('Hi! I just placed an order on Golnisà and paid via Bank Deposit. Here is my payment screenshot:');
     waBtn.href = `https://wa.me/${num}?text=${msg}`;
   }
-  /* ── Checkout 3D background (particles) ── */
+
+  /* ── Backward compatibility stub ── */
+  window.goToStep = () => {};
+
+  /* ── Three.js background particles ── */
   initCheckoutThree();
 });
-/* ── Lightweight checkout Three.js ── */
+
 function initCheckoutThree() {
   const canvas = document.getElementById('checkout-canvas');
   if (!canvas || typeof THREE === 'undefined') return;

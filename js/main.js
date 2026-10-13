@@ -385,9 +385,12 @@ window.proceedToCheckout = () => {
 };
 
 
+
+/* ── Search Bar / Search Button Handler (Mobile & Desktop) ── */
 document.addEventListener('DOMContentLoaded', () => {
   const headerSearchInput = document.getElementById('header-search-input');
-  const headerSearchBtn = document.getElementById('header-search-btn');
+  const headerSearchBtn   = document.getElementById('header-search-btn');
+
   if (headerSearchInput) {
     headerSearchInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && this.value.trim()) {
@@ -395,11 +398,110 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  if (headerSearchBtn && headerSearchInput) {
-    headerSearchBtn.addEventListener('click', function() {
-      const val = headerSearchInput.value.trim();
+
+  if (headerSearchBtn) {
+    headerSearchBtn.addEventListener('click', function(e) {
+      if (window.innerWidth <= 768) {
+        e.preventDefault();
+        const overlay = document.getElementById('search-overlay');
+        if (overlay) {
+          overlay.classList.add('active');
+          const inp = document.getElementById('search-input');
+          if (inp) { inp.focus(); }
+        }
+        return;
+      }
+      const val = headerSearchInput ? headerSearchInput.value.trim() : '';
       if (val) window.location.href = 'shop.html?q=' + encodeURIComponent(val);
     });
   }
+
+  /* ── Initialize Mobile Menu Drawer with all categories ── */
+  initMobileMenuDrawer();
 });
 
+function initMobileMenuDrawer() {
+  let drawer = document.getElementById('mobile-menu-drawer');
+  let backdrop = document.getElementById('mobile-menu-backdrop');
+  if (!drawer) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'mobile-menu-backdrop';
+    backdrop.className = 'mobile-menu-backdrop';
+    document.body.appendChild(backdrop);
+
+    drawer = document.createElement('div');
+    drawer.id = 'mobile-menu-drawer';
+    drawer.className = 'mobile-menu-drawer';
+    drawer.innerHTML = `
+      <div class="mm-header">
+        <a href="/" class="nav-logo-link" style="display:flex;align-items:center;">
+          <img src="images/logo.svg" alt="Golnisà" style="height:28px;width:auto;" />
+        </a>
+        <button class="mm-close" id="mm-close-btn" aria-label="Close menu">&times;</button>
+      </div>
+      
+      <div class="mm-section-title">Categories & Collections</div>
+      <nav class="mm-links">
+        <a href="jewelry.html" class="mm-link"><i class="fa-solid fa-gem" style="color:var(--gold);width:18px;"></i> All Jewelry</a>
+        <a href="jewelry.html?cat=new-arrivals" class="mm-link"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);width:18px;"></i> New Arrivals <span class="mm-link-badge">New</span></a>
+        <a href="jewelry.html?cat=trending-now" class="mm-link"><i class="fa-solid fa-fire" style="color:#e67e22;width:18px;"></i> Trending Now</a>
+        <a href="jewelry.html?cat=sale" class="mm-link"><i class="fa-solid fa-tag" style="color:#e74c3c;width:18px;"></i> Sale <span class="mm-link-badge" style="background:#e74c3c;">Hot</span></a>
+        <a href="jewelry.html?cat=necklace" class="mm-link"><i class="fa-solid fa-certificate" style="color:var(--gold);width:18px;"></i> Necklaces</a>
+        <a href="jewelry.html?cat=earrings" class="mm-link"><i class="fa-regular fa-sun" style="color:var(--gold);width:18px;"></i> Earrings</a>
+        <a href="jewelry.html?cat=bracelets" class="mm-link"><i class="fa-solid fa-circle-notch" style="color:var(--gold);width:18px;"></i> Bracelets</a>
+        <a href="jewelry.html?cat=rings" class="mm-link"><i class="fa-regular fa-circle" style="color:var(--gold);width:18px;"></i> Rings</a>
+        <a href="jewelry.html?cat=couple-items" class="mm-link"><i class="fa-solid fa-heart" style="color:#e91e63;width:18px;"></i> Couple Items</a>
+        <a href="jewelry.html?cat=jewelry-sets" class="mm-link"><i class="fa-solid fa-crown" style="color:var(--gold);width:18px;"></i> Jewelry Sets</a>
+      </nav>
+
+      <div class="mm-divider"></div>
+
+      <div class="mm-section-title">Navigation</div>
+      <nav class="mm-links">
+        <a href="/" class="mm-link"><i class="fa-solid fa-house" style="width:18px;color:var(--muted);"></i> Home</a>
+        <a href="about" class="mm-link"><i class="fa-regular fa-bookmark" style="width:18px;color:var(--muted);"></i> About Us</a>
+        <a href="contact" class="mm-link"><i class="fa-regular fa-envelope" style="width:18px;color:var(--muted);"></i> Contact</a>
+        <a href="account" class="mm-link"><i class="fa-regular fa-user" style="width:18px;color:var(--muted);"></i> Login / My Account</a>
+      </nav>
+
+      <div class="mm-footer">
+        <a href="https://wa.me/923000000000" id="mm-whatsapp-link" target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp" style="color:#25d366;font-size:1.1rem;"></i> WhatsApp Customer Support
+        </a>
+        <p style="font-size:0.72rem;color:var(--muted);margin:0;">Pakistan's Premier Online Jewelry Store</p>
+      </div>
+    `;
+    document.body.appendChild(drawer);
+
+    if (window.GOLNISÀ_CONFIG?.whatsapp?.number) {
+      const wal = document.getElementById('mm-whatsapp-link');
+      if (wal) wal.href = 'https://wa.me/' + window.GOLNISÀ_CONFIG.whatsapp.number;
+    }
+  }
+
+  const openMenu = () => {
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  const closeMenu = () => {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  document.querySelectorAll('.hamburger').forEach(ham => {
+    ham.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (drawer.classList.contains('open')) closeMenu();
+      else openMenu();
+    });
+  });
+
+  document.getElementById('mm-close-btn')?.addEventListener('click', closeMenu);
+  backdrop.addEventListener('click', closeMenu);
+  drawer.querySelectorAll('.mm-link').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+}

@@ -45,10 +45,19 @@ router.post('/', requireAdmin, async (req, res) => {
     if (!source || !SOURCES.includes(source)) return res.status(400).json({ error: `Source must be one of: ${SOURCES.join(', ')}` });
 
     /* ── Enrich items and calculate totals ── */
+    let catalogue = store.products || [];
+    if (isFirebaseAvailable()) {
+      try {
+        const snap = await getDB().collection('products').get();
+        catalogue = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      } catch (e) {
+        catalogue = store.products || [];
+      }
+    }
     const enrichedItems = items.map(i => {
       let pp = Number(i.purchasePrice) || 0;
       if (!pp && i.name) {
-        const match = store.products.find(p => p.name === String(i.name).trim() || p.id === String(i.productId).trim());
+        const match = catalogue.find(p => p.name === String(i.name).trim() || p.id === String(i.productId).trim());
         if (match && match.purchasePrice != null) pp = match.purchasePrice;
       }
       return {
