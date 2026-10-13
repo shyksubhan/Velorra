@@ -10,15 +10,32 @@ function getResend() {
 const FROM = 'Golnisà <orders@golnisa.com>';
 const TO   = process.env.EMAIL_TO;
 
+/* ── Format item variant/color/size text helper ── */
+function formatItemOptionText(i) {
+  if (!i) return '';
+  const parts = [];
+  if (i.variantOption) parts.push(`Variant: ${i.variantOption}`);
+  if (i.color) parts.push(`Color: ${i.color}`);
+  if (i.size) parts.push(`Size: ${i.size}`);
+  if (parts.length > 0) return parts.join(' | ');
+  if (i.variant && i.variant !== 'Standard') return i.variant;
+  return '';
+}
+
 /* ── Order Confirmation Email (to customer) ── */
 async function sendOrderConfirmation({ to, orderRef, items, delivery, total, paymentMethod }) {
   const resend = getResend();
-  const itemRows = items.map(i =>
-    `<tr>
-      <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;">${i.emoji || '🛍️'} ${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty})</td>
-      <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;text-align:right;">PKR ${(i.price * i.qty).toLocaleString()}</td>
-    </tr>`
-  ).join('');
+  const itemRows = items.map(i => {
+    const optDesc = formatItemOptionText(i);
+    return `<tr>
+      <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;">
+        <span style="font-size:1.1rem;margin-right:6px;">${i.emoji || '🛍️'}</span>
+        <strong style="color:#fff;">${i.name}</strong> (x${i.qty})
+        ${optDesc ? `<br><span style="color:#c9a84c;font-size:0.85rem;display:inline-block;margin-top:4px;">🏷️ ${optDesc}</span>` : ''}
+      </td>
+      <td style="padding:10px 0;border-bottom:1px solid #2a2a2a;text-align:right;vertical-align:top;color:#fff;">PKR ${(i.price * i.qty).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
 
   await resend.emails.send({
     from: FROM,
@@ -50,7 +67,13 @@ async function sendOrderConfirmation({ to, orderRef, items, delivery, total, pay
 async function sendNewOrderNotification({ orderRef, items, delivery, total, paymentMethod }) {
   if (!TO) return;
   const resend = getResend();
-  const itemList = items.map(i => `<li>${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} (x${i.qty}) — PKR ${(i.price * i.qty).toLocaleString()}</li>`).join('');
+  const itemList = items.map(i => {
+    const optDesc = formatItemOptionText(i);
+    return `<li style="margin-bottom:8px;line-height:1.4;">
+      <strong style="color:#fff;">${i.name}</strong> (x${i.qty}) — <span style="color:#c9a84c;">PKR ${(i.price * i.qty).toLocaleString()}</span>
+      ${optDesc ? `<br><span style="color:#e0bfb8;font-size:0.88rem;">↳ <strong>Option:</strong> ${optDesc}</span>` : ''}
+    </li>`;
+  }).join('');
 
   await resend.emails.send({
     from: FROM,

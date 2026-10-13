@@ -2777,6 +2777,17 @@ async function deleteSocialOrder(id) {
   } catch { toast('Network error.', 'error'); }
 }
 
+function formatOrderItemOptions(i) {
+  if (!i) return '';
+  const parts = [];
+  if (i.variantOption) parts.push(`Variant: ${i.variantOption}`);
+  if (i.color) parts.push(`Color: ${i.color}`);
+  if (i.size) parts.push(`Size: ${i.size}`);
+  if (parts.length > 0) return parts.join(' | ');
+  if (i.variant && i.variant !== 'Standard') return i.variant;
+  return '';
+}
+
 function viewSocialOrder(id) {
   const o = allSocialOrders.find(x => x.id === id);
   if (!o) return;
@@ -2794,7 +2805,16 @@ function viewSocialOrder(id) {
       ${o.notes ? `<div style="grid-column:1/-1"><small style="color:var(--muted)">Notes</small><p style="font-size:0.85rem;color:var(--muted)">${esc(o.notes)}</p></div>` : ''}
     </div>
     <h4 style="margin-bottom:10px;font-size:0.88rem;color:var(--muted)">Items</h4>
-    ${(o.items||[]).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>?? ${esc(i.name)}${i.variant && i.variant !== 'Standard' ? ' ('+esc(i.variant)+')' : ''} (x${i.qty})</span><span>PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}}
+    ${(o.items||[]).map(i => {
+      const opt = formatOrderItemOptions(i);
+      return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+        <div>
+          <div>🛍️ <strong>${esc(i.name)}</strong> <span style="color:var(--muted);">(x${i.qty})</span></div>
+          ${opt ? `<div style="font-size:0.78rem;color:var(--gold);margin-top:2px;padding-left:22px;"><i class="fa-solid fa-tag" style="font-size:0.7rem;margin-right:4px;"></i><strong>${esc(opt)}</strong></div>` : ''}
+        </div>
+        <span style="font-weight:600">PKR ${(i.price*i.qty).toLocaleString()}</span>
+      </div>`;
+    }).join('')}
     <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--muted)">Subtotal</span><span>PKR ${(o.subtotal||0).toLocaleString()}</span></div>
     ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
@@ -3528,7 +3548,16 @@ function viewOrder(id) {
       <div><small style="color:var(--muted)">Status</small><p><span class="badge badge-${o.status?.toLowerCase()}">${o.status}</span></p></div>
     </div>
     <h4 style="margin-bottom:10px;font-size:0.88rem;color:var(--muted)">Items</h4>
-    ${(o.items || []).map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem"><span>${i.emoji||'🛍️'} ${i.name} (×${i.qty})</span><span>PKR ${(i.price * i.qty).toLocaleString()}</span></div>`).join('')}
+    ${(o.items || []).map(i => {
+      const opt = formatOrderItemOptions(i);
+      return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+        <div>
+          <div>${i.emoji||'🛍️'} <strong>${esc(i.name)}</strong> <span style="color:var(--muted);">(×${i.qty})</span></div>
+          ${opt ? `<div style="font-size:0.78rem;color:var(--gold);margin-top:2px;padding-left:22px;"><i class="fa-solid fa-tag" style="font-size:0.7rem;margin-right:4px;"></i><strong>${esc(opt)}</strong></div>` : ''}
+        </div>
+        <span style="font-weight:600">PKR ${(i.price * i.qty).toLocaleString()}</span>
+      </div>`;
+    }).join('')}
     <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--muted)">Subtotal</span><span>PKR ${(o.subtotal||0).toLocaleString()}</span></div>
     ${o.discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--gold)"><span>Discount${o.coupon?.code ? ' — Coupon "' + esc(o.coupon.code) + '"' : ''}</span><span>− PKR ${o.discount.toLocaleString()}</span></div>` : ''}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600"><span>Delivery</span><span>PKR ${(o.deliveryFee||0).toLocaleString()}</span></div>
@@ -5231,7 +5260,7 @@ async function exportExcel(type) {
         Status:         o.status,
         'Order Date':   fmtDate(o.createdAt),
         'Updated':      fmtDate(o.updatedAt),
-        Items:          (o.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} ${i.variant && i.variant !== 'Standard' ? ' ('+esc(i.variant)+')' : ''} (x${i.qty})`).join(', '),
+        Items:          (o.items||[]).map(i => { const opt = formatOrderItemOptions(i); return `${i.name}${opt ? ' (' + opt + ')' : ''} (x${i.qty})`; }).join(', '),
       }));
     } else if (type === 'messages') {
       rows = allMessages.length ? allMessages : (await (await apiFetch('/contact')).json()).messages || [];
@@ -5446,7 +5475,7 @@ function exportAbandonedExcel() {
       Address: d.address || '',
       City:    d.city || '',
       Province:d.province || '',
-      Items:   (a.items||[]).map(i => `${i.name}${i.variant && i.variant !== 'Standard' ? ' ('+i.variant+')' : ''} ${i.variant && i.variant !== 'Standard' ? ' ('+esc(i.variant)+')' : ''} (x${i.qty})`).join(' | '),
+      Items:   (a.items||[]).map(i => { const opt = formatOrderItemOptions(i); return `${i.name}${opt ? ' (' + opt + ')' : ''} (x${i.qty})`; }).join(' | '),
       Total:   a.total || 0,
       Status:  a.status || '',
       Date:    a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',

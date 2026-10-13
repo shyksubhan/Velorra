@@ -30,7 +30,7 @@ function golnisaProductCardHTML(p) {
     ? `<span class="product-price-old">PKR ${Number(p.priceOld).toLocaleString()}</span>`
     : '';
   const emoji = p.emoji || '🛍️';
-  const variant = (p.colors && p.colors[0]) || (p.sizes && p.sizes[0]) || 'Standard';
+  const variant = (p.variants && p.variants[0]) || (p.colors && p.colors[0]) || (p.sizes && p.sizes[0]) || 'Standard';
   const safeName = p.name.replace(/'/g, "\\'");
   const mainImage = (p.images && p.images.length) ? p.images[0] : null;
   const hasVideo  = !!p.video;

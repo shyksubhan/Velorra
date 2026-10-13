@@ -265,8 +265,9 @@
 
   const parseOpts = (arr, type) => {
     if (!arr || !arr.length) return '';
-    return `<p class="pd-option-label">${type}</p>
-       <div class="${type.toLowerCase()}-options">
+    const typeLower = type.toLowerCase();
+    return `<p class="pd-option-label">${type}: <span class="pd-selected-val" id="pd-selected-${typeLower}"></span></p>
+       <div class="${typeLower}-options">
          ${arr.map(item => {
            let name = typeof item === 'string' ? item : item.name;
            let isOOS = false;
@@ -274,9 +275,9 @@
              isOOS = true;
              name = name.replace(' (OOS)', '').trim();
            }
-           const classes = [type.toLowerCase() + '-opt'];
+           const classes = [typeLower + '-opt'];
            if (isOOS) classes.push('disabled');
-           return `<div class="${classes.join(' ')}" data-${type.toLowerCase()}="${name}" ${isOOS ? 'style="opacity:0.4;cursor:not-allowed;text-decoration:line-through;"' : ''}>${name}</div>`;
+           return `<div class="${classes.join(' ')}" data-${typeLower}="${name}" ${isOOS ? 'style="opacity:0.4;cursor:not-allowed;text-decoration:line-through;"' : ''}>${name}</div>`;
          }).join('')}
        </div>`;
   };
@@ -352,17 +353,62 @@
     document.querySelector(`#pd-thumbs .gallery-thumb[data-idx="${idx}"]`)?.classList.add('active');
   };
 
-  /* Size / color selection */
-  root.querySelectorAll('.size-opt').forEach(opt => {
-    opt.addEventListener('click', () => {
-      root.querySelectorAll('.size-opt').forEach(o => o.classList.remove('active'));
-      opt.classList.add('active');
-    });
+  function updateOptionLabel(type) {
+    const valEl = document.getElementById(`pd-selected-${type}`);
+    const activeOpt = root.querySelector(`.${type}-opt.active`);
+    if (valEl && activeOpt) {
+      valEl.textContent = activeOpt.getAttribute(`data-${type}`) || '';
+    }
+  }
+
+  function getSelectedOptions() {
+    const variant = root.querySelector('.variant-opt.active')?.getAttribute('data-variant') || null;
+    const color   = root.querySelector('.color-opt.active')?.getAttribute('data-color') || null;
+    const size    = root.querySelector('.size-opt.active')?.getAttribute('data-size') || null;
+
+    const parts = [variant, color, size].filter(Boolean);
+    const variantStr = parts.length > 0 ? parts.join(' — ') : 'Standard';
+
+    return {
+      variantStr,
+      variantOption: variant,
+      color,
+      size
+    };
+  }
+
+  function updateWhatsAppLink() {
+    const waBtn = root.querySelector('.wa-order-btn');
+    if (!waBtn) return;
+    const opts = getSelectedOptions();
+    let text = `Hi! I'd like to order this item from Golnisà:\n\n📦 Product: ${product.name}\n💰 Price: PKR ${Number(product.price).toLocaleString()}`;
+    if (opts.variantStr && opts.variantStr !== 'Standard') {
+      text += `\n🏷️ Options: ${opts.variantStr}`;
+    }
+    text += `\n🔗 Link: ${window.location.origin}/product.html?id=${product.id}\n\nPlease confirm availability and delivery details.`;
+    waBtn.href = `https://wa.me/923014617844?text=${encodeURIComponent(text)}`;
+  }
+
+  /* Auto-select first available option in each category */
+  ['variant', 'color', 'size'].forEach(type => {
+    const nonOOS = root.querySelectorAll(`.${type}-opt:not(.disabled)`);
+    if (nonOOS.length > 0) {
+      nonOOS[0].classList.add('active');
+      updateOptionLabel(type);
+    }
   });
-  root.querySelectorAll('.color-opt').forEach(opt => {
-    opt.addEventListener('click', () => {
-      root.querySelectorAll('.color-opt').forEach(o => o.classList.remove('active'));
-      opt.classList.add('active');
+  updateWhatsAppLink();
+
+  /* Variant / Color / Size click listeners */
+  ['variant', 'color', 'size'].forEach(type => {
+    root.querySelectorAll(`.${type}-opt`).forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (opt.classList.contains('disabled')) return;
+        root.querySelectorAll(`.${type}-opt`).forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        updateOptionLabel(type);
+        updateWhatsAppLink();
+      });
     });
   });
 
@@ -370,10 +416,19 @@
   const addBtn = document.getElementById('pd-add-btn');
   if (addBtn && product.inStock !== false) {
     addBtn.addEventListener('click', () => {
-      const size = root.querySelector('.size-opt.active')?.dataset.size;
-      const color = root.querySelector('.color-opt.active')?.dataset.color;
-      const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
-      window.addToCart(product.name, Number(product.price), emoji, variant, (product.images && product.images[0]) || '');
+      const opts = getSelectedOptions();
+      window.addToCart(
+        product.name,
+        Number(product.price),
+        emoji,
+        opts.variantStr,
+        (product.images && product.images[0]) || '',
+        {
+          variantOption: opts.variantOption,
+          color: opts.color,
+          size: opts.size
+        }
+      );
     });
   }
 
@@ -381,10 +436,19 @@
   const buyNowBtn = document.getElementById('pd-buynow-btn');
   if (buyNowBtn && product.inStock !== false) {
     buyNowBtn.addEventListener('click', () => {
-      const size = root.querySelector('.size-opt.active')?.dataset.size;
-      const color = root.querySelector('.color-opt.active')?.dataset.color;
-      const variant = [size, color].filter(Boolean).join(' — ') || 'Standard';
-      window.buyNow(product.name, Number(product.price), emoji, variant, (product.images && product.images[0]) || '');
+      const opts = getSelectedOptions();
+      window.buyNow(
+        product.name,
+        Number(product.price),
+        emoji,
+        opts.variantStr,
+        (product.images && product.images[0]) || '',
+        {
+          variantOption: opts.variantOption,
+          color: opts.color,
+          size: opts.size
+        }
+      );
     });
   }
 

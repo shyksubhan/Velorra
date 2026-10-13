@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="ck-item-emoji" style="${item.image ? 'display:flex;align-items:center;justify-content:center;' : ''}">${item.image ? `<img src="${item.image}" alt="${item.name.replace(/"/g, '&quot;')}" style="width:36px;height:45px;object-fit:cover;border-radius:4px;">` : (item.emoji || '🛍️')}</span>
         <div class="ck-item-info">
           <span class="ck-item-name">${item.name}</span>
+          ${item.variant && item.variant !== 'Standard' ? `<span class="ck-item-variant" style="font-size:0.75rem;color:var(--gold);display:block;margin:1px 0;">${item.variant}</span>` : ''}
           <span class="ck-item-qty">Qty: ${item.qty}</span>
         </div>
         <span class="ck-item-price">PKR ${(item.price * item.qty).toLocaleString()}</span>
@@ -208,9 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="confirm-section">
         <h4>Items</h4>
-        ${cart.map(i => `<div class="ck-item">
-          <span>${i.emoji}</span>
-          <span style="flex:1">${i.name} × ${i.qty}</span>
+        ${cart.map(i => `<div class="ck-item" style="display:flex;align-items:flex-start;gap:8px;">
+          <span>${i.emoji || '🛍️'}</span>
+          <div style="flex:1">
+            <div>${i.name} × ${i.qty}</div>
+            ${i.variant && i.variant !== 'Standard' ? `<div style="font-size:0.75rem;color:var(--gold);margin-top:2px;">${i.variant}</div>` : ''}
+          </div>
           <span>PKR ${(i.price*i.qty).toLocaleString()}</span>
         </div>`).join('')}
       </div>
