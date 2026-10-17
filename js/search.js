@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* search logic */
   const performSearch = (q, resultsContainer) => {
     if (!q || q.length < 2) { resultsContainer.innerHTML = ''; return; }
+    window.MetaPixel?.trackSearch(q);
     const matches = VELORRA_SEARCH_INDEX.filter(item =>
       item.title.toLowerCase().includes(q) ||
       item.keywords.toLowerCase().includes(q)

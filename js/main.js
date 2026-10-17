@@ -1,4 +1,135 @@
 /* ============================================================
+   GOLNISÀ — Meta Pixel E-Commerce Tracking Helper
+   Pixel ID: 4331926033691657
+   ============================================================ */
+window.MetaPixel = {
+  // Safe track runner
+  track: function(eventName, params = {}, custom = false) {
+    try {
+      if (typeof window.fbq === 'function') {
+        if (custom) {
+          window.fbq('trackCustom', eventName, params);
+        } else {
+          window.fbq('track', eventName, params);
+        }
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || localStorage.getItem('pixel_debug') === '1') {
+          console.log(`[Meta Pixel] ${eventName}:`, params);
+        }
+      }
+    } catch (e) {
+      console.warn('[Meta Pixel Error]', e);
+    }
+  },
+
+  // ViewContent: Fired on product detail page
+  trackViewContent: function(product) {
+    if (!product) return;
+    const price = Number(product.price) || 0;
+    const id = String(product.id || '');
+    const name = String(product.name || '');
+    const category = String(product.category || product.subcategory || 'Jewelry');
+
+    this.track('ViewContent', {
+      content_name: name,
+      content_category: category,
+      content_ids: id ? [id] : [name],
+      content_type: 'product',
+      value: price,
+      currency: 'PKR'
+    });
+  },
+
+  // AddToCart: Fired when an item is added to bag
+  trackAddToCart: function(item) {
+    if (!item) return;
+    const price = Number(item.price) || 0;
+    const qty = Number(item.qty) || 1;
+    const id = String(item.productId || item.id || item.name || '');
+    const name = String(item.name || '');
+
+    this.track('AddToCart', {
+      content_name: name,
+      content_ids: id ? [id] : [name],
+      content_type: 'product',
+      value: price * qty,
+      currency: 'PKR'
+    });
+  },
+
+  // InitiateCheckout: Fired when customer proceeds to checkout
+  trackInitiateCheckout: function(cart, subtotal) {
+    if (!cart || !cart.length) return;
+    const totalVal = Number(subtotal != null ? subtotal : cart.reduce((s, i) => s + (Number(i.price) * (Number(i.qty) || 1)), 0));
+    const contentIds = cart.map(i => String(i.productId || i.id || i.name));
+    const contents = cart.map(i => ({
+      id: String(i.productId || i.id || i.name),
+      quantity: Number(i.qty) || 1,
+      item_price: Number(i.price) || 0
+    }));
+    const numItems = cart.reduce((acc, i) => acc + (Number(i.qty) || 1), 0);
+
+    this.track('InitiateCheckout', {
+      content_ids: contentIds,
+      contents: contents,
+      content_type: 'product',
+      value: totalVal,
+      currency: 'PKR',
+      num_items: numItems
+    });
+  },
+
+  // Purchase: Fired ONLY after backend successfully creates an order
+  trackPurchase: function(orderRef, orderData, cartItems, grandTotal) {
+    if (!orderRef) return;
+    // Deduplication guard
+    const storageKey = 'pixel_purchased_' + orderRef;
+    if (sessionStorage.getItem(storageKey)) return;
+    sessionStorage.setItem(storageKey, '1');
+
+    const items = (orderData && Array.isArray(orderData.items) && orderData.items.length) ? orderData.items : (cartItems || []);
+    const value = Number(grandTotal != null ? grandTotal : (orderData && orderData.total != null ? orderData.total : 0));
+    const contentIds = items.map(i => String(i.productId || i.id || i.name));
+    const contents = items.map(i => ({
+      id: String(i.productId || i.id || i.name),
+      quantity: Number(i.qty) || 1,
+      item_price: Number(i.price) || 0
+    }));
+    const numItems = items.reduce((acc, i) => acc + (Number(i.qty) || 1), 0);
+
+    this.track('Purchase', {
+      content_name: 'Order ' + orderRef,
+      content_ids: contentIds,
+      contents: contents,
+      content_type: 'product',
+      value: value,
+      currency: 'PKR',
+      num_items: numItems,
+      order_id: orderRef
+    });
+  },
+
+  // Search
+  trackSearch: function(query) {
+    if (!query) return;
+    this.track('Search', {
+      search_string: String(query).trim()
+    });
+  },
+
+  // Contact
+  trackContact: function() {
+    this.track('Contact');
+  },
+
+  // Lead (e.g. newsletter)
+  trackLead: function(leadType) {
+    this.track('Lead', {
+      content_name: leadType || 'General Lead'
+    });
+  }
+};
+
+/* ============================================================
    GOLNISÀ — Main JavaScript
    ============================================================ */
 
@@ -77,12 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
         color: options.color || null,
         size: options.size || null,
         image: image || null,
+        productId: options.productId || null,
         qty: 1
       });
     }
     saveCart(); updateCartUI();
     showToast('Added to bag ✓');
     openCart();
+
+    // Track Meta Pixel AddToCart
+    window.MetaPixel?.trackAddToCart({
+      name,
+      price,
+      qty: 1,
+      productId: options.productId || null
+    });
   };
 
   /* ── Buy It Now ──
@@ -103,9 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
       color: options.color || null,
       size: options.size || null,
       image: image || null,
+      productId: options.productId || null,
       qty: 1
     }];
     localStorage.setItem('golnisa_cart', JSON.stringify(buyNowCart));
+
+    // Track Meta Pixel AddToCart
+    window.MetaPixel?.trackAddToCart({
+      name,
+      price,
+      qty: 1,
+      productId: options.productId || null
+    });
+
     window.location.href = 'checkout';
   };
 
@@ -219,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (result.ok) {
         showToast('Message sent — we\'ll reply within 24h ✓');
         e.target.reset();
+        window.MetaPixel?.trackContact();
       } else {
         showToast(result.data.error || 'Please try again.');
       }
@@ -381,6 +532,8 @@ window.proceedToCheckout = () => {
     window.showToast('Your bag is empty. Add items before checking out.');
     return;
   }
+  // Track Meta Pixel InitiateCheckout
+  window.MetaPixel?.trackInitiateCheckout(cart);
   window.location.href = 'checkout';
 };
 
@@ -394,7 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (headerSearchInput) {
     headerSearchInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && this.value.trim()) {
-        window.location.href = 'shop.html?q=' + encodeURIComponent(this.value.trim());
+        const query = this.value.trim();
+        window.MetaPixel?.trackSearch(query);
+        window.location.href = 'shop.html?q=' + encodeURIComponent(query);
       }
     });
   }
@@ -412,7 +567,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const val = headerSearchInput ? headerSearchInput.value.trim() : '';
-      if (val) window.location.href = 'shop.html?q=' + encodeURIComponent(val);
+      if (val) {
+        window.MetaPixel?.trackSearch(val);
+        window.location.href = 'shop.html?q=' + encodeURIComponent(val);
+      }
     });
   }
 

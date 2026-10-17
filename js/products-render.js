@@ -65,8 +65,8 @@ function golnisaProductCardHTML(p) {
         <h3 class="product-name"><a href="product.html?id=${p.id}">${p.name}</a></h3>
         <div class="product-price">PKR ${Number(p.price).toLocaleString()} ${oldPrice}</div>
         <div class="product-action-row" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-          <button class="btn-primary product-add" style="flex:1;font-size:0.8rem;padding:8px;min-width:80px;" onclick="addToCart('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}')">Add to Bag</button>
-          <button class="btn-outline product-buy" style="flex:1;font-size:0.8rem;padding:8px;min-width:80px;" onclick="buyNow('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}')">Buy it Now</button>
+          <button class="btn-primary product-add" style="flex:1;font-size:0.8rem;padding:8px;min-width:80px;" onclick="addToCart('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}', { productId: '${p.id}' })">Add to Bag</button>
+          <button class="btn-outline product-buy" style="flex:1;font-size:0.8rem;padding:8px;min-width:80px;" onclick="buyNow('${safeName}', ${p.price}, '${emoji}', '${variant}', '${mainImage || ''}', { productId: '${p.id}' })">Buy it Now</button>
         </div>
         <a href="https://wa.me/923014617844?text=${encodeURIComponent(`Hi! I'd like to order this item from Golnisà:\n\n`)}%F0%9F%93%A6${encodeURIComponent(` Product: ${p.name}\n`)}%F0%9F%92%B0${encodeURIComponent(` Price: PKR ${Number(p.price).toLocaleString()}\n`)}%F0%9F%94%97${encodeURIComponent(` Link: ${window.location.origin}/product.html?id=${p.id}\n\nPlease confirm availability and delivery details.`)}" target="_blank" rel="noopener" class="wa-order-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;margin-top:4px;background:#25D366;color:#fff;border-radius:8px;font-size:0.78rem;font-weight:600;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'"><i class="fa-brands fa-whatsapp" style="font-size:1rem;"></i> Order on WhatsApp</a>
       </div>

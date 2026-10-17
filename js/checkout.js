@@ -70,6 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderSummary();
 
+  // Track InitiateCheckout on checkout page load (with session deduplication)
+  const cartForInit = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
+  if (cartForInit.length > 0 && !sessionStorage.getItem('pixel_initiate_checkout_page')) {
+    sessionStorage.setItem('pixel_initiate_checkout_page', '1');
+    const subtotal = cartForInit.reduce((s, i) => s + (Number(i.price) * (Number(i.qty) || 1)), 0);
+    window.MetaPixel?.trackInitiateCheckout(cartForInit, subtotal);
+  }
+
   /* ── Payment method toggle ── */
   document.querySelectorAll('input[name="payment"]').forEach(r => {
     r.addEventListener('change', () => {
@@ -270,6 +278,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const ref = result.data.orderRef;
+        const finalOrder = result.data.order;
+        const orderTotal = Number(finalOrder?.total != null ? finalOrder.total : Math.max(0, subtotal - discount + fee));
+
+        // Fire Meta Pixel Purchase Event ONLY after backend order confirmation
+        window.MetaPixel?.trackPurchase(ref, finalOrder, cart, orderTotal);
+
         document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
         showBankDepositSuccessNote(payMethod, ref);
         localStorage.removeItem('golnisa_cart');
