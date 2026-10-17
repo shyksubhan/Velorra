@@ -3,17 +3,34 @@
    Pixel ID: 4331926033691657
    ============================================================ */
 window.MetaPixel = {
+  // Retrieve test_event_code if testing via Meta Events Manager
+  getTestCode: function() {
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      var code = urlParams.get('test_event_code');
+      if (code) {
+        sessionStorage.setItem('meta_test_event_code', code);
+        return code;
+      }
+      return sessionStorage.getItem('meta_test_event_code') || null;
+    } catch (_) {
+      return null;
+    }
+  },
+
   // Safe track runner
   track: function(eventName, params = {}, custom = false) {
     try {
       if (typeof window.fbq === 'function') {
+        var testCode = this.getTestCode();
+        var options = testCode ? { test_event_code: testCode } : undefined;
         if (custom) {
-          window.fbq('trackCustom', eventName, params);
+          window.fbq('trackCustom', eventName, params, options);
         } else {
-          window.fbq('track', eventName, params);
+          window.fbq('track', eventName, params, options);
         }
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || localStorage.getItem('pixel_debug') === '1') {
-          console.log(`[Meta Pixel] ${eventName}:`, params);
+          console.log(`[Meta Pixel] ${eventName}:`, params, options);
         }
       }
     } catch (e) {
@@ -195,6 +212,16 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.addToCart = (name, price, emoji, variant, image, options = {}) => {
+    // Track Meta Pixel AddToCart immediately
+    try {
+      window.MetaPixel?.trackAddToCart({
+        name,
+        price,
+        qty: 1,
+        productId: options.productId || null
+      });
+    } catch (_) {}
+
     const existing = cart.find(i => i.name === name && i.variant === (variant || 'Standard'));
     if (existing) {
       existing.qty++;
@@ -213,16 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     saveCart(); updateCartUI();
-    showToast('Added to bag ✓');
-    openCart();
-
-    // Track Meta Pixel AddToCart
-    window.MetaPixel?.trackAddToCart({
-      name,
-      price,
-      qty: 1,
-      productId: options.productId || null
-    });
+    (window.showToast || showToast)?.('Added to bag ✓');
+    if (typeof openCart === 'function') openCart();
   };
 
   /* ── Buy It Now ──
@@ -230,6 +249,16 @@ document.addEventListener('DOMContentLoaded', () => {
      customer's existing bag is stashed (not lost) so it can be
      restored if they leave checkout without completing the order. */
   window.buyNow = (name, price, emoji, variant, image, options = {}) => {
+    // Track Meta Pixel AddToCart immediately
+    try {
+      window.MetaPixel?.trackAddToCart({
+        name,
+        price,
+        qty: 1,
+        productId: options.productId || null
+      });
+    } catch (_) {}
+
     const existingCart = localStorage.getItem('golnisa_cart');
     if (existingCart && existingCart !== '[]') {
       localStorage.setItem('golnisa_cart_stashed', existingCart);
@@ -248,15 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }];
     localStorage.setItem('golnisa_cart', JSON.stringify(buyNowCart));
 
-    // Track Meta Pixel AddToCart
-    window.MetaPixel?.trackAddToCart({
-      name,
-      price,
-      qty: 1,
-      productId: options.productId || null
-    });
-
-    window.location.href = 'checkout';
+    const testCode = window.MetaPixel?.getTestCode?.();
+    const targetUrl = testCode ? `checkout?test_event_code=${encodeURIComponent(testCode)}` : 'checkout';
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 120);
   };
 
   /* ── Buy It Now: restore stashed bag if the customer left checkout
@@ -529,12 +554,19 @@ window.toggleGolnisàPassword = (inputId, btn) => {
 window.proceedToCheckout = () => {
   const cart = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
   if (!cart.length) {
-    window.showToast('Your bag is empty. Add items before checking out.');
+    (window.showToast || showToast)?.('Your bag is empty. Add items before checking out.');
     return;
   }
   // Track Meta Pixel InitiateCheckout
-  window.MetaPixel?.trackInitiateCheckout(cart);
-  window.location.href = 'checkout';
+  try {
+    window.MetaPixel?.trackInitiateCheckout(cart);
+  } catch (_) {}
+
+  const testCode = window.MetaPixel?.getTestCode?.();
+  const targetUrl = testCode ? `checkout?test_event_code=${encodeURIComponent(testCode)}` : 'checkout';
+  setTimeout(() => {
+    window.location.href = targetUrl;
+  }, 120);
 };
 
 

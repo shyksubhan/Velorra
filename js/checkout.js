@@ -70,10 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderSummary();
 
-  // Track InitiateCheckout on checkout page load (with session deduplication)
+  // Track InitiateCheckout on checkout page load (with 4s debounce to allow re-testing)
   const cartForInit = JSON.parse(localStorage.getItem('golnisa_cart') || '[]');
-  if (cartForInit.length > 0 && !sessionStorage.getItem('pixel_initiate_checkout_page')) {
-    sessionStorage.setItem('pixel_initiate_checkout_page', '1');
+  const lastInit = Number(sessionStorage.getItem('pixel_init_ts') || 0);
+  if (cartForInit.length > 0 && (Date.now() - lastInit > 4000)) {
+    sessionStorage.setItem('pixel_init_ts', String(Date.now()));
     const subtotal = cartForInit.reduce((s, i) => s + (Number(i.price) * (Number(i.qty) || 1)), 0);
     window.MetaPixel?.trackInitiateCheckout(cartForInit, subtotal);
   }
@@ -304,6 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const abId = sessionStorage.getItem('golnisa_abandoned_id');
       if (abId) { fetch(`${GOLNISÀ_API}/abandoned/${abId}/converted`, { method: 'PATCH' }).catch(() => {}); sessionStorage.removeItem('golnisa_abandoned_id'); }
       const ref = 'VLR-' + Date.now().toString().slice(-8);
+      const fallbackTotal = Math.max(0, subtotal - discount + fee);
+      window.MetaPixel?.trackPurchase(ref, null, cart, fallbackTotal);
+
       document.getElementById('order-ref-num').textContent = 'Order Reference: ' + ref;
       showBankDepositSuccessNote(payMethod, ref);
       localStorage.removeItem('golnisa_cart');
