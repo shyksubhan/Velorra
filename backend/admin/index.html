@@ -5407,8 +5407,23 @@ function renderAbandoned(list) {
   }
   tbody.innerHTML = list.map((a, i) => {
     const d    = a.delivery || {};
-    const name = `${d.fname || ''} ${d.lname || ''}`.trim() || '—';
-    const items = (a.items || []).map(it => `${it.name} ×${it.qty}`).join(', ') || '—';
+    const name = `${d.fname || ''} ${d.lname || ''}`.trim() || d.name || '—';
+    const itemsHtml = (a.items && a.items.length)
+      ? a.items.map(it => {
+          const tags = [];
+          if (it.variant && it.variant !== 'Standard') tags.push(`<span style="background:rgba(201,168,76,0.12);color:var(--gold);padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600">Var: ${it.variant}</span>`);
+          if (it.variantOption) tags.push(`<span style="background:rgba(201,168,76,0.12);color:var(--gold);padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600">Opt: ${it.variantOption}</span>`);
+          if (it.color) tags.push(`<span style="background:rgba(59,130,246,0.1);color:#2563eb;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600">Color: ${it.color}</span>`);
+          if (it.size) tags.push(`<span style="background:rgba(168,85,247,0.1);color:#9333ea;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600">Size: ${it.size}</span>`);
+          const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${tags.join('')}</div>` : '';
+          return `<div style="padding:4px 0;border-bottom:1px dashed rgba(0,0,0,0.06);line-height:1.35">
+            <span style="font-weight:600;color:var(--text)">${it.name || 'Product'}</span>
+            <span style="font-weight:700;color:var(--gold);margin-left:4px">×${it.qty || 1}</span>
+            <span style="color:var(--muted);font-size:0.72rem;margin-left:4px">(PKR ${(Number(it.price)||0).toLocaleString()})</span>
+            ${tagsHtml}
+          </div>`;
+        }).join('')
+      : '—';
     const statusBadge = a.status === 'converted'
       ? '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">✅ Resolved</span>'
       : '<span style="background:rgba(249,115,22,0.15);color:#f97316;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600">🛒 Abandoned</span>';
@@ -5416,17 +5431,17 @@ function renderAbandoned(list) {
       ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}?text=Hi+${encodeURIComponent(d.fname||'')}%2C+you+left+something+in+your+cart+at+Golnisà+Jewelry%21+Complete+your+order+here%3A+https%3A%2F%2Fgolnisa.com%2Fcheckout.html" target="_blank" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:#25d366;border-color:rgba(37,211,102,0.4)"><i class="fa-brands fa-whatsapp"></i> Recover</a>`
       : '';
     return `<tr>
-      <td>${i + 1}</td>
-      <td><strong>${name}</strong>${d.email ? `<br><small style="color:var(--muted)">${d.email}</small>` : ''}</td>
-      <td>${d.phone || '—'}</td>
-      <td>${d.city || '—'}</td>
-      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.78rem">${items}</td>
-      <td style="color:var(--gold);font-weight:600">PKR ${(a.total||0).toLocaleString()}</td>
-      <td style="font-size:0.75rem">${a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
-      <td>${statusBadge}</td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap">
+      <td style="vertical-align:top">${i + 1}</td>
+      <td style="vertical-align:top"><strong>${name}</strong>${d.email ? `<br><small style="color:var(--muted)">${d.email}</small>` : ''}</td>
+      <td style="vertical-align:top">${d.phone || '—'}</td>
+      <td style="vertical-align:top">${d.city || '—'}</td>
+      <td style="min-width:220px;font-size:0.78rem;vertical-align:top">${itemsHtml}</td>
+      <td style="color:var(--gold);font-weight:600;vertical-align:top">PKR ${(a.total||0).toLocaleString()}</td>
+      <td style="font-size:0.75rem;vertical-align:top">${a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+      <td style="vertical-align:top">${statusBadge}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;vertical-align:top">
         ${waLink}
-        ${a.status !== 'converted' ? `<button onclick="convertAbandonedToOrder('${a.id}')" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:var(--gold);border-color:rgba(201,168,76,0.5)" title="Manually resolved — move to Orders"><i class="fa-solid fa-check-double"></i> Resolved</button>` : ''}
+        ${a.status !== 'converted' ? `<button onclick="convertAbandonedToOrder('${a.id}')" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:var(--gold);border-color:rgba(201,168,76,0.5);white-space:nowrap" title="Recover checkout and move to Orders tab"><i class="fa-solid fa-arrow-right-to-bracket"></i> Move to Orders</button>` : ''}
         <button onclick="deleteAbandoned('${a.id}')" class="btn btn-outline" style="font-size:0.7rem;padding:5px 10px;color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>`;
@@ -5439,13 +5454,44 @@ async function deleteAbandoned(id) {
   loadAbandoned();
 }
 
-/* ── Convert abandoned checkout → real order (manually resolved) ── */
+/* ── Convert abandoned checkout → real order in Orders tab ── */
 async function convertAbandonedToOrder(id) {
   const rec = allAbandoned.find(a => a.id === id);
   if (!rec) { toast('Record not found in local list', 'error'); return; }
   
-  openSocialOrderModal(null, rec);
-  showPage('social-orders');
+  const d = rec.delivery || {};
+  const cname = `${d.fname || ''} ${d.lname || ''}`.trim() || d.name || 'Customer';
+  const total = (rec.total || 0).toLocaleString();
+
+  const confirmed = await showConfirmModal({
+    icon: '📦',
+    title: 'Recover to Orders Tab',
+    message: `Are you sure you want to recover checkout for <strong>${cname}</strong> (PKR ${total}) and move it to the <strong>Orders</strong> tab?`,
+    confirmText: 'Move to Orders',
+    cancelText: 'Cancel',
+    confirmColor: 'var(--gold)'
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const res = await apiFetch('/orders/from-abandoned', {
+      method: 'POST',
+      body: JSON.stringify({ abandonedId: id })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast(`🎉 Order ${data.orderRef} created in Orders tab!`, 'success');
+      loadAbandoned();
+      showPage('orders');
+      loadOrders();
+    } else {
+      toast(data.error || 'Failed to convert abandoned checkout.', 'error');
+    }
+  } catch (err) {
+    console.error('convertAbandonedToOrder error:', err);
+    toast('Network error while converting abandoned checkout.', 'error');
+  }
 }
 
 /* ── Pretty confirm modal ── */

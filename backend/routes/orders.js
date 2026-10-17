@@ -167,9 +167,26 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
     const delivery = abandoned.delivery || {};
     const items    = abandoned.items    || [];
 
-    if (!items.length || !delivery.fname || !delivery.email) {
-      return res.status(400).json({ error: 'Abandoned record is missing delivery or items data.' });
+    if (!items.length) {
+      return res.status(400).json({ error: 'Abandoned record has no items.' });
     }
+
+    const rawName = (delivery.name || `${delivery.fname || ''} ${delivery.lname || ''}`).trim();
+    const parts = rawName ? rawName.split(/\s+/) : [];
+    const fname = delivery.fname || parts[0] || 'Customer';
+    const lname = delivery.lname || parts.slice(1).join(' ') || '';
+    const email = delivery.email || (delivery.phone ? `${delivery.phone.replace(/\D/g, '')}@checkout.local` : 'guest@checkout.local');
+    const phone = delivery.phone || '';
+    const city = delivery.city || '';
+    const address = delivery.address || delivery.street || '';
+
+    delivery.name = rawName || fname;
+    delivery.fname = fname;
+    delivery.lname = lname;
+    delivery.email = email;
+    delivery.phone = phone;
+    delivery.city = city;
+    delivery.address = address;
 
     /* Enrich items with purchasePrice from catalogue */
     const catalogue = isFirebaseAvailable()
@@ -177,11 +194,15 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
       : (store.products || []);
 
     const enrichedItems = items.map(i => {
-      const match = catalogue.find(p => p.name === i.name);
+      const match = catalogue.find(p => p.name === i.name || p.id === i.productId);
       return {
         ...i,
         productId:     match?.id ?? i.productId ?? null,
         purchasePrice: match?.purchasePrice ?? i.purchasePrice ?? 0,
+        variant:       i.variant || 'Standard',
+        variantOption: i.variantOption || null,
+        color:         i.color || null,
+        size:          i.size || null,
       };
     });
 
@@ -209,8 +230,24 @@ router.post('/from-abandoned', requireAdmin, async (req, res) => {
 
     if (isFirebaseAvailable()) {
       await getDB().collection('orders').doc(orderRef).set(order);
+      try {
+        await getDB().collection('abandoned').doc(abandoned.id).update({
+          status: 'converted',
+          convertedAt: new Date().toISOString(),
+          convertedToOrderRef: orderRef
+        });
+      } catch (err) {
+        console.warn('Could not mark abandoned doc converted in firestore:', err.message);
+      }
     } else {
       store.orders.unshift(order);
+    }
+
+    const abStore = store.abandoned.find(a => a.id === abandonedId || a.id === abandoned.id);
+    if (abStore) {
+      abStore.status = 'converted';
+      abStore.convertedAt = new Date().toISOString();
+      abStore.convertedToOrderRef = orderRef;
     }
 
     store.logActivity({
